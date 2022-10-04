@@ -11,6 +11,7 @@ import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.internal.ContextSpanProcessorInvoker;
 import io.opentelemetry.instrumentation.api.internal.SupportabilityMetrics;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -183,6 +184,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
 
     spanBuilder.setAllAttributes(attributes);
     Span span = spanBuilder.startSpan();
+    ContextSpanProcessorInvoker.onStart(context, span);
     context = context.with(span);
 
     for (ContextCustomizer<? super REQUEST> contextCustomizer : contextCustomizers) {

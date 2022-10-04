@@ -28,6 +28,9 @@ public class InstrumentationApiInstrumentationModule extends InstrumentationModu
 
   @Override
   public List<TypeInstrumentation> typeInstrumentations() {
-    return asList(new HttpRouteStateInstrumentation(), new SpanKeyInstrumentation());
+    return asList(
+        new HttpRouteStateInstrumentation(),
+        new SpanKeyInstrumentation(),
+        new ContextSpanProcessorImplInstrumentation());
   }
 }

@@ -76,11 +76,13 @@ public final class SpanKey {
     this.key = key;
   }
 
+  // instumented by SpanKeyInstrumentation
   public Context storeInContext(Context context, Span span) {
     return context.with(key, span);
   }
 
   @Nullable
+  // instumented by SpanKeyInstrumentation
   public Span fromContextOrNull(Context context) {
     return context.get(key);
   }
