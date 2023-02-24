@@ -228,14 +228,14 @@ class ApacheHttpAsyncClientTest {
     optionsBuilder.setUserAgent("httpasyncclient");
     optionsBuilder.setResponseCodeOnRedirectError(302);
     optionsBuilder.enableTestReadTimeout();
-    optionsBuilder.setHttpAttributes(
-        endpoint -> {
-          Set<AttributeKey<?>> attributes =
-              new HashSet<>(HttpClientTestOptions.DEFAULT_HTTP_ATTRIBUTES);
-          attributes.add(SemanticAttributes.HTTP_SCHEME);
-          attributes.add(SemanticAttributes.HTTP_TARGET);
-          return attributes;
-        });
+    optionsBuilder.setHttpAttributes(ApacheHttpAsyncClientTest::getHttpAttributes);
+  }
+
+  private static Set<AttributeKey<?>> getHttpAttributes(URI endpoint) {
+    Set<AttributeKey<?>> attributes = new HashSet<>(HttpClientTestOptions.DEFAULT_HTTP_ATTRIBUTES);
+    attributes.add(SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH);
+    attributes.add(SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH);
+    return attributes;
   }
 
   static String fullPathFromUri(URI uri) {

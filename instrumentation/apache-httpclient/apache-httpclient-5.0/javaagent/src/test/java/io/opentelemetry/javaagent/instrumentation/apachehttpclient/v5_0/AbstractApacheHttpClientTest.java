@@ -37,6 +37,7 @@ abstract class AbstractApacheHttpClientTest<T extends HttpRequest>
     optionsBuilder.setUserAgent(userAgent());
     optionsBuilder.enableTestReadTimeout();
     optionsBuilder.setHttpAttributes(this::getHttpAttributes);
+    optionsBuilder.setResponseCodeOnRedirectError(302);
   }
 
   protected Set<AttributeKey<?>> getHttpAttributes(URI endpoint) {
@@ -45,6 +46,8 @@ abstract class AbstractApacheHttpClientTest<T extends HttpRequest>
     attributes.add(SemanticAttributes.NET_PEER_PORT);
     attributes.add(SemanticAttributes.HTTP_URL);
     attributes.add(SemanticAttributes.HTTP_METHOD);
+    attributes.add(SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH);
+    attributes.add(SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH);
     if (endpoint.toString().contains("/success")) {
       attributes.add(SemanticAttributes.HTTP_FLAVOR);
     }

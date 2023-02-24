@@ -141,6 +141,8 @@ hideFromDependabot(":instrumentation:apache-dubbo-2.7:javaagent")
 hideFromDependabot(":instrumentation:apache-dubbo-2.7:library-autoconfigure")
 hideFromDependabot(":instrumentation:apache-dubbo-2.7:testing")
 hideFromDependabot(":instrumentation:apache-httpasyncclient-4.1:javaagent")
+hideFromDependabot(":instrumentation:apache-httpclient:commons:javaagent")
+hideFromDependabot(":instrumentation:apache-httpclient:commons-4.0:javaagent")
 hideFromDependabot(":instrumentation:apache-httpclient:apache-httpclient-2.0:javaagent")
 hideFromDependabot(":instrumentation:apache-httpclient:apache-httpclient-4.0:javaagent")
 hideFromDependabot(":instrumentation:apache-httpclient:apache-httpclient-4.3:library")
@@ -514,3 +516,5 @@ include(":benchmark-jfr-analyzer")
 fun hideFromDependabot(projectPath: String) {
   include(projectPath)
 }
+include("instrumentation:apache-httpclient:commons-4.0:javaagent")
+findProject(":instrumentation:apache-httpclient:commons-4.0:javaagent")?.name = "javaagent"

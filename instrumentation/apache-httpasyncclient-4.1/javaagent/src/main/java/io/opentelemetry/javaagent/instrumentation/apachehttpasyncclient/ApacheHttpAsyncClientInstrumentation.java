@@ -8,34 +8,25 @@ package io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient;
 import static io.opentelemetry.javaagent.bootstrap.Java8BytecodeBridge.currentContext;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
-import static io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.ApacheHttpAsyncClientSingletons.instrumenter;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import java.io.IOException;
-import java.util.logging.Logger;
-import javax.annotation.Nullable;
+import io.opentelemetry.javaagent.instrumentation.apachehttpclient.v4_0.commons.ApacheHttpClientOtelContext;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
 import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.nio.ContentEncoder;
-import org.apache.http.nio.IOControl;
 import org.apache.http.nio.protocol.HttpAsyncRequestProducer;
+import org.apache.http.nio.protocol.HttpAsyncResponseConsumer;
+import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HttpCoreContext;
 
-public class ApacheHttpAsyncClientInstrumentation implements TypeInstrumentation {
+public final class ApacheHttpAsyncClientInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<ClassLoader> classLoaderOptimization() {
@@ -66,193 +57,24 @@ public class ApacheHttpAsyncClientInstrumentation implements TypeInstrumentation
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void methodEnter(
         @Advice.Argument(value = 0, readOnly = false) HttpAsyncRequestProducer requestProducer,
-        @Advice.Argument(2) HttpContext httpContext,
+        @Advice.Argument(value = 1, readOnly = false) HttpAsyncResponseConsumer<?> responseConsumer,
+        @Advice.Argument(value = 2, readOnly = false) HttpContext httpContext,
         @Advice.Argument(value = 3, readOnly = false) FutureCallback<?> futureCallback) {
 
       Context parentContext = currentContext();
+      if (httpContext == null) {
+        httpContext = new BasicHttpContext();
+      }
+      ApacheHttpClientOtelContext httpOtelContext = ApacheHttpClientOtelContext.adapt(httpContext);
+      httpOtelContext.markAsyncClient();
 
       WrappedFutureCallback<?> wrappedFutureCallback =
           new WrappedFutureCallback<>(parentContext, httpContext, futureCallback);
       requestProducer =
-          new DelegatingRequestProducer(parentContext, requestProducer, wrappedFutureCallback);
+          new WrappedRequestProducer(
+              parentContext, httpContext, requestProducer, wrappedFutureCallback);
+      responseConsumer = new WrappedResponseConsumer<>(parentContext, responseConsumer);
       futureCallback = wrappedFutureCallback;
-    }
-  }
-
-  public static class DelegatingRequestProducer implements HttpAsyncRequestProducer {
-    private final Context parentContext;
-    private final HttpAsyncRequestProducer delegate;
-    private final WrappedFutureCallback<?> wrappedFutureCallback;
-
-    public DelegatingRequestProducer(
-        Context parentContext,
-        HttpAsyncRequestProducer delegate,
-        WrappedFutureCallback<?> wrappedFutureCallback) {
-      this.parentContext = parentContext;
-      this.delegate = delegate;
-      this.wrappedFutureCallback = wrappedFutureCallback;
-    }
-
-    @Override
-    public HttpHost getTarget() {
-      return delegate.getTarget();
-    }
-
-    @Override
-    public HttpRequest generateRequest() throws IOException, HttpException {
-      HttpHost target = delegate.getTarget();
-      HttpRequest request = delegate.generateRequest();
-
-      ApacheHttpClientRequest otelRequest = new ApacheHttpClientRequest(target, request);
-
-      if (instrumenter().shouldStart(parentContext, otelRequest)) {
-        wrappedFutureCallback.context = instrumenter().start(parentContext, otelRequest);
-        wrappedFutureCallback.otelRequest = otelRequest;
-      }
-
-      return request;
-    }
-
-    @Override
-    public void produceContent(ContentEncoder encoder, IOControl ioctrl) throws IOException {
-      delegate.produceContent(encoder, ioctrl);
-    }
-
-    @Override
-    public void requestCompleted(HttpContext context) {
-      delegate.requestCompleted(context);
-    }
-
-    @Override
-    public void failed(Exception ex) {
-      delegate.failed(ex);
-    }
-
-    @Override
-    public boolean isRepeatable() {
-      return delegate.isRepeatable();
-    }
-
-    @Override
-    public void resetRequest() throws IOException {
-      delegate.resetRequest();
-    }
-
-    @Override
-    public void close() throws IOException {
-      delegate.close();
-    }
-  }
-
-  public static class WrappedFutureCallback<T> implements FutureCallback<T> {
-
-    private static final Logger logger = Logger.getLogger(WrappedFutureCallback.class.getName());
-
-    private final Context parentContext;
-    @Nullable private final HttpContext httpContext;
-    private final FutureCallback<T> delegate;
-
-    private volatile Context context;
-    private volatile ApacheHttpClientRequest otelRequest;
-
-    public WrappedFutureCallback(
-        Context parentContext, HttpContext httpContext, FutureCallback<T> delegate) {
-      this.parentContext = parentContext;
-      this.httpContext = httpContext;
-      // Note: this can be null in real life, so we have to handle this carefully
-      this.delegate = delegate;
-    }
-
-    @Override
-    public void completed(T result) {
-      if (context == null) {
-        // this is unexpected
-        logger.fine("context was never set");
-        completeDelegate(result);
-        return;
-      }
-
-      instrumenter().end(context, otelRequest, getResponseFromHttpContext(), null);
-
-      if (parentContext == null) {
-        completeDelegate(result);
-        return;
-      }
-
-      try (Scope ignored = parentContext.makeCurrent()) {
-        completeDelegate(result);
-      }
-    }
-
-    @Override
-    public void failed(Exception ex) {
-      if (context == null) {
-        // this is unexpected
-        logger.fine("context was never set");
-        failDelegate(ex);
-        return;
-      }
-
-      // end span before calling delegate
-      instrumenter().end(context, otelRequest, getResponseFromHttpContext(), ex);
-
-      if (parentContext == null) {
-        failDelegate(ex);
-        return;
-      }
-
-      try (Scope ignored = parentContext.makeCurrent()) {
-        failDelegate(ex);
-      }
-    }
-
-    @Override
-    public void cancelled() {
-      if (context == null) {
-        // this is unexpected
-        logger.fine("context was never set");
-        cancelDelegate();
-        return;
-      }
-
-      // TODO (trask) add "canceled" span attribute
-      // end span before calling delegate
-      instrumenter().end(context, otelRequest, getResponseFromHttpContext(), null);
-
-      if (parentContext == null) {
-        cancelDelegate();
-        return;
-      }
-
-      try (Scope ignored = parentContext.makeCurrent()) {
-        cancelDelegate();
-      }
-    }
-
-    private void completeDelegate(T result) {
-      if (delegate != null) {
-        delegate.completed(result);
-      }
-    }
-
-    private void failDelegate(Exception ex) {
-      if (delegate != null) {
-        delegate.failed(ex);
-      }
-    }
-
-    private void cancelDelegate() {
-      if (delegate != null) {
-        delegate.cancelled();
-      }
-    }
-
-    @Nullable
-    private HttpResponse getResponseFromHttpContext() {
-      if (httpContext == null) {
-        return null;
-      }
-      return (HttpResponse) httpContext.getAttribute(HttpCoreContext.HTTP_RESPONSE);
     }
   }
 }

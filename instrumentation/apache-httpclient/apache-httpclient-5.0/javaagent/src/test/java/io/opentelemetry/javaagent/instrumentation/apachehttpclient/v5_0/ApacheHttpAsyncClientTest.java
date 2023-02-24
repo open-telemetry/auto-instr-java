@@ -8,7 +8,6 @@ package io.opentelemetry.javaagent.instrumentation.apachehttpclient.v5_0;
 import io.opentelemetry.instrumentation.testing.junit.InstrumentationExtension;
 import io.opentelemetry.instrumentation.testing.junit.http.HttpClientInstrumentationExtension;
 import io.opentelemetry.instrumentation.testing.junit.http.HttpClientResult;
-import io.opentelemetry.instrumentation.testing.junit.http.HttpClientTestOptions;
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -108,12 +107,6 @@ class ApacheHttpAsyncClientTest {
     @Override
     void executeRequestWithCallback(SimpleHttpRequest request, URI uri, HttpClientResult result) {
       client.execute(request, getContext(), new ResponseCallback(result));
-    }
-
-    @Override
-    protected void configure(HttpClientTestOptions.Builder optionsBuilder) {
-      super.configure(optionsBuilder);
-      optionsBuilder.setResponseCodeOnRedirectError(302);
     }
   }
 

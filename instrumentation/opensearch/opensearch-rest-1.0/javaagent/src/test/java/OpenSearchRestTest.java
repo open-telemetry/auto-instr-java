@@ -112,6 +112,7 @@ public class OpenSearchRestTest {
                             equalTo(
                                 SemanticAttributes.HTTP_URL, httpHost.toURI() + "/_cluster/health"),
                             equalTo(SemanticAttributes.HTTP_STATUS_CODE, 200L),
+                            equalTo(SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH, 0L),
                             equalTo(SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH, 415L))));
   }
 
@@ -187,6 +188,7 @@ public class OpenSearchRestTest {
                             equalTo(
                                 SemanticAttributes.HTTP_URL, httpHost.toURI() + "/_cluster/health"),
                             equalTo(SemanticAttributes.HTTP_STATUS_CODE, 200L),
+                            equalTo(SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH, 0L),
                             equalTo(SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH, 415L)),
                 span ->
                     span.hasName("callback")
