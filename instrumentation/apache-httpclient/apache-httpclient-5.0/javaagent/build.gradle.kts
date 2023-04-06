@@ -11,5 +11,6 @@ muzzle {
 }
 
 dependencies {
+  implementation(project(":instrumentation:apache-httpclient:commons:javaagent"))
   library("org.apache.httpcomponents.client5:httpclient5:5.0")
 }

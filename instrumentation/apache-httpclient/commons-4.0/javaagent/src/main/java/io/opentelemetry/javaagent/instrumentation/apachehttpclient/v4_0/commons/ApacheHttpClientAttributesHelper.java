@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.javaagent.instrumentation.apachehttpclient.v4_0;
+package io.opentelemetry.javaagent.instrumentation.apachehttpclient.v4_0.commons;
 
 import static java.util.logging.Level.FINE;
 
@@ -17,39 +17,26 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpMessage;
 import org.apache.http.HttpRequest;
 import org.apache.http.ProtocolVersion;
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.StatusLine;
 
-public final class ApacheHttpClientRequest {
+public final class ApacheHttpClientAttributesHelper {
+  private static final Logger logger;
 
-  private static final Logger logger = Logger.getLogger(ApacheHttpClientRequest.class.getName());
-
-  @Nullable private final URI uri;
-
-  private final HttpRequest delegate;
-
-  public ApacheHttpClientRequest(HttpHost httpHost, HttpRequest httpRequest) {
-    URI calculatedUri = getUri(httpRequest);
-    if (calculatedUri != null && httpHost != null) {
-      uri = getCalculatedUri(httpHost, calculatedUri);
-    } else {
-      uri = calculatedUri;
-    }
-    delegate = httpRequest;
+  static {
+    logger = Logger.getLogger(ApacheHttpClientAttributesHelper.class.getName());
   }
 
-  public ApacheHttpClientRequest(HttpUriRequest httpRequest) {
-    uri = httpRequest.getURI();
-    delegate = httpRequest;
-  }
+  public ApacheHttpClientAttributesHelper() {}
 
-  public List<String> getHeader(String name) {
-    return headersToList(delegate.getHeaders(name));
+  public static List<String> getHeader(HttpMessage httpMessage, String name) {
+    return headersToList(httpMessage.getHeaders(name));
   }
 
   // minimize memory overhead by not using streams
-  static List<String> headersToList(Header[] headers) {
+  private static List<String> headersToList(Header[] headers) {
     if (headers == null || headers.length == 0) {
       return Collections.emptyList();
     }
@@ -60,22 +47,13 @@ public final class ApacheHttpClientRequest {
     return headersList;
   }
 
-  public void setHeader(String name, String value) {
-    delegate.setHeader(name, value);
+  public static Integer getStatusCode(StatusLine statusLine) {
+    return statusLine != null ? statusLine.getStatusCode() : null;
   }
 
-  public String getMethod() {
-    return delegate.getRequestLine().getMethod();
-  }
-
-  public String getUrl() {
-    return uri != null ? uri.toString() : null;
-  }
-
-  public String getFlavor() {
-    ProtocolVersion protocolVersion = delegate.getProtocolVersion();
+  public static String getFlavor(ProtocolVersion protocolVersion) {
     String protocol = protocolVersion.getProtocol();
-    if (!protocol.equals("HTTP")) {
+    if (!"HTTP".equals(protocol)) {
       return null;
     }
     int major = protocolVersion.getMajor();
@@ -93,14 +71,12 @@ public final class ApacheHttpClientRequest {
     return null;
   }
 
-  @Nullable
-  public String getPeerName() {
-    return uri == null ? null : uri.getHost();
-  }
-
-  @Nullable
-  public Integer getPeerPort() {
-    return uri == null ? null : uri.getPort();
+  public static URI getUri(HttpHost target, HttpRequest httpRequest) {
+    URI calculatedUri = getUri(httpRequest);
+    if (calculatedUri != null && target != null) {
+      calculatedUri = getCalculatedUri(target, calculatedUri);
+    }
+    return calculatedUri;
   }
 
   @Nullable
@@ -114,15 +90,29 @@ public final class ApacheHttpClientRequest {
     }
   }
 
+  public static String getPeerName(URI uri) {
+    return uri == null ? null : uri.getHost();
+  }
+
+  public static Integer getPeerPort(URI uri) {
+    return uri == null ? null : uri.getPort();
+  }
+
   @Nullable
   private static URI getCalculatedUri(HttpHost httpHost, URI uri) {
     try {
+      String path = uri.getPath();
+      if (!path.startsWith("/")) {
+        // elasticsearch RestClient sends relative urls
+        // TODO(trask) add test for this and extend to Apache 4, 4.3 and 5
+        path = "/" + path;
+      }
       return new URI(
           httpHost.getSchemeName(),
           null,
           httpHost.getHostName(),
           httpHost.getPort(),
-          uri.getPath(),
+          path,
           uri.getQuery(),
           uri.getFragment());
     } catch (URISyntaxException e) {

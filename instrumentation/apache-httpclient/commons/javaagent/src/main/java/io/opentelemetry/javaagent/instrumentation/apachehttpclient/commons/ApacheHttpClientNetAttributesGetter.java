@@ -3,37 +3,35 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient;
+package io.opentelemetry.javaagent.instrumentation.apachehttpclient.commons;
 
 import io.opentelemetry.instrumentation.api.instrumenter.net.InetSocketAddressNetClientAttributesGetter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.InetSocketAddress;
 import javax.annotation.Nullable;
-import org.apache.http.HttpResponse;
 
-final class ApacheHttpAsyncClientNetAttributesGetter
-    extends InetSocketAddressNetClientAttributesGetter<ApacheHttpClientRequest, HttpResponse> {
-
+public final class ApacheHttpClientNetAttributesGetter
+    extends InetSocketAddressNetClientAttributesGetter<OtelHttpRequest, OtelHttpResponse> {
   @Override
-  public String getTransport(ApacheHttpClientRequest request, @Nullable HttpResponse response) {
+  public String getTransport(OtelHttpRequest request, @Nullable OtelHttpResponse response) {
     return SemanticAttributes.NetTransportValues.IP_TCP;
   }
 
   @Override
   @Nullable
-  public String getPeerName(ApacheHttpClientRequest request) {
+  public String getPeerName(OtelHttpRequest request) {
     return request.getPeerName();
   }
 
   @Override
-  public Integer getPeerPort(ApacheHttpClientRequest request) {
+  public Integer getPeerPort(OtelHttpRequest request) {
     return request.getPeerPort();
   }
 
   @Nullable
   @Override
   protected InetSocketAddress getPeerSocketAddress(
-      ApacheHttpClientRequest request, @Nullable HttpResponse response) {
-    return request.peerSocketAddress();
+      OtelHttpRequest request, @Nullable OtelHttpResponse otelHttpResponse) {
+    return request.getPeerSocketAddress();
   }
 }

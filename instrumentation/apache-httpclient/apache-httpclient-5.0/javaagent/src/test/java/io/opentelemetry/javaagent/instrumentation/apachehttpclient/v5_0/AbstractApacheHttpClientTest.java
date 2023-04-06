@@ -36,15 +36,12 @@ abstract class AbstractApacheHttpClientTest<T extends HttpRequest>
   }
 
   protected Set<AttributeKey<?>> getHttpAttributes(URI endpoint) {
-    Set<AttributeKey<?>> attributes = new HashSet<>();
-    attributes.add(SemanticAttributes.NET_PEER_NAME);
-    attributes.add(SemanticAttributes.NET_PEER_PORT);
-    attributes.add(SemanticAttributes.HTTP_URL);
-    attributes.add(SemanticAttributes.HTTP_METHOD);
-    if (endpoint.toString().contains("/success")) {
-      attributes.add(SemanticAttributes.HTTP_FLAVOR);
+    Set<AttributeKey<?>> attributes = new HashSet<>(HttpClientTestOptions.DEFAULT_HTTP_ATTRIBUTES);
+    if (!endpoint.toString().contains("/success")) {
+      attributes.remove(SemanticAttributes.HTTP_FLAVOR);
     }
-    attributes.add(SemanticAttributes.HTTP_USER_AGENT);
+    attributes.add(SemanticAttributes.HTTP_SCHEME);
+    attributes.add(SemanticAttributes.HTTP_TARGET);
     return attributes;
   }
 

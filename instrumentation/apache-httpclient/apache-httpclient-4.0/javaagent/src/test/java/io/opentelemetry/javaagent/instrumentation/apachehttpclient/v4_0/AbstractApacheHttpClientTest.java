@@ -9,7 +9,9 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.instrumentation.testing.junit.http.AbstractHttpClientTest;
 import io.opentelemetry.instrumentation.testing.junit.http.HttpClientResult;
 import io.opentelemetry.instrumentation.testing.junit.http.HttpClientTestOptions;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.net.URI;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.apache.http.HttpHost;
@@ -33,7 +35,10 @@ abstract class AbstractApacheHttpClientTest<T extends HttpRequest>
   }
 
   private static Set<AttributeKey<?>> getHttpAttributes(URI endpoint) {
-    return HttpClientTestOptions.DEFAULT_HTTP_ATTRIBUTES;
+    Set<AttributeKey<?>> attributes = new HashSet<>(HttpClientTestOptions.DEFAULT_HTTP_ATTRIBUTES);
+    attributes.add(SemanticAttributes.HTTP_SCHEME);
+    attributes.add(SemanticAttributes.HTTP_TARGET);
+    return attributes;
   }
 
   @Override

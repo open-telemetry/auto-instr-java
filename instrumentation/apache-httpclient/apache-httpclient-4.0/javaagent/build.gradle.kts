@@ -24,6 +24,8 @@ muzzle {
 }
 
 dependencies {
+  implementation(project(":instrumentation:apache-httpclient:commons:javaagent"))
+  implementation(project(":instrumentation:apache-httpclient:commons-4.0:javaagent"))
   library("org.apache.httpcomponents:httpclient:4.0")
   testCompileOnly("net.jcip:jcip-annotations:1.0")
 }
