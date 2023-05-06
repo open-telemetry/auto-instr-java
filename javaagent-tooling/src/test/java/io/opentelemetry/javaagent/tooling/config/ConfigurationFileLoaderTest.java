@@ -8,6 +8,7 @@ package io.opentelemetry.javaagent.tooling.config;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.events.GlobalEventEmitterProvider;
@@ -21,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junitpioneer.jupiter.ClearSystemProperty;
@@ -60,6 +62,69 @@ class ConfigurationFileLoaderTest {
     @Override
     public void customize(AutoConfigurationCustomizer autoConfiguration) {
       autoConfiguration.addPropertiesSupplier(() -> singletonMap("custom.key", "123"));
+    }
+  }
+
+  @Nested
+  @SuppressWarnings("ClassCanBeStatic")
+  class SubstitutionReplacerTest {
+    final ConfigurationFileLoader.SubstitutionReplacer substitutionReplacer =
+        new ConfigurationFileLoader.SubstitutionReplacer("fileName");
+
+    @Test
+    void emptyStringShouldReturnInput() {
+      assertEquals("", substitutionReplacer.replace(""));
+    }
+
+    @Test
+    void singleDollarShouldInput() {
+      assertEquals("$", substitutionReplacer.replace("$"));
+    }
+
+    @Test
+    void dollarCullyShouldReturnInput() {
+      assertEquals("${", substitutionReplacer.replace("${"));
+    }
+
+    @Test
+    void noMatchOfPlaceholderShouldReturnInput() {
+      assertEquals("${ccvxv}", substitutionReplacer.replace("${ccvxv}"));
+    }
+
+    @Test
+    void emptyPlaceholderShouldReturnInput() {
+      assertEquals("${}", substitutionReplacer.replace("${}"));
+    }
+
+    @Test
+    @SetSystemProperty(key = "PLACEHOLDER", value = "hello, world!")
+    void placeholderMatchShouldReturnSubstitution() {
+      assertEquals("hello, world!", substitutionReplacer.replace("${PLACEHOLDER}"));
+    }
+
+    @Test
+    @SetSystemProperty(key = "PLACEHOLDER", value = "hello, world!")
+    void twoPlaceholderMatchsShouldReturnSubstitutions() {
+      assertEquals(
+          "hello, world!, shkkj hello, world!",
+          substitutionReplacer.replace("${PLACEHOLDER}, shkkj ${PLACEHOLDER}"));
+    }
+
+    @Test
+    void escapedDollarShouldReturnSingleDollar() {
+      assertEquals("$", substitutionReplacer.replace("$$"));
+    }
+
+    @Test
+    @SetSystemProperty(key = "PLACEHOLDER", value = "hello, world!")
+    void escapedPlaceholderShouldReturnSingleDollarPlaceholder() {
+      assertEquals("${PLACEHOLDER}", substitutionReplacer.replace("$${PLACEHOLDER}"));
+    }
+
+    @Test
+    @SetSystemProperty(key = "PLACEHOLDER", value = "hello, world!")
+    void escapedPlaceholderShouldReturnSingleDollarSubstitution() {
+      assertEquals("$hello, world!", substitutionReplacer.replace("$$${PLACEHOLDER}"));
     }
   }
 }
