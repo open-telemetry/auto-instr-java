@@ -24,3 +24,23 @@ This format is the only format recognized by AWS managed services, and populatin
 propagating the trace through them. If this does not fulfill your use case, perhaps because you are
 using the same SDK with a different non-AWS managed service, let us know so we can provide
 configuration for this behavior.
+
+## Using SqsMessageReceiver
+
+This instrumentation takes a ReceiveMessageRequest and returns a ReceiveMessageResponse for SQS.
+A span is created for the call to SQS with appropriate attributes and span links.
+Span links comes from each of the response's messages as if this were a batch of messages.
+
+1. Setup SqsMessageReceiver so that it knows how to pull information from SQS.
+Pass in your OpenTelemetry, the name of the destination, and SqsClient.
+2. Call the receive method on SqsMessageReceiver and pass in the request.
+3. It will return the response and wrap the call in a span.
+
+```java
+OpenTelemetry openTelemetry;
+SqsClient sqsClient;
+ReceiveMessageRequest request;
+
+SqsMessageReceiver messageReceiver = new SqsMessageReceiver(openTelemetry, "destination", sqsClient);
+ReceiveMessageResponse response = messageReceiver.receive(request);
+```
