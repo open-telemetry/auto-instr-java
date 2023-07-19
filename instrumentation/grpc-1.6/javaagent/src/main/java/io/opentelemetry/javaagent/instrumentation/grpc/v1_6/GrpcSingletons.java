@@ -23,9 +23,14 @@ public final class GrpcSingletons {
 
   public static final ServerInterceptor SERVER_INTERCEPTOR;
 
-  public static final Context.Storage STORAGE = new ContextStorageBridge(false);
+  public static final Context.Storage STORAGE;
 
   static {
+    boolean propagateGrpcDeadline =
+        InstrumentationConfig.get()
+            .getBoolean("otel.instrumentation.grpc.propagate-grpc-deadline", false);
+    STORAGE = new ContextStorageBridge(propagateGrpcDeadline);
+
     boolean experimentalSpanAttributes =
         InstrumentationConfig.get()
             .getBoolean("otel.instrumentation.grpc.experimental-span-attributes", false);
