@@ -1,0 +1,31 @@
+name: Build
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu]
+        java:
+          - 8
+          - 11
+          - 17
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: temurin
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1.0.5
+      - name: Setup Gradle and run build
+        uses: gradle/gradle-build-action@v2.4.2
+        env:
+          CHECK_GENERATED_FILES: true
+          SMOKE_TEST_JAVA_VERSION: ${{ matrix.java }} # the some test will pick this up
+        with:
+          arguments: build

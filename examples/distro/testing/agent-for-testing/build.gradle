@@ -114,7 +114,7 @@ tasks {
       attributes.put("Can-Redefine-Classes", "true")
       attributes.put("Can-Retransform-Classes", "true")
       attributes.put("Implementation-Vendor", "Demo")
-      attributes.put("Implementation-Version", "demo-${project.version}-otel-${versions.opentelemetryJavaagent}")
+      attributes.put("Implementation-Version", "${versions.opentelemetryJavaagent}")
     }
   }
 

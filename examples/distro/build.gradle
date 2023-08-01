@@ -2,19 +2,18 @@ group 'io.opentelemetry.example'
 version '1.0-SNAPSHOT'
 
 buildscript {
+  ext {
+    otelVersion = "1.28.0"
+  }
   repositories {
     maven {
       url "https://plugins.gradle.org/m2/"
-    }
-    maven {
-      name = "sonatype"
-      url = uri("https://oss.sonatype.org/content/repositories/snapshots")
     }
   }
   dependencies {
     classpath "com.diffplug.spotless:spotless-plugin-gradle:6.20.0"
     classpath "gradle.plugin.com.github.johnrengelman:shadow:8.0.0"
-    classpath "io.opentelemetry.instrumentation:gradle-plugins:1.29.0-alpha-SNAPSHOT"
+    classpath "io.opentelemetry.instrumentation:gradle-plugins:${otelVersion}-alpha"
   }
 }
 
@@ -27,15 +26,16 @@ subprojects {
   ext {
     versions = [
       // this line is managed by .github/scripts/update-sdk-version.sh
-      opentelemetrySdk           : "1.28.0",
+      opentelemetrySdk           : otelVersion,
 
       // these lines are managed by .github/scripts/update-version.sh
-      opentelemetryJavaagent     : "1.29.0-SNAPSHOT",
-      opentelemetryJavaagentAlpha: "1.29.0-alpha-SNAPSHOT",
+      opentelemetryJavaagent     : otelVersion,
+      opentelemetryJavaagentAlpha: "${otelVersion}-alpha",
 
       bytebuddy                  : "1.14.5",
       autoservice                : "1.1.1",
-      junit                      : "5.10.0"
+      junit                      : "5.10.0",
+      assertj                    : "3.24.2",
     ]
 
     deps = [
@@ -49,16 +49,12 @@ subprojects {
 
   repositories {
     mavenCentral()
-    maven {
-      name = "sonatype"
-      url = uri("https://oss.sonatype.org/content/repositories/snapshots")
-    }
   }
 
   spotless {
     java {
       googleJavaFormat()
-      licenseHeaderFile(rootProject.file("../../buildscripts/spotless.license.java"), "(package|import|public)")
+      licenseHeaderFile(rootProject.file("buildscripts/spotless.license.java"), "(package|import|public)")
       target("src/**/*.java")
     }
   }
@@ -70,9 +66,11 @@ subprojects {
     implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${versions.opentelemetryJavaagent}"))
     implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions.opentelemetryJavaagentAlpha}"))
 
-    testImplementation("org.mockito:mockito-core:5.4.0")
+    testImplementation("org.assertj:assertj-core:${versions.assertj}")
+
     testImplementation(enforcedPlatform("org.junit:junit-bom:${versions.junit}"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:${versions.junit}")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:${versions.junit}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${versions.junit}")
   }
 
@@ -83,6 +81,10 @@ subprojects {
 
     compileJava {
       options.release.set(8)
+      options.compilerArgs << "-Werror"
+    }
+    compileTestJava {
+      options.release.set(17)
     }
   }
 }

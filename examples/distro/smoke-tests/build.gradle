@@ -3,14 +3,17 @@ plugins {
 }
 
 dependencies {
+  testImplementation(project(":custom"))
   testImplementation("org.testcontainers:testcontainers:1.18.3")
   testImplementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
   testImplementation("com.google.protobuf:protobuf-java-util:3.23.4")
   testImplementation("com.squareup.okhttp3:okhttp:4.11.0")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto:1.0.0-alpha")
   testImplementation("io.opentelemetry:opentelemetry-api:${versions.opentelemetry}")
+  testImplementation("io.opentelemetry:opentelemetry-semconv:${versions.opentelemetry}")
 
   testImplementation("ch.qos.logback:logback-classic:1.4.8")
+  testImplementation("org.awaitility:awaitility:4.2.0")
 }
 
 tasks.test {

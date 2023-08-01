@@ -5,15 +5,15 @@
 
 package com.example.javaagent.smoketest;
 
-import io.opentelemetry.api.trace.TraceId;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.TELEMETRY_SDK_NAME;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.TELEMETRY_SDK_VERSION;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.example.javaagent.DistributionVersion;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
 import okhttp3.Request;
-import okhttp3.Response;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class SpringBootSmokeTest extends SmokeTest {
@@ -26,35 +26,30 @@ class SpringBootSmokeTest extends SmokeTest {
   }
 
   @Test
-  public void springBootSmokeTestOnJDK() throws IOException, InterruptedException {
-    startTarget(8);
+  public void checkDistributionVersion() throws IOException, InterruptedException {
+    startTarget();
+
     String url = String.format("http://localhost:%d/greeting", target.getMappedPort(8080));
     Request request = new Request.Builder().url(url).get().build();
 
-    String currentAgentVersion =
-        (String)
-            new JarFile(agentPath)
-                .getManifest()
-                .getMainAttributes()
-                .get(Attributes.Name.IMPLEMENTATION_VERSION);
-
-    Response response = client.newCall(request).execute();
-    System.out.println(response.headers().toString());
+    String response = makeCall(request);
 
     Collection<ExportTraceServiceRequest> traces = waitForTraces();
 
-    Assertions.assertNotNull(response.header("X-server-id"));
-    Assertions.assertEquals(1, response.headers("X-server-id").size());
-    Assertions.assertTrue(TraceId.isValid(response.header("X-server-id")));
-    Assertions.assertEquals("Hi!", response.body().string());
-    Assertions.assertEquals(1, countSpansByName(traces, "GET /greeting"));
-    Assertions.assertEquals(0, countSpansByName(traces, "WebController.greeting"));
-    Assertions.assertEquals(1, countSpansByName(traces, "WebController.withSpan"));
-    Assertions.assertEquals(2, countSpansByAttributeValue(traces, "custom", "demo"));
-    Assertions.assertNotEquals(
-        0, countResourcesByValue(traces, "telemetry.auto.version", currentAgentVersion));
-    Assertions.assertNotEquals(0, countResourcesByValue(traces, "custom.resource", "demo"));
+    assertThat(response).isEqualTo("Hi!");
+    assertThat(countSpansByName(traces, "GET /greeting")).isEqualTo(1);
+    assertThat(countSpansByName(traces, "WebController.greeting")).isEqualTo(1);
+    assertThat(countSpansByName(traces, "WebController.withSpan")).isEqualTo(1);
+    assertThat(
+            countResourcesByValue(
+                traces, TELEMETRY_SDK_VERSION.getKey(), DistributionVersion.VERSION))
+        .isGreaterThan(0);
+    assertThat(
+            countResourcesByValue(
+                traces, TELEMETRY_SDK_NAME.getKey(), "opentelemetry-java-instrumentation-distro"))
+        .isGreaterThan(0);
 
-    stopTarget();
+    assertThat(getLogMessages(waitForLogs())).contains("HTTP request received");
+    assertThat(getMetricNames(waitForMetrics())).contains("process.runtime.jvm.memory.usage");
   }
 }

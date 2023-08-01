@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: temurin
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1.0.5
+      - name: Setup Gradle and run build
+        uses: gradle/gradle-build-action@v2.4.2
+        with:
+          arguments: build -x test
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            agent/build/libs/opentelemetry-java-instrumentation-distro-demo.jar
+            LICENSE
