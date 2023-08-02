@@ -519,6 +519,8 @@ hideFromDependabot(":instrumentation:spring:starters:zipkin-spring-boot-starter"
 hideFromDependabot(":instrumentation:spymemcached-2.12:javaagent")
 hideFromDependabot(":instrumentation:struts-2.3:javaagent")
 hideFromDependabot(":instrumentation:tapestry-5.4:javaagent")
+hideFromDependabot(":instrumentation:thrift-0.14.1:javaagent")
+hideFromDependabot(":instrumentation:thrift-0.14.1:testing")
 hideFromDependabot(":instrumentation:tomcat:tomcat-7.0:javaagent")
 hideFromDependabot(":instrumentation:tomcat:tomcat-10.0:javaagent")
 hideFromDependabot(":instrumentation:tomcat:tomcat-common:javaagent")
