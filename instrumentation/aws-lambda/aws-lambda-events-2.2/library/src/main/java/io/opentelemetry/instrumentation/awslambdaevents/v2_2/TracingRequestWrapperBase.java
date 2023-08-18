@@ -7,6 +7,7 @@ package io.opentelemetry.instrumentation.awslambdaevents.v2_2;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.instrumentation.awslambdacore.v1_0.TracingRequestHandler;
@@ -78,6 +79,8 @@ abstract class TracingRequestWrapperBase<I, O> extends TracingRequestHandler<I, 
   protected final Map<String, String> extractHttpHeaders(I input) {
     if (input instanceof APIGatewayProxyRequestEvent) {
       return MapUtils.emptyIfNull(((APIGatewayProxyRequestEvent) input).getHeaders());
+    } else if (input instanceof APIGatewayV2HTTPEvent) {
+      return MapUtils.emptyIfNull(((APIGatewayV2HTTPEvent) input).getHeaders());
     }
     return Collections.emptyMap();
   }

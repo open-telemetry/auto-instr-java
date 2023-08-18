@@ -16,7 +16,7 @@ dependencies {
   // with lambda.
   // NB: 2.2.0 includes a class called SQSEvent but isn't usable due to it returning private classes
   // in public API.
-  library("com.amazonaws:aws-lambda-java-events:2.2.1")
+  library("com.amazonaws:aws-lambda-java-events:3.9.0")
 
   // We need Jackson for wrappers to reproduce the serialization does when Lambda invokes a RequestHandler with event
   // since Lambda will only be able to invoke the wrapper itself with a generic Object.

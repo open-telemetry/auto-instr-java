@@ -15,6 +15,9 @@ import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.USER_
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent.RequestContext;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
@@ -33,11 +36,14 @@ final class ApiGatewayProxyAttributesExtractor
       AttributesBuilder attributes, Context parentContext, AwsLambdaRequest request) {
     if (request.getInput() instanceof APIGatewayProxyRequestEvent) {
       attributes.put(FAAS_TRIGGER, SemanticAttributes.FaasTriggerValues.HTTP);
-      onRequest(attributes, (APIGatewayProxyRequestEvent) request.getInput());
+      onRequest(attributes, new V1Request((APIGatewayProxyRequestEvent) request.getInput()));
+    } else if (request.getInput() instanceof APIGatewayV2HTTPEvent) {
+      attributes.put(FAAS_TRIGGER, SemanticAttributes.FaasTriggerValues.HTTP);
+      onRequest(attributes, new V2Request((APIGatewayV2HTTPEvent) request.getInput()));
     }
   }
 
-  void onRequest(AttributesBuilder attributes, APIGatewayProxyRequestEvent request) {
+  void onRequest(AttributesBuilder attributes, Request request) {
     attributes.put(HTTP_METHOD, request.getHttpMethod());
 
     Map<String, String> headers = lowercaseMap(request.getHeaders());
@@ -51,8 +57,7 @@ final class ApiGatewayProxyAttributesExtractor
     }
   }
 
-  private static String getHttpUrl(
-      APIGatewayProxyRequestEvent request, Map<String, String> headers) {
+  private static String getHttpUrl(Request request, Map<String, String> headers) {
     StringBuilder str = new StringBuilder();
 
     String scheme = headers.get("x-forwarded-proto");
@@ -95,6 +100,80 @@ final class ApiGatewayProxyAttributesExtractor
       if (statusCode != null) {
         attributes.put(HTTP_STATUS_CODE, statusCode);
       }
+    } else if (response instanceof APIGatewayV2HTTPResponse) {
+      int statusCode = ((APIGatewayV2HTTPResponse) response).getStatusCode();
+      if (statusCode != 0) {
+        attributes.put(HTTP_STATUS_CODE, statusCode);
+      }
+    }
+  }
+
+  private interface Request {
+    String getHttpMethod();
+
+    String getPath();
+
+    Map<String, String> getHeaders();
+
+    Map<String, String> getQueryStringParameters();
+  }
+
+  private static class V1Request implements Request {
+    private final APIGatewayProxyRequestEvent request;
+
+    private V1Request(APIGatewayProxyRequestEvent request) {
+      this.request = request;
+    }
+
+    @Override
+    public String getHttpMethod() {
+      return request.getHttpMethod();
+    }
+
+    @Override
+    public String getPath() {
+      return request.getPath();
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+      return request.getHeaders();
+    }
+
+    @Override
+    public Map<String, String> getQueryStringParameters() {
+      return request.getQueryStringParameters();
+    }
+  }
+
+  private static class V2Request implements Request {
+    private final APIGatewayV2HTTPEvent request;
+
+    private V2Request(APIGatewayV2HTTPEvent request) {
+      this.request = request;
+    }
+
+    @Override
+    public String getHttpMethod() {
+      RequestContext requestContext = request.getRequestContext();
+      RequestContext.Http http = requestContext != null ? requestContext.getHttp() : null;
+
+      return http != null ? http.getMethod() : null;
+    }
+
+    @Override
+    public String getPath() {
+      return request.getRawPath();
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+      return request.getHeaders();
+    }
+
+    @Override
+    public Map<String, String> getQueryStringParameters() {
+      return request.getQueryStringParameters();
     }
   }
 
