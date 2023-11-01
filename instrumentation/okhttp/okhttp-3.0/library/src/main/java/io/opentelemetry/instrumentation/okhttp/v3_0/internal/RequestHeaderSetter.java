@@ -9,8 +9,11 @@ import io.opentelemetry.context.propagation.TextMapSetter;
 import javax.annotation.Nullable;
 import okhttp3.Request;
 
-/** Helper class to inject span context into request headers. */
-enum RequestHeaderSetter implements TextMapSetter<Request.Builder> {
+/**
+ * Helper class to inject span context into request headers. This class is internal and is hence not
+ * for public use. Its APIs are unstable and can change at any time.
+ */
+public enum RequestHeaderSetter implements TextMapSetter<Request.Builder> {
   INSTANCE;
 
   @Override
