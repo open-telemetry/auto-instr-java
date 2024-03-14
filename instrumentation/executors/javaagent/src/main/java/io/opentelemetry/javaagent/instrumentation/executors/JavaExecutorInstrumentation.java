@@ -26,6 +26,7 @@ import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.Future;
 import net.bytebuddy.asm.Advice;
@@ -89,12 +90,13 @@ public class JavaExecutorInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static PropagatedContext enterJobSubmit(
+        @Advice.This Executor executor,
         @Advice.Argument(value = 0, readOnly = false) Runnable task) {
       Context context = Java8BytecodeBridge.currentContext();
       if (!ExecutorAdviceHelper.shouldPropagateContext(context, task)) {
         return null;
       }
-      if (ContextPropagatingRunnable.shouldDecorateRunnable(task)) {
+      if (ContextPropagatingRunnable.shouldDecorateRunnable(executor, task)) {
         task = ContextPropagatingRunnable.propagateContext(task, context);
         return null;
       }
@@ -136,14 +138,19 @@ public class JavaExecutorInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static PropagatedContext enterJobSubmit(
+        @Advice.This Executor executor,
         @Advice.Argument(value = 0, readOnly = false) Runnable task) {
       Context context = Java8BytecodeBridge.currentContext();
-      if (ExecutorAdviceHelper.shouldPropagateContext(context, task)) {
-        VirtualField<Runnable, PropagatedContext> virtualField =
-            VirtualField.find(Runnable.class, PropagatedContext.class);
-        return ExecutorAdviceHelper.attachContextToTask(context, virtualField, task);
+      if (!ExecutorAdviceHelper.shouldPropagateContext(context, task)) {
+        return null;
       }
-      return null;
+      if (ContextPropagatingRunnable.shouldDecorateRunnable(executor, task)) {
+        task = ContextPropagatingRunnable.propagateContext(task, context);
+        return null;
+      }
+      VirtualField<Runnable, PropagatedContext> virtualField =
+          VirtualField.find(Runnable.class, PropagatedContext.class);
+      return ExecutorAdviceHelper.attachContextToTask(context, virtualField, task);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)

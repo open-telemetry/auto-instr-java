@@ -9,6 +9,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.internal.ContextPropagationDebug;
 import io.opentelemetry.instrumentation.api.util.VirtualField;
 import io.opentelemetry.javaagent.bootstrap.InstrumentedTaskClasses;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import javax.annotation.Nullable;
 
@@ -34,6 +35,18 @@ public final class ExecutorAdviceHelper {
     }
 
     return InstrumentedTaskClasses.canInstrumentTaskClass(task.getClass());
+  }
+
+  private static final VirtualField<Executor, Boolean> disableDecorateRunnableField =
+      VirtualField.find(Executor.class, Boolean.class);
+
+  public static void disableDecorateRunnable(Executor executor) {
+    disableDecorateRunnableField.set(executor, Boolean.TRUE);
+  }
+
+  public static boolean shouldDecorateRunnable(Executor executor) {
+    Boolean disabled = disableDecorateRunnableField.get(executor);
+    return !Boolean.TRUE.equals(disabled);
   }
 
   /**
