@@ -6,14 +6,15 @@
 package io.opentelemetry.javaagent.instrumentation.pulsar.v2_8;
 
 import static io.opentelemetry.instrumentation.testing.util.TelemetryDataUtil.orderByRootSpanName;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.satisfies;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.instrumentation.testing.junit.AgentInstrumentationExtension;
 import io.opentelemetry.instrumentation.testing.junit.InstrumentationExtension;
+import io.opentelemetry.javaagent.instrumentation.pulsar.v2_8.telemetry.PulsarSingletons;
 import io.opentelemetry.sdk.testing.assertj.AttributeAssertion;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -38,6 +39,7 @@ import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;
 import org.apache.pulsar.client.api.Schema;
 import org.apache.pulsar.client.api.SubscriptionInitialPosition;
+import org.apache.pulsar.client.api.SubscriptionType;
 import org.assertj.core.api.AbstractLongAssert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -62,10 +64,6 @@ class PulsarClientTest {
   private static PulsarContainer pulsar;
   private static PulsarClient client;
   private static PulsarAdmin admin;
-  private static Producer<String> producer;
-  private static Consumer<String> consumer;
-  private static Producer<String> producer2;
-
   private static String brokerHost;
   private static int brokerPort;
 
@@ -83,21 +81,16 @@ class PulsarClientTest {
 
     brokerHost = pulsar.getHost();
     brokerPort = pulsar.getMappedPort(6650);
-    client = PulsarClient.builder().serviceUrl(pulsar.getPulsarBrokerUrl()).build();
+    client =
+        PulsarClient.builder()
+            .serviceUrl(pulsar.getPulsarBrokerUrl())
+            .statsInterval(5, TimeUnit.SECONDS)
+            .build();
     admin = PulsarAdmin.builder().serviceHttpUrl(pulsar.getHttpServiceUrl()).build();
   }
 
   @AfterAll
   static void afterAll() throws PulsarClientException {
-    if (producer != null) {
-      producer.close();
-    }
-    if (consumer != null) {
-      consumer.close();
-    }
-    if (producer2 != null) {
-      producer2.close();
-    }
     if (client != null) {
       client.close();
     }
@@ -111,7 +104,8 @@ class PulsarClientTest {
   void testSendNonPartitionedTopic() throws Exception {
     String topic = "persistent://public/default/testSendNonPartitionedTopic";
     admin.topics().createNonPartitionedTopic(topic);
-    producer = client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
+    Producer<String> producer =
+        client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
 
     String msg = "test";
     MessageId msgId = testing.runWithSpan("parent", () -> producer.send(msg));
@@ -126,6 +120,7 @@ class PulsarClientTest {
                         .hasParent(trace.getSpan(0))
                         .hasAttributesSatisfyingExactly(
                             sendAttributes(topic, msgId.toString(), false))));
+    producer.close();
   }
 
   @Test
@@ -133,7 +128,7 @@ class PulsarClientTest {
     String topic = "persistent://public/default/testConsumeNonPartitionedTopic";
     CountDownLatch latch = new CountDownLatch(1);
     admin.topics().createNonPartitionedTopic(topic);
-    consumer =
+    Consumer<String> c =
         client
             .newConsumer(Schema.STRING)
             .subscriptionName("test_sub")
@@ -147,7 +142,8 @@ class PulsarClientTest {
                     })
             .subscribe();
 
-    producer = client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
+    Producer<String> producer =
+        client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
 
     String msg = "test";
     MessageId msgId = testing.runWithSpan("parent", () -> producer.send(msg));
@@ -176,20 +172,23 @@ class PulsarClientTest {
                         .hasParent(trace.getSpan(2))
                         .hasAttributesSatisfyingExactly(
                             processAttributes(topic, msgId.toString(), false))));
+    c.close();
+    producer.close();
   }
 
   @Test
   void testConsumeNonPartitionedTopicUsingReceive() throws Exception {
     String topic = "persistent://public/default/testConsumeNonPartitionedTopicCallReceive";
     admin.topics().createNonPartitionedTopic(topic);
-    consumer =
+    Consumer<String> consumer =
         client
             .newConsumer(Schema.STRING)
             .subscriptionName("test_sub")
             .topic(topic)
             .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
             .subscribe();
-    producer = client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
+    Producer<String> producer =
+        client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
 
     String msg = "test";
     MessageId msgId = testing.runWithSpan("parent", () -> producer.send(msg));
@@ -213,13 +212,15 @@ class PulsarClientTest {
                         .hasParent(trace.getSpan(1))
                         .hasAttributesSatisfyingExactly(
                             receiveAttributes(topic, msgId.toString(), false))));
+    consumer.close();
+    producer.close();
   }
 
   @Test
   void testConsumeNonPartitionedTopicUsingReceiveAsync() throws Exception {
     String topic = "persistent://public/default/testConsumeNonPartitionedTopicCallReceiveAsync";
     admin.topics().createNonPartitionedTopic(topic);
-    consumer =
+    Consumer<String> consumer =
         client
             .newConsumer(Schema.STRING)
             .subscriptionName("test_sub")
@@ -227,7 +228,8 @@ class PulsarClientTest {
             .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
             .subscribe();
 
-    producer = client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
+    Producer<String> producer =
+        client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
 
     CompletableFuture<Message<String>> result =
         consumer
@@ -264,6 +266,8 @@ class PulsarClientTest {
                     span.hasName("callback")
                         .hasKind(SpanKind.INTERNAL)
                         .hasParent(trace.getSpan(2))));
+    consumer.close();
+    producer.close();
   }
 
   @Test
@@ -271,14 +275,15 @@ class PulsarClientTest {
     String topic =
         "persistent://public/default/testConsumeNonPartitionedTopicCallReceiveWithTimeout";
     admin.topics().createNonPartitionedTopic(topic);
-    consumer =
+    Consumer<String> consumer =
         client
             .newConsumer(Schema.STRING)
             .subscriptionName("test_sub")
             .topic(topic)
             .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
             .subscribe();
-    producer = client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
+    Producer<String> producer =
+        client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
 
     String msg = "test";
     MessageId msgId = testing.runWithSpan("parent", () -> producer.send(msg));
@@ -302,13 +307,15 @@ class PulsarClientTest {
                         .hasParent(trace.getSpan(1))
                         .hasAttributesSatisfyingExactly(
                             receiveAttributes(topic, msgId.toString(), false))));
+    consumer.close();
+    producer.close();
   }
 
   @Test
   void testConsumeNonPartitionedTopicUsingBatchReceive() throws Exception {
     String topic = "persistent://public/default/testConsumeNonPartitionedTopicCallBatchReceive";
     admin.topics().createNonPartitionedTopic(topic);
-    consumer =
+    Consumer<String> consumer =
         client
             .newConsumer(Schema.STRING)
             .subscriptionName("test_sub")
@@ -316,7 +323,8 @@ class PulsarClientTest {
             .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
             .subscribe();
 
-    producer = client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
+    Producer<String> producer =
+        client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
 
     String msg = "test";
     MessageId msgId = testing.runWithSpan("parent", () -> producer.send(msg));
@@ -351,6 +359,8 @@ class PulsarClientTest {
                         .hasParent(trace.getSpan(0))
                         .hasAttributesSatisfyingExactly(
                             batchReceiveAttributes(topic, null, false))));
+    consumer.close();
+    producer.close();
   }
 
   @Test
@@ -358,7 +368,7 @@ class PulsarClientTest {
     String topic =
         "persistent://public/default/testConsumeNonPartitionedTopicCallBatchReceiveAsync";
     admin.topics().createNonPartitionedTopic(topic);
-    consumer =
+    Consumer<String> consumer =
         client
             .newConsumer(Schema.STRING)
             .subscriptionName("test_sub")
@@ -366,7 +376,8 @@ class PulsarClientTest {
             .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
             .subscribe();
 
-    producer = client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
+    Producer<String> producer =
+        client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
 
     String msg = "test";
     MessageId msgId = testing.runWithSpan("parent", () -> producer.send(msg));
@@ -413,6 +424,8 @@ class PulsarClientTest {
                     span.hasName("callback")
                         .hasKind(SpanKind.INTERNAL)
                         .hasParent(trace.getSpan(1))));
+    consumer.close();
+    producer.close();
   }
 
   @Test
@@ -420,7 +433,7 @@ class PulsarClientTest {
     String topic = "persistent://public/default/testCaptureMessageHeaderTopic";
     CountDownLatch latch = new CountDownLatch(1);
     admin.topics().createNonPartitionedTopic(topic);
-    consumer =
+    Consumer<String> c =
         client
             .newConsumer(Schema.STRING)
             .subscriptionName("test_sub")
@@ -434,7 +447,8 @@ class PulsarClientTest {
                     })
             .subscribe();
 
-    producer = client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
+    Producer<String> producer =
+        client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
 
     String msg = "test";
     MessageId msgId =
@@ -466,13 +480,16 @@ class PulsarClientTest {
                         .hasParent(trace.getSpan(2))
                         .hasAttributesSatisfyingExactly(
                             processAttributes(topic, msgId.toString(), true))));
+    c.close();
+    producer.close();
   }
 
   @Test
   void testSendPartitionedTopic() throws Exception {
     String topic = "persistent://public/default/testSendPartitionedTopic";
     admin.topics().createPartitionedTopic(topic, 1);
-    producer = client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
+    Producer<String> producer =
+        client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
 
     String msg = "test";
     MessageId msgId = testing.runWithSpan("parent", () -> producer.send(msg));
@@ -487,6 +504,7 @@ class PulsarClientTest {
                         .hasParent(trace.getSpan(0))
                         .hasAttributesSatisfyingExactly(
                             sendAttributes(topic + "-partition-0", msgId.toString(), false))));
+    producer.close();
   }
 
   @Test
@@ -494,8 +512,7 @@ class PulsarClientTest {
     String topic = "persistent://public/default/testConsumePartitionedTopic";
     admin.topics().createPartitionedTopic(topic, 1);
     CountDownLatch latch = new CountDownLatch(1);
-
-    consumer =
+    Consumer<String> c =
         client
             .newConsumer(Schema.STRING)
             .subscriptionName("test_sub")
@@ -509,7 +526,8 @@ class PulsarClientTest {
                     })
             .subscribe();
 
-    producer = client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
+    Producer<String> producer =
+        client.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();
 
     String msg = "test";
     MessageId msgId = testing.runWithSpan("parent", () -> producer.send(msg));
@@ -538,6 +556,8 @@ class PulsarClientTest {
                         .hasParent(trace.getSpan(2))
                         .hasAttributesSatisfyingExactly(
                             processAttributes(topic + "-partition-0", msgId.toString(), false))));
+    c.close();
+    producer.close();
   }
 
   @Test
@@ -546,13 +566,14 @@ class PulsarClientTest {
     String topic1 = topicNamePrefix + "1";
     String topic2 = topicNamePrefix + "2";
     CountDownLatch latch = new CountDownLatch(2);
-    producer = client.newProducer(Schema.STRING).topic(topic1).enableBatching(false).create();
-    producer2 = client.newProducer(Schema.STRING).topic(topic2).enableBatching(false).create();
+    Producer<String> producer =
+        client.newProducer(Schema.STRING).topic(topic1).enableBatching(false).create();
+    Producer<String> producer2 =
+        client.newProducer(Schema.STRING).topic(topic2).enableBatching(false).create();
 
     MessageId msgId1 = testing.runWithSpan("parent1", () -> producer.send("test1"));
     MessageId msgId2 = testing.runWithSpan("parent2", () -> producer2.send("test2"));
-
-    consumer =
+    Consumer<String> c =
         client
             .newConsumer(Schema.STRING)
             .topic(topic2, topic1)
@@ -612,6 +633,192 @@ class PulsarClientTest {
                         .hasParent(trace.getSpan(2))
                         .hasAttributesSatisfyingExactly(
                             processAttributes(topic2, msgId2.toString(), false))));
+    c.close();
+    producer.close();
+    producer2.close();
+  }
+
+  @Test
+  void testClientMetrics() throws Exception {
+    String topic = "persistent://public/default/testMetrics";
+    int producerCount = 2;
+    int consumerCount = 2;
+    List<Producer<String>> producers = new ArrayList<>(producerCount);
+    for (int i = 0; i < producerCount; i++) {
+      producers.add(
+          client.newProducer(Schema.STRING).producerName("producer-" + i).topic(topic).create());
+    }
+
+    MessageListener<String> listener = Consumer::acknowledgeAsync;
+    List<Consumer<String>> consumers = new ArrayList<>(consumerCount);
+    for (int i = 0; i < 2; i++) {
+      consumers.add(
+          client
+              .newConsumer(Schema.STRING)
+              .topic(topic)
+              .subscriptionName("sub")
+              .consumerName("consumer-" + i)
+              .subscriptionType(SubscriptionType.Shared)
+              .messageListener(listener)
+              .subscribe());
+    }
+
+    int messages = 100;
+    for (Producer<String> producer : producers) {
+      for (int i = 0; i < messages; i++) {
+        producer.sendAsync("test_" + i);
+      }
+    }
+
+    testing.waitAndAssertMetrics(
+        PulsarSingletons.INSTRUMENTATION_NAME,
+        "pulsarclient.producer.message.send.size",
+        metrics ->
+            metrics.anySatisfy(
+                metric ->
+                    assertThat(metric)
+                        .hasDescription("Counts the size of sent messages")
+                        .hasUnit("By")
+                        .hasLongGaugeSatisfying(
+                            __ ->
+                                assertThat(metric.getLongGaugeData().getPoints())
+                                    .anySatisfy(
+                                        point -> {
+                                          assertThat(point.getValue()).isPositive();
+                                          assertThat(point.getAttributes())
+                                              .containsEntry("pulsar.producer.name", "producer-0");
+                                        }))));
+
+    testing.waitAndAssertMetrics(
+        PulsarSingletons.INSTRUMENTATION_NAME,
+        "pulsarclient.producer.message.send.count",
+        metrics ->
+            metrics.anySatisfy(
+                metric ->
+                    assertThat(metric)
+                        .hasDescription("Counts the number of sent messages")
+                        .hasUnit("message")
+                        .hasLongGaugeSatisfying(
+                            __ ->
+                                assertThat(metric.getLongGaugeData().getPoints())
+                                    .anySatisfy(
+                                        point -> {
+                                          assertThat(point.getValue()).isPositive();
+                                          assertThat(point.getAttributes())
+                                              .containsEntry("pulsar.producer.name", "producer-0");
+                                        }))));
+
+    testing.waitAndAssertMetrics(
+        PulsarSingletons.INSTRUMENTATION_NAME,
+        "pulsarclient.producer.message.send.duration",
+        metrics ->
+            metrics.anySatisfy(
+                metric ->
+                    assertThat(metric)
+                        .hasDescription("The duration of sent messages")
+                        .hasUnit("ms")
+                        .hasDoubleGaugeSatisfying(
+                            __ ->
+                                assertThat(metric.getDoubleGaugeData().getPoints())
+                                    .anySatisfy(
+                                        point -> {
+                                          assertThat(point.getValue()).isPositive();
+                                          assertThat(point.getAttributes())
+                                              .containsEntry("pulsar.producer.name", "producer-0");
+                                        }))));
+
+    testing.waitAndAssertMetrics(
+        PulsarSingletons.INSTRUMENTATION_NAME,
+        "pulsarclient.consumer.message.received.size",
+        metrics ->
+            metrics.anySatisfy(
+                metric ->
+                    assertThat(metric)
+                        .hasDescription("Counts the size of received messages")
+                        .hasUnit("By")
+                        .hasLongGaugeSatisfying(
+                            __ ->
+                                assertThat(metric.getLongGaugeData().getPoints())
+                                    .anySatisfy(
+                                        point -> {
+                                          assertThat(point.getValue()).isPositive();
+                                          assertThat(point.getAttributes())
+                                              .containsEntry("pulsar.consumer.name", "consumer-0");
+                                          assertThat(point.getAttributes())
+                                              .containsEntry("pulsar.subscription", "sub");
+                                        }))));
+
+    testing.waitAndAssertMetrics(
+        PulsarSingletons.INSTRUMENTATION_NAME,
+        "pulsarclient.consumer.message.received.count",
+        metrics ->
+            metrics.anySatisfy(
+                metric ->
+                    assertThat(metric)
+                        .hasDescription("Counts the number of received messages")
+                        .hasUnit("message")
+                        .hasLongGaugeSatisfying(
+                            __ ->
+                                assertThat(metric.getLongGaugeData().getPoints())
+                                    .anySatisfy(
+                                        point -> {
+                                          assertThat(point.getValue()).isPositive();
+                                          assertThat(point.getAttributes())
+                                              .containsEntry("pulsar.consumer.name", "consumer-0");
+                                          assertThat(point.getAttributes())
+                                              .containsEntry("pulsar.subscription", "sub");
+                                        }))));
+
+    testing.waitAndAssertMetrics(
+        PulsarSingletons.INSTRUMENTATION_NAME,
+        "pulsarclient.consumer.message.ack.count",
+        metrics ->
+            metrics.anySatisfy(
+                metric ->
+                    assertThat(metric)
+                        .hasDescription("Counts the number of sent message acknowledgements")
+                        .hasUnit("ack")
+                        .hasLongGaugeSatisfying(
+                            __ ->
+                                assertThat(metric.getLongGaugeData().getPoints())
+                                    .anySatisfy(
+                                        point -> {
+                                          assertThat(point.getValue()).isPositive();
+                                          assertThat(point.getAttributes())
+                                              .containsEntry("pulsar.consumer.name", "consumer-0");
+                                          assertThat(point.getAttributes())
+                                              .containsEntry("pulsar.subscription", "sub");
+                                        }))));
+
+    testing.waitAndAssertMetrics(
+        PulsarSingletons.INSTRUMENTATION_NAME,
+        "pulsarclient.consumer.receiver.queue.usage",
+        metrics ->
+            metrics.anySatisfy(
+                metric ->
+                    assertThat(metric)
+                        .hasDescription("Number of the messages in the receiver queue")
+                        .hasUnit("message")
+                        .hasLongGaugeSatisfying(
+                            __ ->
+                                assertThat(metric.getLongGaugeData().getPoints())
+                                    .anySatisfy(
+                                        point -> {
+                                          assertThat(point.getValue()).isZero();
+                                          assertThat(point.getAttributes())
+                                              .containsEntry("pulsar.consumer.name", "consumer-0");
+                                          assertThat(point.getAttributes())
+                                              .containsEntry("pulsar.subscription", "sub");
+                                        }))));
+
+    for (Producer<String> producer : producers) {
+      producer.close();
+    }
+    for (Consumer<String> consumer : consumers) {
+      consumer.close();
+    }
+    assertThat(PulsarMetricsRegistry.getMetricsRegistry().getProducerSize()).isZero();
+    assertThat(PulsarMetricsRegistry.getMetricsRegistry().getConsumerSize()).isZero();
   }
 
   private static List<AttributeAssertion> sendAttributes(

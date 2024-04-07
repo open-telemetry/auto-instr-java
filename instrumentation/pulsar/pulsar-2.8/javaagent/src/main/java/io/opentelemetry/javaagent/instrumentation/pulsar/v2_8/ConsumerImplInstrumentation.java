@@ -11,6 +11,7 @@ import static io.opentelemetry.javaagent.instrumentation.pulsar.v2_8.telemetry.P
 import static net.bytebuddy.matcher.ElementMatchers.isConstructor;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isProtected;
+import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
@@ -28,6 +29,7 @@ import org.apache.pulsar.client.api.Consumer;
 import org.apache.pulsar.client.api.Message;
 import org.apache.pulsar.client.api.Messages;
 import org.apache.pulsar.client.api.PulsarClient;
+import org.apache.pulsar.client.impl.ConsumerImpl;
 import org.apache.pulsar.client.impl.PulsarClientImpl;
 
 public class ConsumerImplInstrumentation implements TypeInstrumentation {
@@ -70,6 +72,9 @@ public class ConsumerImplInstrumentation implements TypeInstrumentation {
             .and(named("internalBatchReceiveAsync"))
             .and(takesArguments(0)),
         className + "$ConsumerBatchAsyncReceiveAdvice");
+    transformer.applyAdviceToMethod(
+        isMethod().and(isPublic()).and(named("closeAsync")),
+        className + "$ConsumerCloseAsyncMethodAdvice");
   }
 
   @SuppressWarnings("unused")
@@ -82,6 +87,11 @@ public class ConsumerImplInstrumentation implements TypeInstrumentation {
       PulsarClientImpl pulsarClient = (PulsarClientImpl) client;
       String url = pulsarClient.getLookup().getServiceUrl();
       VirtualFieldStore.inject(consumer, url);
+      if (consumer instanceof ConsumerImpl) {
+        // Skip the MultiTopicsConsumerImpl to avoid duplicated metrics since the
+        // MultiTopicsConsumerImpl instance will contain a couple of internal ConsumerImpl instance
+        PulsarMetricsRegistry.getMetricsRegistry().registerConsumer((ConsumerImpl<?>) consumer);
+      }
     }
   }
 
@@ -160,6 +170,15 @@ public class ConsumerImplInstrumentation implements TypeInstrumentation {
         @Advice.This Consumer<?> consumer,
         @Advice.Return(readOnly = false) CompletableFuture<Messages<?>> future) {
       future = wrapBatch(future, timer, consumer);
+    }
+  }
+
+  public static class ConsumerCloseAsyncMethodAdvice {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static void before(@Advice.This Consumer<?> consumer) {
+      if (consumer instanceof ConsumerImpl<?>) {
+        PulsarMetricsRegistry.getMetricsRegistry().deleteConsumer((ConsumerImpl<?>) consumer);
+      }
     }
   }
 }

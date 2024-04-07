@@ -31,9 +31,14 @@ import org.apache.pulsar.client.api.Message;
 import org.apache.pulsar.client.api.Messages;
 
 public final class PulsarSingletons {
-  private static final String INSTRUMENTATION_NAME = "io.opentelemetry.pulsar-2.8";
+  public static final String INSTRUMENTATION_NAME = "io.opentelemetry.pulsar-2.8";
 
-  private static final OpenTelemetry TELEMETRY = GlobalOpenTelemetry.get();
+  public static final String METRICS_CONFIG_NAME =
+      "otel.instrumentation.pulsar-clients-metrics.enabled";
+  public static final String EXPERIMENTAL_SPAN_ATTRIBUTES_NAME =
+      "otel.instrumentation.pulsar.experimental-span-attributes";
+
+  public static final OpenTelemetry TELEMETRY = GlobalOpenTelemetry.get();
   private static final TextMapPropagator PROPAGATOR =
       TELEMETRY.getPropagators().getTextMapPropagator();
   private static final List<String> capturedHeaders =
@@ -121,8 +126,7 @@ public final class PulsarSingletons {
             .addAttributesExtractor(
                 ServerAttributesExtractor.create(new PulsarNetClientAttributesGetter()));
 
-    if (InstrumentationConfig.get()
-        .getBoolean("otel.instrumentation.pulsar.experimental-span-attributes", false)) {
+    if (InstrumentationConfig.get().getBoolean(EXPERIMENTAL_SPAN_ATTRIBUTES_NAME, false)) {
       builder.addAttributesExtractor(ExperimentalProducerAttributesExtractor.INSTANCE);
     }
 
