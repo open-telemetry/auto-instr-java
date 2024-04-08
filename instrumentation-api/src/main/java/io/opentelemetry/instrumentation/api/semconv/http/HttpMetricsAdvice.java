@@ -26,6 +26,7 @@ final class HttpMetricsAdvice {
     ((ExtendedDoubleHistogramBuilder) builder)
         .setAttributesAdvice(
             asList(
+                SemanticAttributes.HTTP_ROUTE,
                 SemanticAttributes.HTTP_REQUEST_METHOD,
                 SemanticAttributes.HTTP_RESPONSE_STATUS_CODE,
                 SemanticAttributes.ERROR_TYPE,

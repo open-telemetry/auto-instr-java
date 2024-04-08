@@ -75,6 +75,11 @@ public final class HttpClientAttributesExtractor<REQUEST, RESPONSE>
     String fullUrl = stripSensitiveData(getter.getUrlFull(request));
     internalSet(attributes, SemanticAttributes.URL_FULL, fullUrl);
 
+    String httpRoute = getter.getHttpRoute(request);
+    if (httpRoute != null && !httpRoute.isEmpty()) {
+      internalSet(attributes, SemanticAttributes.HTTP_ROUTE, httpRoute);
+    }
+
     int resendCount = resendCountIncrementer.applyAsInt(parentContext);
     if (resendCount > 0) {
       attributes.put(SemanticAttributes.HTTP_REQUEST_RESEND_COUNT, resendCount);

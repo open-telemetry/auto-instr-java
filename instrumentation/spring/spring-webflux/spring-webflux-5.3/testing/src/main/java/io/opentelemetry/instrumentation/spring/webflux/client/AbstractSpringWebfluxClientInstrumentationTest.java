@@ -23,6 +23,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -44,7 +45,7 @@ public abstract class AbstractSpringWebfluxClientInstrumentationTest
 
     return webClient
         .method(HttpMethod.valueOf(method))
-        .uri(uri)
+        .uri(uri.toString(), Collections.emptyMap())
         .headers(h -> headers.forEach(h::add));
   }
 
@@ -182,6 +183,7 @@ public abstract class AbstractSpringWebfluxClientInstrumentationTest
                         .hasAttributesSatisfyingExactly(
                             equalTo(SemanticAttributes.HTTP_REQUEST_METHOD, "GET"),
                             equalTo(SemanticAttributes.URL_FULL, uri.toString()),
+                            equalTo(SemanticAttributes.HTTP_ROUTE, uri.getPath()),
                             equalTo(SemanticAttributes.SERVER_ADDRESS, "localhost"),
                             equalTo(SemanticAttributes.SERVER_PORT, uri.getPort()),
                             equalTo(SemanticAttributes.ERROR_TYPE, "cancelled")),

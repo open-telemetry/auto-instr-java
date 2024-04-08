@@ -42,6 +42,12 @@ class HttpClientAttributesExtractorTest {
       return request.get("urlFull");
     }
 
+    @Nullable
+    @Override
+    public String getHttpRoute(Map<String, String> request) {
+      return request.get("httpRoute");
+    }
+
     @Override
     public String getHttpRequestMethod(Map<String, String> request) {
       return request.get("method");
@@ -138,6 +144,7 @@ class HttpClientAttributesExtractorTest {
     Map<String, String> request = new HashMap<>();
     request.put("method", "POST");
     request.put("urlFull", "http://github.com");
+    request.put("httpRoute", "/api");
     request.put("header.content-length", "10");
     request.put("header.user-agent", "okhttp 3.x");
     request.put("header.custom-request-header", "123,456");
@@ -170,6 +177,7 @@ class HttpClientAttributesExtractorTest {
         .containsOnly(
             entry(SemanticAttributes.HTTP_REQUEST_METHOD, "POST"),
             entry(SemanticAttributes.URL_FULL, "http://github.com"),
+            entry(SemanticAttributes.HTTP_ROUTE, "/api"),
             entry(
                 AttributeKey.stringArrayKey("http.request.header.custom-request-header"),
                 asList("123", "456")),
