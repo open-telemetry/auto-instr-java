@@ -1,4 +1,3 @@
-import com.gradle.enterprise.gradleplugin.testretry.retry
 import io.opentelemetry.instrumentation.gradle.OtelJavaExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import java.time.Duration
@@ -9,7 +8,6 @@ plugins {
   checkstyle
   codenarc
   idea
-
   id("otel.errorprone-conventions")
   id("otel.spotless-conventions")
   id("org.owasp.dependencycheck")
@@ -343,13 +341,6 @@ tasks.withType<Test>().configureEach {
   // All tests must complete within 15 minutes.
   // This value is quite big because with lower values (3 mins) we were experiencing large number of false positives
   timeout.set(Duration.ofMinutes(15))
-
-  develocity.testRetry {
-    // You can see tests that were retried by this mechanism in the collected test reports and build scans.
-    if (System.getenv().containsKey("CI") || rootProject.hasProperty("retryTests")) {
-      maxRetries.set(5)
-    }
-  }
 
   reports {
     junitXml.isOutputPerTestCase = true

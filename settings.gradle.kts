@@ -12,8 +12,6 @@ pluginManagement {
 }
 
 plugins {
-  id("com.gradle.develocity") version "3.17.1"
-  id("com.gradle.common-custom-user-data-gradle-plugin") version "2.0"
   id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
   // this can't live in pluginManagement currently due to
   // https://github.com/bmuschko/gradle-docker-plugin/issues/1123
@@ -27,51 +25,6 @@ dependencyResolutionManagement {
   repositories {
     mavenCentral()
     mavenLocal()
-  }
-}
-
-val gradleEnterpriseServer = "https://ge.opentelemetry.io"
-val isCI = System.getenv("CI") != null
-val geAccessKey = System.getenv("GRADLE_ENTERPRISE_ACCESS_KEY") ?: ""
-
-// if GE access key is not given and we are in CI, then we publish to scans.gradle.com
-val useScansGradleCom = isCI && geAccessKey.isEmpty()
-
-if (useScansGradleCom) {
-  develocity {
-    buildScan {
-      termsOfUseUrl = "https://gradle.com/help/legal-terms-of-use"
-      termsOfUseAgree = "yes"
-      uploadInBackground = !isCI
-
-      capture {
-        fileFingerprints = true
-      }
-    }
-  }
-} else {
-  develocity {
-    server = gradleEnterpriseServer
-    buildScan {
-      uploadInBackground = !isCI
-      publishing.onlyIf { it.isAuthenticated }
-
-      capture {
-        fileFingerprints = true
-      }
-
-      gradle.startParameter.projectProperties["testJavaVersion"]?.let { tag(it) }
-      gradle.startParameter.projectProperties["testJavaVM"]?.let { tag(it) }
-      gradle.startParameter.projectProperties["smokeTestSuite"]?.let {
-        value("Smoke test suite", it)
-      }
-    }
-  }
-
-  buildCache {
-    remote(develocity.buildCache) {
-      isPush = isCI && geAccessKey.isNotEmpty()
-    }
   }
 }
 

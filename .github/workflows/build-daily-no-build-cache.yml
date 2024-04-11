@@ -11,15 +11,11 @@ jobs:
     uses: ./.github/workflows/build-common.yml
     with:
       no-build-cache: true
-    secrets:
-      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
 
   test-latest-deps:
     uses: ./.github/workflows/reusable-test-latest-deps.yml
     with:
       no-build-cache: true
-    secrets:
-      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
 
   # muzzle is not included here because it doesn't use gradle cache anyway and so is already covered
   # by the normal daily build

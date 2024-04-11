@@ -9,9 +9,6 @@ on:
       no-build-cache:
         type: boolean
         required: false
-    secrets:
-      GRADLE_ENTERPRISE_ACCESS_KEY:
-        required: false
 
 permissions:
   contents: read
@@ -59,8 +56,6 @@ jobs:
           key: ${{ runner.os }}-test-latest-cache-pnpm-modules
 
       - name: List tests
-        env:
-          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
         uses: gradle/actions/setup-gradle@1168cd3d07c1876a65e1724114de42ccbdfa7b78 # v3.2.1
         with:
           arguments: >
@@ -75,8 +70,6 @@ jobs:
 
       - name: Test
         uses: gradle/actions/setup-gradle@1168cd3d07c1876a65e1724114de42ccbdfa7b78 # v3.2.1
-        env:
-          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
         with:
           arguments: >
             ${{ env.test-tasks }}

@@ -9,13 +9,9 @@ on:
 jobs:
   common:
     uses: ./.github/workflows/build-common.yml
-    secrets:
-      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
 
   test-latest-deps:
     uses: ./.github/workflows/reusable-test-latest-deps.yml
-    secrets:
-      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
 
   muzzle:
     uses: ./.github/workflows/reusable-muzzle.yml
