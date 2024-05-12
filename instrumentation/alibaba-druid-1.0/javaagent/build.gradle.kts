@@ -1,5 +1,7 @@
 plugins {
   id("otel.javaagent-instrumentation")
+
+  jacoco
 }
 
 muzzle {
@@ -17,4 +19,12 @@ dependencies {
   implementation(project(":instrumentation:alibaba-druid-1.0:library"))
 
   testImplementation(project(":instrumentation:alibaba-druid-1.0:testing"))
+}
+
+tasks.test {
+  finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+  dependsOn(tasks.test)
 }

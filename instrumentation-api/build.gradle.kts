@@ -7,6 +7,8 @@ plugins {
   id("otel.japicmp-conventions")
   id("otel.publish-conventions")
   id("otel.jmh-conventions")
+
+  jacoco
 }
 
 group = "io.opentelemetry.instrumentation"
@@ -46,4 +48,12 @@ tasks {
     jvmArgs("--add-opens=java.base/java.util=ALL-UNNAMED")
     jvmArgs("-XX:+IgnoreUnrecognizedVMOptions")
   }
+}
+
+tasks.test {
+  finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+  dependsOn(tasks.test)
 }

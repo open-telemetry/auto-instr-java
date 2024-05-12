@@ -4,6 +4,8 @@ plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
   id("otel.jmh-conventions")
+
+  jacoco
 }
 
 group = "io.opentelemetry.javaagent"
@@ -132,4 +134,12 @@ configurations {
       exclude("org.mockito", "mockito-inline")
     }
   }
+}
+
+tasks.test {
+  finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+  dependsOn(tasks.test)
 }

@@ -1,6 +1,8 @@
 plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
+
+  jacoco
 }
 
 group = "io.opentelemetry.javaagent"
@@ -22,4 +24,12 @@ dependencies {
 
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
+}
+
+tasks.test {
+  finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+  dependsOn(tasks.test)
 }

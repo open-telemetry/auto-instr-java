@@ -2,6 +2,8 @@ plugins {
   id("otel.java-conventions")
   id("otel.japicmp-conventions")
   id("otel.publish-conventions")
+
+  jacoco
 }
 
 group = "io.opentelemetry.javaagent"
@@ -25,4 +27,12 @@ dependencies {
 
   testImplementation(project(":testing-common"))
   testImplementation("com.google.guava:guava")
+}
+
+tasks.test {
+  finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+  dependsOn(tasks.test)
 }

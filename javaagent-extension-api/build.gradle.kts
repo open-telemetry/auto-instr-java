@@ -2,6 +2,8 @@ plugins {
   id("otel.java-conventions")
   id("otel.japicmp-conventions")
   id("otel.publish-conventions")
+
+  jacoco
 }
 
 group = "io.opentelemetry.javaagent"
@@ -19,4 +21,12 @@ dependencies {
 
   // Used by byte-buddy but not brought in as a transitive dependency.
   compileOnly("com.google.code.findbugs:annotations")
+}
+
+tasks.test {
+  finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+  dependsOn(tasks.test)
 }

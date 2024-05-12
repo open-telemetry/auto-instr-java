@@ -1,6 +1,8 @@
 plugins {
   id("otel.library-instrumentation")
   id("otel.nullaway-conventions")
+
+  jacoco
 }
 
 dependencies {
@@ -13,4 +15,12 @@ tasks {
   withType<Test>().configureEach {
     systemProperty("testLatestDeps", findProperty("testLatestDeps") as Boolean)
   }
+}
+
+tasks.test {
+  finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+  dependsOn(tasks.test)
 }

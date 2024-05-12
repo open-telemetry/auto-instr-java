@@ -1,6 +1,8 @@
 plugins {
   id("otel.javaagent-instrumentation")
   id("otel.scala-conventions")
+
+  jacoco
 }
 
 muzzle {
@@ -31,4 +33,12 @@ dependencies {
   library("com.typesafe.akka:akka-actor_2.11:2.5.0")
 
   testImplementation(project(":instrumentation:executors:testing"))
+}
+
+tasks.test {
+  finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+  dependsOn(tasks.test)
 }

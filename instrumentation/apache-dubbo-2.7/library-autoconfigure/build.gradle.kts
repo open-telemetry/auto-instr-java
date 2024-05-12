@@ -1,5 +1,7 @@
 plugins {
   id("otel.library-instrumentation")
+
+  jacoco
 }
 
 dependencies {
@@ -19,4 +21,12 @@ tasks.withType<Test>().configureEach {
   jvmArgs("--add-opens=java.base/java.math=ALL-UNNAMED")
   // required on jdk17
   jvmArgs("--add-opens=java.base/java.lang=ALL-UNNAMED")
+}
+
+tasks.test {
+  finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+  dependsOn(tasks.test)
 }

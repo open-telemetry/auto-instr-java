@@ -1,6 +1,8 @@
 plugins {
   id("otel.javaagent-instrumentation")
   id("otel.scala-conventions")
+
+  jacoco
 }
 
 muzzle {
@@ -62,4 +64,12 @@ if (findProperty("testLatestDeps") as Boolean) {
       exclude("com.typesafe.akka", "akka-stream_2.11")
     }
   }
+}
+
+tasks.test {
+  finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+  dependsOn(tasks.test)
 }

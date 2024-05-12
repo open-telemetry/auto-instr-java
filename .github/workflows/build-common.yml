@@ -375,6 +375,10 @@ jobs:
             jitdump.*.dmp
             smoke-tests/jitdump.*.dmp
           if-no-files-found: ignore
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   gradle-plugins:
     runs-on: ubuntu-latest

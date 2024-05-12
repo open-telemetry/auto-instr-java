@@ -6,6 +6,8 @@ plugins {
   id("otel.jacoco-conventions")
   id("otel.japicmp-conventions")
   id("otel.publish-conventions")
+
+  jacoco
 }
 
 group = "io.opentelemetry.instrumentation"
@@ -40,4 +42,12 @@ tasks {
   sourcesJar {
     dependsOn("generateJflex")
   }
+}
+
+tasks.test {
+  finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+  dependsOn(tasks.test)
 }
