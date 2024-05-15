@@ -33,6 +33,10 @@ public class OpenTelemetryAppender extends UnsynchronizedAppenderBase<ILoggingEv
 
   private final AppenderAttachableImpl<ILoggingEvent> aai = new AppenderAttachableImpl<>();
 
+  private String traceIdAttributeName = TRACE_ID;
+  private String spanIdAttributeName = SPAN_ID;
+  private String traceFlagsAttributeName = TRACE_FLAGS;
+
   /**
    * When set to true this will enable addition of all baggage entries to MDC. This can be done by
    * adding the following to the logback.xml config for this appender. {@code
@@ -57,9 +61,9 @@ public class OpenTelemetryAppender extends UnsynchronizedAppenderBase<ILoggingEv
 
     if (currentSpan.getSpanContext().isValid()) {
       SpanContext spanContext = currentSpan.getSpanContext();
-      contextData.put(TRACE_ID, spanContext.getTraceId());
-      contextData.put(SPAN_ID, spanContext.getSpanId());
-      contextData.put(TRACE_FLAGS, spanContext.getTraceFlags().asHex());
+      contextData.put(traceIdAttributeName, spanContext.getTraceId());
+      contextData.put(spanIdAttributeName, spanContext.getSpanId());
+      contextData.put(traceFlagsAttributeName, spanContext.getTraceFlags().asHex());
     }
 
     if (addBaggage) {
@@ -144,5 +148,17 @@ public class OpenTelemetryAppender extends UnsynchronizedAppenderBase<ILoggingEv
   @Override
   public boolean detachAppender(String name) {
     return aai.detachAppender(name);
+  }
+
+  public void setTraceIdAttributeName(String attributeName) {
+    this.traceIdAttributeName = attributeName;
+  }
+
+  public void setSpanIdAttributeName(String attributeName) {
+    this.spanIdAttributeName = attributeName;
+  }
+
+  public void setTraceFlagsAttributeName(String attributeName) {
+    this.traceFlagsAttributeName = attributeName;
   }
 }
