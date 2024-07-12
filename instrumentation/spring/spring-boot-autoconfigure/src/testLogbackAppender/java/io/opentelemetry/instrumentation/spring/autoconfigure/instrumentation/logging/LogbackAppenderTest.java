@@ -110,4 +110,40 @@ class LogbackAppenderTest {
 
     assertThat(testing.logRecords()).isEmpty();
   }
+
+  @Test
+  void shouldNotInitializeAppenderWhenSdkDisabled() {
+    Map<String, Object> properties = new HashMap<>();
+    properties.put("logging.config", "classpath:logback-test.xml");
+    properties.put("otel.sdk.disabled", "true");
+
+    SpringApplication app =
+        new SpringApplication(
+            TestingOpenTelemetryConfiguration.class, OpenTelemetryAppenderAutoConfiguration.class);
+    app.setDefaultProperties(properties);
+    ConfigurableApplicationContext context = app.run();
+    cleanup.deferCleanup(context);
+
+    LoggerFactory.getLogger("test").info("test log message");
+
+    assertThat(testing.logRecords()).isEmpty();
+  }
+
+  @Test
+  void shouldNotInitializeAppenderWhenInstrumentationDisabled() {
+    Map<String, Object> properties = new HashMap<>();
+    properties.put("logging.config", "classpath:logback-test.xml");
+    properties.put("otel.instrumentation.logback-appender.enabled", "false");
+
+    SpringApplication app =
+        new SpringApplication(
+            TestingOpenTelemetryConfiguration.class, OpenTelemetryAppenderAutoConfiguration.class);
+    app.setDefaultProperties(properties);
+    ConfigurableApplicationContext context = app.run();
+    cleanup.deferCleanup(context);
+
+    LoggerFactory.getLogger("test").info("test log message");
+
+    assertThat(testing.logRecords()).isEmpty();
+  }
 }

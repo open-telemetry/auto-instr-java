@@ -30,15 +30,14 @@ class LogbackAppenderInstaller {
 
   private static boolean isLogbackAppenderAddable(
       ApplicationEnvironmentPreparedEvent applicationEnvironmentPreparedEvent) {
-    Boolean otelSdkDisableProperty =
-        evaluateBooleanProperty(applicationEnvironmentPreparedEvent, "otel.sdk.disabled");
-    Boolean logbackInstrumentationEnabledProperty =
+    boolean otelSdkDisableProperty =
+        evaluateBooleanProperty(applicationEnvironmentPreparedEvent, "otel.sdk.disabled", false);
+    boolean logbackInstrumentationEnabledProperty =
         evaluateBooleanProperty(
-            applicationEnvironmentPreparedEvent, "otel.instrumentation.logback-appender.enabled");
-    return otelSdkDisableProperty == null
-        || !otelSdkDisableProperty.booleanValue()
-        || logbackInstrumentationEnabledProperty == null
-        || logbackInstrumentationEnabledProperty.booleanValue();
+            applicationEnvironmentPreparedEvent,
+            "otel.instrumentation.logback-appender.enabled",
+            true);
+    return !otelSdkDisableProperty && logbackInstrumentationEnabledProperty;
   }
 
   private static void reInitializeOpenTelemetryAppender(
@@ -131,6 +130,15 @@ class LogbackAppenderInstaller {
     return applicationEnvironmentPreparedEvent
         .getEnvironment()
         .getProperty(property, Boolean.class);
+  }
+
+  private static boolean evaluateBooleanProperty(
+      ApplicationEnvironmentPreparedEvent applicationEnvironmentPreparedEvent,
+      String property,
+      boolean defaultValue) {
+    return applicationEnvironmentPreparedEvent
+        .getEnvironment()
+        .getProperty(property, Boolean.class, defaultValue);
   }
 
   private static Optional<OpenTelemetryAppender> findOpenTelemetryAppender() {
