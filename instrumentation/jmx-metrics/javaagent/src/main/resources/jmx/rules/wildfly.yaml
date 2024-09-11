@@ -25,6 +25,7 @@ rules:
         unit: ns
       errorCount:
   - bean: jboss.as:subsystem=undertow,server=*,http-listener=*
+    metricPrefix: wildfly.
     metricAttribute:
       server: param(server)
       listener: param(http-listener)
@@ -32,40 +33,42 @@ rules:
     unit: By
     mapping:
       bytesSent:
-        metric: wildfly.network.io
+        metric: network.io
         desc: Total number of bytes transferred
         metricAttribute:
-          direction: const(out)
+          network.io.direction: const(transmit)
       bytesReceived:
-        metric: wildfly.network.io
+        metric: network.io
         desc: Total number of bytes transferred
         metricAttribute:
-          direction: const(in)
+          network.io.direction: const(receive)
   - bean: jboss.as:subsystem=datasources,data-source=*,statistics=pool
-    unit: "1"
+    unit: "{connection}"
     metricAttribute:
       data_source: param(data-source)
     mapping:
       ActiveCount:
-        metric: wildfly.db.client.connections.usage
+        metric: wildfly.db.client.connection.count
         metricAttribute:
-          state: const(used)
-        desc: The number of open jdbc connections
+          db.client.connection.state: const(used)
+        desc: The number of in-use physical jdbc connections
       IdleCount:
-        metric: wildfly.db.client.connections.usage
+        metric: wildfly.db.client.connections.count
         metricAttribute:
-          state: const(idle)
-        desc: The number of open jdbc connections
+          db.client.connection.state: const(idle)
+        desc: The number of idle physical jdbc connections
       WaitCount:
-        metric: wildfly.db.client.connections.WaitCount
-        type: counter
+        metric: wildfly.db.client.connection.count
+        metricAttribute:
+          db.client.connection.state: const(idle)
+        desc: The number of waiting logical jdbc connections
   - bean: jboss.as:subsystem=transactions
     type: counter
     prefix: wildfly.db.client.
-    unit: "{transactions}"
+    unit: "{transaction}"
     mapping:
       numberOfTransactions:
-        metric: transaction.NumberOfTransactions
+        metric: transaction.numberOfTransactions
       numberOfApplicationRollbacks:
         metric: rollback.count
         metricAttribute:

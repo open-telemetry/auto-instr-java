@@ -2,12 +2,13 @@
 
 Here is the list of metrics based on MBeans exposed by Tomcat.
 
-| Metric Name                                | Type          | Attributes      | Description                                                     |
-| ------------------------------------------ | ------------- | --------------- | --------------------------------------------------------------- |
-| http.server.tomcat.sessions.activeSessions | UpDownCounter | context         | The number of active sessions                                   |
-| http.server.tomcat.errorCount              | Gauge         | name            | The number of errors per second on all request processors       |
-| http.server.tomcat.requestCount            | Gauge         | name            | The number of requests per second across all request processors |
-| http.server.tomcat.maxTime                 | Gauge         | name            | The longest request processing time                             |
-| http.server.tomcat.processingTime          | Counter       | name            | Represents the total time for processing all requests           |
-| http.server.tomcat.traffic                 | Counter       | name, direction | The number of bytes transmitted                                 |
-| http.server.tomcat.threads                 | UpDownCounter | name, state     | Thread Count of the Thread Pool                                 |
+| Metric Name                      | Type          | Attributes                 | Description                                                     |
+|----------------------------------|---------------|----------------------------|-----------------------------------------------------------------|
+| tomcat.session.activeSessions    | UpDownCounter | context                    | The number of active sessions                                   |
+| tomcat.request.errorCount        | Gauge         | name                       | The number of errors per second on all request processors       |
+| tomcat.request.requestCount      | Gauge         | name                       | The number of requests per second across all request processors |
+| tomcat.request.maxTime           | Gauge         | name                       | The longest request processing time                             |
+| tomcat.request.processingTime    | Counter       | name                       | Represents the total time for processing all requests           |
+| tomcat.network.io                | Counter       | name, network.io.direction | The number of bytes transmitted                                 |
+| tomcat.thread.currentThreadCount | UpDownCounter | name                       | Total thread count of the thread pool                           |
+| tomcat.thread.currentThreadsBusy | UpDownCounter | name                       | Busy thread count of the thread pool                            |

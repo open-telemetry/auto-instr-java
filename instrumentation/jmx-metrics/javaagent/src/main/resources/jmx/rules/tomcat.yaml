@@ -6,133 +6,129 @@
 rules:
   - bean: Catalina:type=GlobalRequestProcessor,name=*
     unit: "1"
-    prefix: http.server.tomcat.
+    prefix: tomcat.
     metricAttribute:
       name: param(name)
     mapping:
       errorCount:
-        metric: errorCount
+        metric: request.errorCount
         type: gauge
+        unit: "{request}"
         desc: The number of errors per second on all request processors
       requestCount:
-        metric: requestCount
+        metric: request.requestCount
         type: gauge
+        unit: "{request}"
         desc: The number of requests per second across all request processors
       maxTime:
-        metric: maxTime
+        metric: request.maxTime
         type: gauge
         unit: ms
         desc: The longest request processing time
       processingTime:
-        metric: processingTime
+        metric: request.processingTime
         type: counter
         unit: ms
         desc: Total time for processing all requests
       bytesReceived:
-        metric: traffic
+        metric: network.io
         type: counter
         unit: By
         desc: The number of bytes transmitted
         metricAttribute:
-          direction: const(received)
+          network.io.direction: const(receive)
       bytesSent:
-        metric: traffic
+        metric: network.io
         type: counter
         unit: By
         desc: The number of bytes transmitted
         metricAttribute:
-          direction: const(sent)
+          network.io.direction: const(transmit)
   - bean: Tomcat:type=GlobalRequestProcessor,name=*
     unit: "1"
-    prefix: http.server.tomcat.
+    prefix: tomcat.
     metricAttribute:
       name: param(name)
     mapping:
       errorCount:
-        metric: errorCount
+        metric: request.errorCount
         type: gauge
+        unit: "{request}"
         desc: The number of errors per second on all request processors
       requestCount:
-        metric: requestCount
+        metric: request.requestCount
         type: gauge
+        unit: "{request}"
         desc: The number of requests per second across all request processors
       maxTime:
-        metric: maxTime
+        metric: request.maxTime
         type: gauge
         unit: ms
         desc: The longest request processing time
       processingTime:
-        metric: processingTime
+        metric: request.processingTime
         type: counter
         unit: ms
         desc: Total time for processing all requests
       bytesReceived:
-        metric: traffic
+        metric: network.io
         type: counter
         unit: By
         desc: The number of bytes transmitted
         metricAttribute:
-          direction: const(received)
+          network.io.direction: const(receive)
       bytesSent:
-        metric: traffic
+        metric: network.io
         type: counter
         unit: By
         desc: The number of bytes transmitted
         metricAttribute:
-          direction: const(sent)
+          network.io.direction: const(transmit)
 
   - bean: Catalina:type=Manager,host=localhost,context=*
-    unit: "1"
-    prefix: http.server.tomcat.
+    unit: "{session}"
+    prefix: tomcat.session.
     type: updowncounter
     metricAttribute:
       context: param(context)
     mapping:
       activeSessions:
-        metric: sessions.activeSessions
+        metric: activeSessions
         desc: The number of active sessions
   - bean: Tomcat:type=Manager,host=localhost,context=*
-    unit: "1"
-    prefix: http.server.tomcat.
+    unit: "{session}"
+    prefix: tomcat.session.
     type: updowncounter
     metricAttribute:
       context: param(context)
     mapping:
       activeSessions:
-        metric: sessions.activeSessions
+        metric: activeSessions
         desc: The number of active sessions
 
   - bean: Catalina:type=ThreadPool,name=*
-    unit: "{threads}"
-    prefix: http.server.tomcat.
+    unit: "{thread}"
+    prefix: tomcat.thread.
     type: updowncounter
     metricAttribute:
       name: param(name)
     mapping:
       currentThreadCount:
-        metric: threads
-        desc: Thread Count of the Thread Pool
-        metricAttribute:
-          state: const(idle)
+        metric: currentThreadCount
+        desc: Total thread count of the thread pool
       currentThreadsBusy:
-        metric: threads
-        desc: Thread Count of the Thread Pool
-        metricAttribute:
-          state: const(busy)
+        metric: currentThreadsBusy
+        desc: Busy thread count of the thread pool
   - bean: Tomcat:type=ThreadPool,name=*
-    unit: "{threads}"
-    prefix: http.server.tomcat.
+    unit: "{thread}"
+    prefix: tomcat.thread.
     type: updowncounter
     metricAttribute:
       name: param(name)
     mapping:
       currentThreadCount:
-        metric: threads
-        desc: Thread Count of the Thread Pool
-        metricAttribute:
-          state: const(idle)
+        metric: currentThreadCount
+        desc: Total thread count of the thread pool
       currentThreadsBusy:
-        metric: threads
-        desc: Thread Count of the Thread Pool
-        metricAttribute:
-          state: const(busy)
+        metric: currentThreadsBusy
+        desc: Busy thread count of the thread pool

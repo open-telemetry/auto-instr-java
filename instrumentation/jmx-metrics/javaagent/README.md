@@ -33,6 +33,20 @@ No targets are enabled by default. The supported target environments are listed 
 - [wildfly](wildfly.md)
 - [hadoop](hadoop.md)
 
+### Predefined metrics mapping
+
+The pre-defined metrics do not provide an exhaustive mapping of every available JMX attribute as doing
+so would be verbose, tedious to maintain and brittle as it relies on implementation details of each
+of the targets supported. The goal here is to provide a monitoring of the essential metrics, advanced
+use-cases will require dedicated configuration.
+
+The following guidelines are recommended when modifying/extending pre-defined metrics:
+- stay consistent with [semconv general guidelines](https://github.com/open-telemetry/semantic-conventions/blob/main/docs/general/metrics.md#general-guidelines) for metrics.
+- start with `{target}.` prefix, where `{target}` is the target system, for example `tomcat` or `hadoop`.
+- align with semconv when semantics are identical, for example:
+  - `wildfly.network.io` is consistent with [`system.network.io`](https://opentelemetry.io/docs/specs/semconv/system/system-metrics/#metric-systemnetworkio)
+- when not fitting semconv, reuse the existing mbean attribute names as metric suffix to preserve semantics of the exposed MBeans, for example `tomcat.request.errorCount` where tomcat reports as error any status >=400 and another app server might do it differently.
+
 ## Configuration Files
 
 To provide your own metric definitions, create one or more YAML configuration files, and specify their location using the `otel.jmx.config` property. Absolute or relative pathnames can be specified. For example
