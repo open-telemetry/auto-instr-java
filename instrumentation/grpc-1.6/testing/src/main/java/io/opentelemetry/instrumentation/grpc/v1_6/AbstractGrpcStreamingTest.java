@@ -19,6 +19,7 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
@@ -45,6 +46,11 @@ import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
 
 public abstract class AbstractGrpcStreamingTest {
+
+  private static final AttributeKey<Long> RPC_REQUEST_BODY_SIZE =
+      AttributeKey.longKey("rpc.request.body.size");
+  private static final AttributeKey<Long> RPC_RESPONSE_BODY_SIZE =
+      AttributeKey.longKey("rpc.response.body.size");
 
   protected abstract ServerBuilder<?> configureServer(ServerBuilder<?> server);
 
@@ -153,6 +159,9 @@ public abstract class AbstractGrpcStreamingTest {
                 .sorted()
                 .collect(Collectors.toList()));
 
+    Helloworld.Response message = Helloworld.Response.newBuilder().setMessage("call " + 1).build();
+    int requestSerializedSize = message.getSerializedSize();
+
     List<Consumer<EventData>> events = new ArrayList<>();
     for (int i = 1; i <= clientMessageCount * serverMessageCount + clientMessageCount; i++) {
       long messageId = i;
@@ -191,6 +200,8 @@ public abstract class AbstractGrpcStreamingTest {
                                         RpcIncubatingAttributes.RPC_GRPC_STATUS_CODE,
                                         (long) Status.Code.OK.value()),
                                     equalTo(ServerAttributes.SERVER_ADDRESS, "localhost"),
+                                    equalTo(RPC_RESPONSE_BODY_SIZE, requestSerializedSize),
+                                    equalTo(RPC_REQUEST_BODY_SIZE, requestSerializedSize),
                                     equalTo(ServerAttributes.SERVER_PORT, (long) server.getPort())))
                             .satisfies(
                                 spanData ->
@@ -211,6 +222,8 @@ public abstract class AbstractGrpcStreamingTest {
                                 equalTo(ServerAttributes.SERVER_PORT, server.getPort()),
                                 equalTo(NetworkAttributes.NETWORK_TYPE, "ipv4"),
                                 equalTo(NetworkAttributes.NETWORK_PEER_ADDRESS, "127.0.0.1"),
+                                equalTo(RPC_REQUEST_BODY_SIZE, requestSerializedSize),
+                                equalTo(RPC_RESPONSE_BODY_SIZE, requestSerializedSize),
                                 satisfies(
                                     NetworkAttributes.NETWORK_PEER_PORT,
                                     val -> assertThat(val).isNotNull()))

@@ -20,6 +20,9 @@ public final class GrpcRequest {
   private volatile int logicalPort = -1;
   @Nullable private volatile SocketAddress peerSocketAddress;
 
+  private Long requestSize;
+  private Long responseSize;
+
   GrpcRequest(
       MethodDescriptor<?, ?> method,
       @Nullable Metadata metadata,
@@ -77,5 +80,21 @@ public final class GrpcRequest {
 
   void setPeerSocketAddress(SocketAddress peerSocketAddress) {
     this.peerSocketAddress = peerSocketAddress;
+  }
+
+  public Long getRequestSize() {
+    return requestSize;
+  }
+
+  public void setRequestSize(Long requestSize) {
+    this.requestSize = requestSize;
+  }
+
+  public Long getResponseSize() {
+    return responseSize;
+  }
+
+  public void setResponseSize(Long responseSize) {
+    this.responseSize = responseSize;
   }
 }

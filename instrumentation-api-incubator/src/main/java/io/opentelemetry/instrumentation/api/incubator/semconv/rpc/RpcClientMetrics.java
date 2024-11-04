@@ -11,6 +11,8 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
+import io.opentelemetry.api.metrics.LongHistogram;
+import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
@@ -35,6 +37,8 @@ public final class RpcClientMetrics implements OperationListener {
   private static final Logger logger = Logger.getLogger(RpcClientMetrics.class.getName());
 
   private final DoubleHistogram clientDurationHistogram;
+  private final LongHistogram clientRequestSize;
+  private final LongHistogram clientResponseSize;
 
   private RpcClientMetrics(Meter meter) {
     DoubleHistogramBuilder durationBuilder =
@@ -44,6 +48,24 @@ public final class RpcClientMetrics implements OperationListener {
             .setUnit("ms");
     RpcMetricsAdvice.applyClientDurationAdvice(durationBuilder);
     clientDurationHistogram = durationBuilder.build();
+
+    LongHistogramBuilder requestSizeBuilder =
+        meter
+            .histogramBuilder("rpc.client.request.size")
+            .setUnit("By")
+            .setDescription("Measures the size of RPC request messages (uncompressed).")
+            .ofLongs();
+    RpcMetricsAdvice.applyClientRequestSizeAdvice(requestSizeBuilder);
+    clientRequestSize = requestSizeBuilder.build();
+
+    LongHistogramBuilder responseSizeBuilder =
+        meter
+            .histogramBuilder("rpc.client.response.size")
+            .setUnit("By")
+            .setDescription("Measures the size of RPC response messages (uncompressed).")
+            .ofLongs();
+    RpcMetricsAdvice.applyClientRequestSizeAdvice(responseSizeBuilder);
+    clientResponseSize = responseSizeBuilder.build();
   }
 
   /**
@@ -72,10 +94,21 @@ public final class RpcClientMetrics implements OperationListener {
           context);
       return;
     }
+    Attributes attributes = state.startAttributes().toBuilder().putAll(endAttributes).build();
     clientDurationHistogram.record(
-        (endNanos - state.startTimeNanos()) / NANOS_PER_MS,
-        state.startAttributes().toBuilder().putAll(endAttributes).build(),
-        context);
+        (endNanos - state.startTimeNanos()) / NANOS_PER_MS, attributes, context);
+
+    Long rpcClientRequestBodySize =
+        RpcMessageBodySizeUtil.getRpcRequestBodySize(endAttributes, state.startAttributes());
+    if (rpcClientRequestBodySize != null) {
+      clientRequestSize.record(rpcClientRequestBodySize, attributes, context);
+    }
+
+    Long rpcClientResponseBodySize =
+        RpcMessageBodySizeUtil.getRpcResponseBodySize(endAttributes, state.startAttributes());
+    if (rpcClientResponseBodySize != null) {
+      clientResponseSize.record(rpcClientResponseBodySize, attributes, context);
+    }
   }
 
   @AutoValue

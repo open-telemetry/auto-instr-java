@@ -103,6 +103,7 @@ final class TracingServerInterceptor implements ServerInterceptor {
 
     @Override
     public void sendMessage(RESPONSE message) {
+      request.setRequestSize(BodySizeUtil.getBodySize(message));
       try (Scope ignored = context.makeCurrent()) {
         super.sendMessage(message);
       }
@@ -136,6 +137,7 @@ final class TracingServerInterceptor implements ServerInterceptor {
 
       @Override
       public void onMessage(REQUEST message) {
+        request.setResponseSize(BodySizeUtil.getBodySize(message));
         Attributes attributes =
             Attributes.of(
                 MESSAGE_TYPE,

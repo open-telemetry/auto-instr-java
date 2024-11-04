@@ -8,6 +8,7 @@ muzzle {
     module.set("grpc-core")
     versions.set("[1.6.0,)")
     assertInverse.set(true)
+    extraDependency("io.grpc:grpc-protobuf:1.5.0")
   }
 }
 
@@ -21,7 +22,7 @@ dependencies {
   testInstrumentation(project(":instrumentation:netty:netty-4.1:javaagent"))
 
   testLibrary("io.grpc:grpc-netty:$grpcVersion")
-  testLibrary("io.grpc:grpc-protobuf:$grpcVersion")
+  library("io.grpc:grpc-protobuf:$grpcVersion")
   testLibrary("io.grpc:grpc-services:$grpcVersion")
   testLibrary("io.grpc:grpc-stub:$grpcVersion")
 

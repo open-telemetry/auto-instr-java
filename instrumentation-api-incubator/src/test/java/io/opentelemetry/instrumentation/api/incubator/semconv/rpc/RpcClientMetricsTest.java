@@ -46,6 +46,8 @@ class RpcClientMetricsTest {
             .put(ServerAttributes.SERVER_PORT, 8080)
             .put(NetworkAttributes.NETWORK_TRANSPORT, "tcp")
             .put(NetworkAttributes.NETWORK_TYPE, "ipv4")
+            .put(RpcCommonAttributesExtractor.RPC_REQUEST_BODY_SIZE, 10)
+            .put(RpcCommonAttributesExtractor.RPC_RESPONSE_BODY_SIZE, 20)
             .build();
 
     Attributes responseAttributes2 =
@@ -76,6 +78,62 @@ class RpcClientMetricsTest {
 
     assertThat(metricReader.collectAllMetrics())
         .satisfiesExactlyInAnyOrder(
+            metric ->
+                assertThat(metric)
+                    .hasName("rpc.client.response.size")
+                    .hasUnit("By")
+                    .hasDescription("Measures the size of RPC response messages (uncompressed).")
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(20 /* bytes */)
+                                        .hasAttributesSatisfying(
+                                            equalTo(RpcIncubatingAttributes.RPC_SYSTEM, "grpc"),
+                                            equalTo(
+                                                RpcIncubatingAttributes.RPC_SERVICE,
+                                                "myservice.EchoService"),
+                                            equalTo(
+                                                RpcIncubatingAttributes.RPC_METHOD,
+                                                "exampleMethod"),
+                                            equalTo(ServerAttributes.SERVER_ADDRESS, "example.com"),
+                                            equalTo(ServerAttributes.SERVER_PORT, 8080),
+                                            equalTo(NetworkAttributes.NETWORK_TRANSPORT, "tcp"),
+                                            equalTo(NetworkAttributes.NETWORK_TYPE, "ipv4"))
+                                        .hasExemplarsSatisfying(
+                                            exemplar ->
+                                                exemplar
+                                                    .hasTraceId("ff01020304050600ff0a0b0c0d0e0f00")
+                                                    .hasSpanId("090a0b0c0d0e0f00")))),
+            metric ->
+                assertThat(metric)
+                    .hasName("rpc.client.request.size")
+                    .hasUnit("By")
+                    .hasDescription("Measures the size of RPC request messages (uncompressed).")
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(10 /* bytes */)
+                                        .hasAttributesSatisfying(
+                                            equalTo(RpcIncubatingAttributes.RPC_SYSTEM, "grpc"),
+                                            equalTo(
+                                                RpcIncubatingAttributes.RPC_SERVICE,
+                                                "myservice.EchoService"),
+                                            equalTo(
+                                                RpcIncubatingAttributes.RPC_METHOD,
+                                                "exampleMethod"),
+                                            equalTo(ServerAttributes.SERVER_ADDRESS, "example.com"),
+                                            equalTo(ServerAttributes.SERVER_PORT, 8080),
+                                            equalTo(NetworkAttributes.NETWORK_TRANSPORT, "tcp"),
+                                            equalTo(NetworkAttributes.NETWORK_TYPE, "ipv4"))
+                                        .hasExemplarsSatisfying(
+                                            exemplar ->
+                                                exemplar
+                                                    .hasTraceId("ff01020304050600ff0a0b0c0d0e0f00")
+                                                    .hasSpanId("090a0b0c0d0e0f00")))),
             metric ->
                 assertThat(metric)
                     .hasName("rpc.client.duration")
