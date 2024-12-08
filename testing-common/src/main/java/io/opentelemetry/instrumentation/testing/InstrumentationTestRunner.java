@@ -29,7 +29,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.assertj.core.api.ListAssert;
-import org.awaitility.core.ConditionTimeoutException;
 
 /**
  * This interface defines a common set of operations for interaction with OpenTelemetry SDK and
@@ -118,25 +117,7 @@ public abstract class InstrumentationTestRunner {
     List<T> assertionsList = new ArrayList<>();
     assertions.forEach(assertionsList::add);
 
-    try {
-      await()
-          .untilAsserted(() -> doAssertTraces(traceComparator, assertionsList, verifyScopeVersion));
-    } catch (Throwable t) {
-      // awaitility is doing a jmx call that is not implemented in GraalVM:
-      // call:
-      // https://github.com/awaitility/awaitility/blob/fbe16add874b4260dd240108304d5c0be84eabc8/awaitility/src/main/java/org/awaitility/core/ConditionAwaiter.java#L157
-      // see https://github.com/oracle/graal/issues/6101 (spring boot graal native image)
-      if (t.getClass().getName().equals("com.oracle.svm.core.jdk.UnsupportedFeatureError")
-          || t instanceof ConditionTimeoutException) {
-        // Don't throw this failure since the stack is the awaitility thread, causing confusion.
-        // Instead, just assert one more time on the test thread, which will fail with a better
-        // stack trace.
-        // TODO(anuraaga): There is probably a better way to do this.
-        doAssertTraces(traceComparator, assertionsList, verifyScopeVersion);
-      } else {
-        throw t;
-      }
-    }
+    doAssertTraces(traceComparator, assertionsList, verifyScopeVersion);
   }
 
   private <T extends Consumer<TraceAssert>> void doAssertTraces(
