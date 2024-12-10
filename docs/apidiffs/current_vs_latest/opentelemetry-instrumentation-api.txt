@@ -1,2 +1,23 @@
 Comparing source compatibility of opentelemetry-instrumentation-api-2.11.0-SNAPSHOT.jar against opentelemetry-instrumentation-api-2.10.0.jar
-No changes.
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.instrumentation.api.semconv.http.HttpClientTelemetryBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	GENERIC TEMPLATES: +++ REQUEST:java.lang.Object, +++ RESPONSE:java.lang.Object
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.instrumentation.api.semconv.http.HttpClientTelemetryBuilder<REQUEST,RESPONSE> addAttributesExtractor(io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor<REQUEST,RESPONSE>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Object build()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.instrumentation.api.semconv.http.HttpClientTelemetryBuilder<REQUEST,RESPONSE> setCapturedRequestHeaders(java.util.List<java.lang.String>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.instrumentation.api.semconv.http.HttpClientTelemetryBuilder<REQUEST,RESPONSE> setCapturedResponseHeaders(java.util.List<java.lang.String>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.instrumentation.api.semconv.http.HttpClientTelemetryBuilder<REQUEST,RESPONSE> setKnownMethods(java.util.Set<java.lang.String>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.instrumentation.api.semconv.http.HttpClientTelemetryBuilder<REQUEST,RESPONSE> setSpanNameExtractor(java.util.function.Function<io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor<REQUEST>,io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor<REQUEST>>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.instrumentation.api.semconv.http.HttpClientTelemetryBuilder<REQUEST,RESPONSE> setStatusExtractor(java.util.function.Function<io.opentelemetry.instrumentation.api.instrumenter.SpanStatusExtractor<REQUEST,RESPONSE>,io.opentelemetry.instrumentation.api.instrumenter.SpanStatusExtractor<REQUEST,RESPONSE>>)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.instrumentation.api.semconv.http.HttpServerTelemetryBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	GENERIC TEMPLATES: +++ REQUEST:java.lang.Object, +++ RESPONSE:java.lang.Object
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.instrumentation.api.semconv.http.HttpServerTelemetryBuilder<REQUEST,RESPONSE> addAttributesExtractor(io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor<REQUEST,RESPONSE>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Object build()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.instrumentation.api.semconv.http.HttpServerTelemetryBuilder<REQUEST,RESPONSE> setCapturedRequestHeaders(java.util.List<java.lang.String>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.instrumentation.api.semconv.http.HttpServerTelemetryBuilder<REQUEST,RESPONSE> setCapturedResponseHeaders(java.util.List<java.lang.String>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.instrumentation.api.semconv.http.HttpServerTelemetryBuilder<REQUEST,RESPONSE> setKnownMethods(java.util.Set<java.lang.String>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.instrumentation.api.semconv.http.HttpServerTelemetryBuilder<REQUEST,RESPONSE> setSpanNameExtractor(java.util.function.Function<io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor<REQUEST>,io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor<REQUEST>>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.instrumentation.api.semconv.http.HttpServerTelemetryBuilder<REQUEST,RESPONSE> setStatusExtractor(java.util.function.Function<io.opentelemetry.instrumentation.api.instrumenter.SpanStatusExtractor<REQUEST,RESPONSE>,io.opentelemetry.instrumentation.api.instrumenter.SpanStatusExtractor<REQUEST,RESPONSE>>)

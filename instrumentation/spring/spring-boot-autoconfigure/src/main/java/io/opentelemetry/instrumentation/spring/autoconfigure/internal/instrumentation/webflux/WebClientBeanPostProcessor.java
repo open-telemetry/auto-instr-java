@@ -7,7 +7,8 @@ package io.opentelemetry.instrumentation.spring.autoconfigure.internal.instrumen
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.spring.autoconfigure.internal.properties.InstrumentationConfigUtil;
-import io.opentelemetry.instrumentation.spring.webflux.v5_3.SpringWebfluxTelemetry;
+import io.opentelemetry.instrumentation.spring.webflux.v5_3.SpringWebfluxClientTelemetry;
+import io.opentelemetry.instrumentation.spring.webflux.v5_3.SpringWebfluxServerTelemetry;
 import io.opentelemetry.instrumentation.spring.webflux.v5_3.internal.SpringWebfluxBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import org.springframework.beans.factory.ObjectProvider;
@@ -31,12 +32,20 @@ final class WebClientBeanPostProcessor implements BeanPostProcessor {
     this.configPropertiesProvider = configPropertiesProvider;
   }
 
-  static SpringWebfluxTelemetry getWebfluxTelemetry(
+  static SpringWebfluxClientTelemetry getWebfluxClientTelemetry(
       OpenTelemetry openTelemetry, ConfigProperties config) {
-    return InstrumentationConfigUtil.configureClientAndServerBuilder(
+    return InstrumentationConfigUtil.configureClientBuilder(
             config,
-            SpringWebfluxTelemetry.builder(openTelemetry),
-            SpringWebfluxBuilderUtil.getClientBuilderExtractor(),
+            SpringWebfluxClientTelemetry.builder(openTelemetry),
+            SpringWebfluxBuilderUtil.getClientBuilderExtractor())
+        .build();
+  }
+
+  static SpringWebfluxServerTelemetry getWebfluxServerTelemetry(
+      OpenTelemetry openTelemetry, ConfigProperties config) {
+    return InstrumentationConfigUtil.configureServerBuilder(
+            config,
+            SpringWebfluxServerTelemetry.builder(openTelemetry),
             SpringWebfluxBuilderUtil.getServerBuilderExtractor())
         .build();
   }
@@ -54,9 +63,9 @@ final class WebClientBeanPostProcessor implements BeanPostProcessor {
   }
 
   private WebClient.Builder wrapBuilder(WebClient.Builder webClientBuilder) {
-    SpringWebfluxTelemetry instrumentation =
-        getWebfluxTelemetry(
+    SpringWebfluxClientTelemetry instrumentation =
+        getWebfluxClientTelemetry(
             openTelemetryProvider.getObject(), configPropertiesProvider.getObject());
-    return webClientBuilder.filters(instrumentation::addClientTracingFilter);
+    return webClientBuilder.filters(instrumentation::addTracingFilter);
   }
 }

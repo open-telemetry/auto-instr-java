@@ -58,7 +58,7 @@ class KtorServerSpanKindExtractorTest : AbstractHttpServerUsingTest<ApplicationE
 
   override fun setupServer(): ApplicationEngine {
     return embeddedServer(Netty, port = port) {
-      install(KtorServerTracing) {
+      install(KtorServerTelemetry) {
         setOpenTelemetry(testing.openTelemetry)
         setSpanKindExtractor {
           SpanKindExtractor { req ->

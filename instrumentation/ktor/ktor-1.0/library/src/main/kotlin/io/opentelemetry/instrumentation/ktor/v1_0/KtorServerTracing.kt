@@ -25,6 +25,7 @@ import io.opentelemetry.instrumentation.api.semconv.http.HttpServerRoute
 import io.opentelemetry.instrumentation.api.semconv.http.HttpServerRouteSource
 import kotlinx.coroutines.withContext
 
+@Deprecated("Use KtorServerTelemetry instead", ReplaceWith("KtorServerTelemetry"))
 class KtorServerTracing private constructor(
   private val instrumenter: Instrumenter<ApplicationRequest, ApplicationResponse>,
 ) {

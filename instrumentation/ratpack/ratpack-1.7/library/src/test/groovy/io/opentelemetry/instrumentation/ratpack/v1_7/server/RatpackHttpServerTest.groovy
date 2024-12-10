@@ -6,7 +6,7 @@
 package io.opentelemetry.instrumentation.ratpack.v1_7.server
 
 import io.opentelemetry.instrumentation.ratpack.server.AbstractRatpackHttpServerTest
-import io.opentelemetry.instrumentation.ratpack.v1_7.RatpackTelemetry
+import io.opentelemetry.instrumentation.ratpack.v1_7.RatpackServerTelemetry
 import io.opentelemetry.instrumentation.test.LibraryTestTrait
 import io.opentelemetry.instrumentation.testing.junit.http.AbstractHttpServerTest
 import io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint
@@ -15,12 +15,12 @@ import ratpack.server.RatpackServerSpec
 class RatpackHttpServerTest extends AbstractRatpackHttpServerTest implements LibraryTestTrait {
   @Override
   void configure(RatpackServerSpec serverSpec) {
-    RatpackTelemetry telemetry = RatpackTelemetry.builder(openTelemetry)
-      .setCapturedServerRequestHeaders([AbstractHttpServerTest.TEST_REQUEST_HEADER])
-      .setCapturedServerResponseHeaders([AbstractHttpServerTest.TEST_RESPONSE_HEADER])
+    RatpackServerTelemetry telemetry = RatpackServerTelemetry.builder(openTelemetry)
+      .setCapturedRequestHeaders([AbstractHttpServerTest.TEST_REQUEST_HEADER])
+      .setCapturedResponseHeaders([AbstractHttpServerTest.TEST_RESPONSE_HEADER])
       .build()
     serverSpec.registryOf {
-      telemetry.configureServerRegistry(it)
+      telemetry.configureRegistry(it)
     }
   }
 

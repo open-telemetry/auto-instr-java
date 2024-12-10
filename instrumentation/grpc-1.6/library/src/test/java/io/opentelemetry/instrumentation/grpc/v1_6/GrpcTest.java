@@ -91,7 +91,7 @@ class GrpcTest extends AbstractGrpcTest {
             .addService(greeter)
             .intercept(
                 GrpcTelemetry.builder(testing.getOpenTelemetry())
-                    .addAttributeExtractor(new CustomAttributesExtractor())
+                    .addAttributesExtractor(new CustomAttributesExtractor())
                     .addServerAttributeExtractor(new CustomAttributesExtractorV2("serverSideValue"))
                     .build()
                     .newServerInterceptor())
@@ -103,7 +103,7 @@ class GrpcTest extends AbstractGrpcTest {
             ManagedChannelBuilder.forAddress("localhost", server.getPort())
                 .intercept(
                     GrpcTelemetry.builder(testing.getOpenTelemetry())
-                        .addAttributeExtractor(new CustomAttributesExtractor())
+                        .addAttributesExtractor(new CustomAttributesExtractor())
                         .addClientAttributeExtractor(
                             new CustomAttributesExtractorV2("clientSideValue"))
                         .build()

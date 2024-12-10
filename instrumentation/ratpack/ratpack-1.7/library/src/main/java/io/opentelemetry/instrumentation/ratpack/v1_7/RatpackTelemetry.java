@@ -46,17 +46,30 @@ import ratpack.registry.RegistrySpec;
  *   .build());
  * HttpClient instrumentedHttpClient = telemetry.instrumentHttpClient(httpClient);
  * }</pre>
+ *
+ * @deprecated Use {@link RatpackClientTelemetry} and {@link RatpackServerTelemetry} instead.
  */
+@Deprecated
 public final class RatpackTelemetry {
 
-  /** Returns a new {@link RatpackTelemetry} configured with the given {@link OpenTelemetry}. */
+  /**
+   * Returns a new {@link RatpackTelemetry} configured with the given {@link OpenTelemetry}.
+   *
+   * @deprecated Use {@link RatpackClientTelemetry#create(OpenTelemetry)} and {@link
+   *     RatpackServerTelemetry#create(OpenTelemetry)} instead.
+   */
+  @Deprecated
   public static RatpackTelemetry create(OpenTelemetry openTelemetry) {
     return builder(openTelemetry).build();
   }
 
   /**
    * Returns a new {@link RatpackTelemetryBuilder} configured with the given {@link OpenTelemetry}.
+   *
+   * @deprecated Use {@link RatpackClientTelemetry#builder(OpenTelemetry)} and {@link
+   *     RatpackServerTelemetry#builder(OpenTelemetry)} instead.
    */
+  @Deprecated
   public static RatpackTelemetryBuilder builder(OpenTelemetry openTelemetry) {
     return new RatpackTelemetryBuilder(openTelemetry);
   }
@@ -71,29 +84,54 @@ public final class RatpackTelemetry {
     httpClientInstrumenter = new OpenTelemetryHttpClient(clientInstrumenter);
   }
 
-  /** Returns instance of {@link OpenTelemetryServerHandler} to support Ratpack Registry binding. */
+  /**
+   * Returns instance of {@link OpenTelemetryServerHandler} to support Ratpack Registry binding.
+   *
+   * @deprecated Use {@link RatpackServerTelemetry#getHandler()} instead.
+   */
+  @Deprecated
   public OpenTelemetryServerHandler getOpenTelemetryServerHandler() {
     return serverHandler;
   }
 
-  /** Returns instance of {@link ExecInterceptor} to support Ratpack Registry binding. */
+  /**
+   * Returns instance of {@link ExecInterceptor} to support Ratpack Registry binding.
+   *
+   * @deprecated Use {@link RatpackServerTelemetry#getExecInterceptor()} instead.
+   */
+  @Deprecated
   public ExecInterceptor getOpenTelemetryExecInterceptor() {
     return OpenTelemetryExecInterceptor.INSTANCE;
   }
 
-  /** Returns instance of {@link ExecInitializer} to support Ratpack Registry binding. */
+  /**
+   * Returns instance of {@link ExecInitializer} to support Ratpack Registry binding.
+   *
+   * @deprecated Use {@link RatpackServerTelemetry#getExecInitializer()} instead.
+   */
+  @Deprecated
   public ExecInitializer getOpenTelemetryExecInitializer() {
     return OpenTelemetryExecInitializer.INSTANCE;
   }
 
-  /** Configures the {@link RegistrySpec} with OpenTelemetry. */
+  /**
+   * Configures the {@link RegistrySpec} with OpenTelemetry.
+   *
+   * @deprecated Use {@link RatpackServerTelemetry#configureRegistry(RegistrySpec)} instead.
+   */
+  @Deprecated
   public void configureServerRegistry(RegistrySpec registry) {
     registry.add(HandlerDecorator.prepend(serverHandler));
     registry.add(OpenTelemetryExecInterceptor.INSTANCE);
     registry.add(OpenTelemetryExecInitializer.INSTANCE);
   }
 
-  /** Returns instrumented instance of {@link HttpClient} with OpenTelemetry. */
+  /**
+   * Returns instrumented instance of {@link HttpClient} with OpenTelemetry.
+   *
+   * @deprecated Use {@link RatpackClientTelemetry#instrument(HttpClient)} instead.
+   */
+  @Deprecated
   public HttpClient instrumentHttpClient(HttpClient httpClient) throws Exception {
     return httpClientInstrumenter.instrument(httpClient);
   }

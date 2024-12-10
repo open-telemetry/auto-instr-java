@@ -24,11 +24,11 @@ class OtelExecChainHandler implements ExecChainHandler {
   private static final String REQUEST_PARENT_CONTEXT_ATTRIBUTE_ID =
       OtelExecChainHandler.class.getName() + ".context";
 
-  private final Instrumenter<ApacheHttpClient5Request, HttpResponse> instrumenter;
+  private final Instrumenter<ApacheHttpClientRequest, HttpResponse> instrumenter;
   private final ContextPropagators propagators;
 
   public OtelExecChainHandler(
-      Instrumenter<ApacheHttpClient5Request, HttpResponse> instrumenter,
+      Instrumenter<ApacheHttpClientRequest, HttpResponse> instrumenter,
       ContextPropagators propagators) {
     this.instrumenter = instrumenter;
     this.propagators = propagators;
@@ -45,7 +45,7 @@ class OtelExecChainHandler implements ExecChainHandler {
       scope.clientContext.setAttribute(REQUEST_PARENT_CONTEXT_ATTRIBUTE_ID, parentContext);
     }
 
-    ApacheHttpClient5Request instrumenterRequest = getApacheHttpClient5Request(request, scope);
+    ApacheHttpClientRequest instrumenterRequest = getApacheHttpClientRequest(request, scope);
 
     if (!instrumenter.shouldStart(parentContext, instrumenterRequest)) {
       return chain.proceed(request, scope);
@@ -59,7 +59,7 @@ class OtelExecChainHandler implements ExecChainHandler {
 
   private ClassicHttpResponse execute(
       ClassicHttpRequest request,
-      ApacheHttpClient5Request instrumenterRequest,
+      ApacheHttpClientRequest instrumenterRequest,
       ExecChain chain,
       Scope scope,
       Context context)
@@ -77,7 +77,7 @@ class OtelExecChainHandler implements ExecChainHandler {
     }
   }
 
-  private static ApacheHttpClient5Request getApacheHttpClient5Request(
+  private static ApacheHttpClientRequest getApacheHttpClientRequest(
       ClassicHttpRequest request, Scope scope) {
     HttpHost host = null;
     if (scope.route.getTargetHost() != null) {
@@ -94,6 +94,6 @@ class OtelExecChainHandler implements ExecChainHandler {
       host = new HttpHost(host.getSchemeName(), host.getHostName(), -1);
     }
 
-    return new ApacheHttpClient5Request(host, request);
+    return new ApacheHttpClientRequest(host, request);
   }
 }

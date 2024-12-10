@@ -10,9 +10,9 @@ import com.google.inject.Provides
 import groovy.transform.CompileStatic
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.SpanKind
-import io.opentelemetry.instrumentation.ratpack.v1_7.internal.OpenTelemetryServerHandler
+import io.opentelemetry.instrumentation.ratpack.v1_7.RatpackClientTelemetry
 import io.opentelemetry.instrumentation.ratpack.v1_7.RatpackFunctionalTest
-import io.opentelemetry.instrumentation.ratpack.v1_7.RatpackTelemetry
+import io.opentelemetry.instrumentation.ratpack.v1_7.RatpackServerTelemetry
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.SdkTracerProvider
@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter
 import ratpack.exec.ExecInitializer
 import ratpack.exec.ExecInterceptor
 import ratpack.guice.Guice
+import ratpack.handling.Handler
 import ratpack.http.client.HttpClient
 import ratpack.server.RatpackServer
 import spock.lang.Specification
@@ -28,9 +29,7 @@ import spock.util.concurrent.PollingConditions
 
 import javax.inject.Singleton
 
-import static io.opentelemetry.semconv.HttpAttributes.HTTP_REQUEST_METHOD
-import static io.opentelemetry.semconv.HttpAttributes.HTTP_RESPONSE_STATUS_CODE
-import static io.opentelemetry.semconv.HttpAttributes.HTTP_ROUTE
+import static io.opentelemetry.semconv.HttpAttributes.*
 import static io.opentelemetry.semconv.UrlAttributes.URL_PATH
 
 class RatpackServerApplicationTest extends Specification {
@@ -104,20 +103,26 @@ class OpenTelemetryModule extends AbstractModule {
 
   @Singleton
   @Provides
-  RatpackTelemetry ratpackTracing(OpenTelemetry openTelemetry) {
-    return RatpackTelemetry.create(openTelemetry)
+  RatpackClientTelemetry ratpackClientTelemetry(OpenTelemetry openTelemetry) {
+    return RatpackClientTelemetry.create(openTelemetry)
   }
 
   @Singleton
   @Provides
-  OpenTelemetryServerHandler ratpackServerHandler(RatpackTelemetry ratpackTracing) {
-    return ratpackTracing.getOpenTelemetryServerHandler()
+  RatpackServerTelemetry ratpackServerTelemetry(OpenTelemetry openTelemetry) {
+    return RatpackServerTelemetry.create(openTelemetry)
   }
 
   @Singleton
   @Provides
-  ExecInterceptor ratpackExecInterceptor(RatpackTelemetry ratpackTracing) {
-    return ratpackTracing.getOpenTelemetryExecInterceptor()
+  Handler ratpackServerHandler(RatpackServerTelemetry ratpackTracing) {
+    return ratpackTracing.getHandler()
+  }
+
+  @Singleton
+  @Provides
+  ExecInterceptor ratpackExecInterceptor(RatpackServerTelemetry ratpackTracing) {
+    return ratpackTracing.getExecInterceptor()
   }
 
   @Provides
@@ -131,14 +136,14 @@ class OpenTelemetryModule extends AbstractModule {
 
   @Singleton
   @Provides
-  HttpClient instrumentedHttpClient(RatpackTelemetry ratpackTracing) {
-    return ratpackTracing.instrumentHttpClient(HttpClient.of {})
+  HttpClient instrumentedHttpClient(RatpackClientTelemetry ratpackTracing) {
+    return ratpackTracing.instrument(HttpClient.of {})
   }
 
   @Singleton
   @Provides
-  ExecInitializer ratpackExecInitializer(RatpackTelemetry ratpackTracing) {
-    return ratpackTracing.getOpenTelemetryExecInitializer()
+  ExecInitializer ratpackExecInitializer(RatpackServerTelemetry ratpackTracing) {
+    return ratpackTracing.getExecInitializer()
   }
 }
 
@@ -152,7 +157,7 @@ class RatpackApp {
         .handlers { chain ->
           chain
             .get("ignore") { ctx -> ctx.render("ignored") }
-            .all(OpenTelemetryServerHandler)
+            .all(Handler)
             .get("foo") { ctx -> ctx.render("hi-foo") }
             .get("bar") { ctx ->
               ctx.get(HttpClient).get(ctx.get(URI))

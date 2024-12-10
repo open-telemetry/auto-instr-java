@@ -25,10 +25,21 @@ public final class R2dbcTelemetryBuilder {
     instrumenterBuilder = new R2dbcInstrumenterBuilder(openTelemetry);
   }
 
+  /**
+   * @deprecated Use {@link #addAttributesExtractor(AttributesExtractor)} instead.
+   */
+  @Deprecated
   @CanIgnoreReturnValue
   public R2dbcTelemetryBuilder addAttributeExtractor(
       AttributesExtractor<DbExecution, Void> attributesExtractor) {
-    instrumenterBuilder.addAttributeExtractor(attributesExtractor);
+    instrumenterBuilder.addAttributesExtractor(attributesExtractor);
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public R2dbcTelemetryBuilder addAttributesExtractor(
+      AttributesExtractor<DbExecution, Void> attributesExtractor) {
+    instrumenterBuilder.addAttributesExtractor(attributesExtractor);
     return this;
   }
 

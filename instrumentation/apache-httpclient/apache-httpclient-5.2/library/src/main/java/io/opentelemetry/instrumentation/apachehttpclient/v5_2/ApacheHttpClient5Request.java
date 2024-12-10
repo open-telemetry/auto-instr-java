@@ -14,6 +14,10 @@ import javax.annotation.Nullable;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.HttpRequest;
 
+/**
+ * @deprecated Use {@link ApacheHttpClientRequest} instead.
+ */
+@Deprecated
 public final class ApacheHttpClient5Request {
 
   private static final Logger logger = Logger.getLogger(ApacheHttpClient5Request.class.getName());

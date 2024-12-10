@@ -7,6 +7,7 @@ package io.opentelemetry.instrumentation.apachehttpclient.v5_2;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.instrumentation.apachehttpclient.v5_2.internal.Experimental;
 import io.opentelemetry.instrumentation.api.incubator.builder.internal.DefaultHttpClientInstrumenterBuilder;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor;
@@ -16,7 +17,12 @@ import java.util.Set;
 import java.util.function.Function;
 import org.apache.hc.core5.http.HttpResponse;
 
-/** A builder for {@link ApacheHttpClient5Telemetry}. */
+/**
+ * A builder for {@link ApacheHttpClient5Telemetry}.
+ *
+ * @deprecated Use {@link ApacheHttpClientTelemetryBuilder} instead.
+ */
+@Deprecated
 public final class ApacheHttpClient5TelemetryBuilder {
 
   private static final String INSTRUMENTATION_NAME = "io.opentelemetry.apache-httpclient-5.2";
@@ -39,7 +45,7 @@ public final class ApacheHttpClient5TelemetryBuilder {
   public ApacheHttpClient5TelemetryBuilder addAttributeExtractor(
       AttributesExtractor<? super ApacheHttpClient5Request, ? super HttpResponse>
           attributesExtractor) {
-    builder.addAttributeExtractor(attributesExtractor);
+    builder.addAttributesExtractor(attributesExtractor);
     return this;
   }
 
@@ -90,7 +96,11 @@ public final class ApacheHttpClient5TelemetryBuilder {
    *
    * @param emitExperimentalHttpClientMetrics {@code true} if the experimental HTTP client metrics
    *     are to be emitted.
+   * @deprecated Use {@link
+   *     Experimental#setEmitExperimentalTelemetry(ApacheHttpClientTelemetryBuilder, boolean)}
+   *     instead.
    */
+  @Deprecated
   @CanIgnoreReturnValue
   public ApacheHttpClient5TelemetryBuilder setEmitExperimentalHttpClientMetrics(
       boolean emitExperimentalHttpClientMetrics) {
@@ -102,8 +112,8 @@ public final class ApacheHttpClient5TelemetryBuilder {
   @CanIgnoreReturnValue
   public ApacheHttpClient5TelemetryBuilder setSpanNameExtractor(
       Function<
-              SpanNameExtractor<? super ApacheHttpClient5Request>,
-              ? extends SpanNameExtractor<? super ApacheHttpClient5Request>>
+              SpanNameExtractor<ApacheHttpClient5Request>,
+              SpanNameExtractor<ApacheHttpClient5Request>>
           spanNameExtractorTransformer) {
     builder.setSpanNameExtractor(spanNameExtractorTransformer);
     return this;

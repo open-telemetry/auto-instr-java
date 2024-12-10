@@ -6,7 +6,6 @@
 package io.opentelemetry.instrumentation.ktor.v2_0.client
 
 import io.ktor.client.*
-import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.opentelemetry.instrumentation.testing.junit.http.SingleConnection
 import kotlinx.coroutines.runBlocking

@@ -9,8 +9,10 @@ import com.linecorp.armeria.client.HttpClient;
 import com.linecorp.armeria.server.HttpService;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.instrumentation.api.incubator.config.internal.CommonConfig;
-import io.opentelemetry.instrumentation.armeria.v1_3.ArmeriaTelemetry;
-import io.opentelemetry.instrumentation.armeria.v1_3.ArmeriaTelemetryBuilder;
+import io.opentelemetry.instrumentation.armeria.v1_3.ArmeriaClientTelemetry;
+import io.opentelemetry.instrumentation.armeria.v1_3.ArmeriaClientTelemetryBuilder;
+import io.opentelemetry.instrumentation.armeria.v1_3.ArmeriaServerTelemetry;
+import io.opentelemetry.instrumentation.armeria.v1_3.ArmeriaServerTelemetryBuilder;
 import io.opentelemetry.instrumentation.armeria.v1_3.internal.ArmeriaInstrumenterBuilderUtil;
 import io.opentelemetry.javaagent.bootstrap.internal.AgentCommonConfig;
 import java.util.function.Function;
@@ -23,15 +25,25 @@ public final class ArmeriaSingletons {
   public static final Function<? super HttpService, ? extends HttpService> SERVER_DECORATOR;
 
   static {
-    ArmeriaTelemetryBuilder builder = ArmeriaTelemetry.builder(GlobalOpenTelemetry.get());
     CommonConfig config = AgentCommonConfig.get();
-    ArmeriaInstrumenterBuilderUtil.getClientBuilderExtractor().apply(builder).configure(config);
-    ArmeriaInstrumenterBuilderUtil.getServerBuilderExtractor().apply(builder).configure(config);
-    ArmeriaTelemetry telemetry = builder.build();
 
-    CLIENT_DECORATOR = telemetry.newClientDecorator();
+    ArmeriaClientTelemetryBuilder clientBuilder =
+        ArmeriaClientTelemetry.builder(GlobalOpenTelemetry.get());
+    ArmeriaInstrumenterBuilderUtil.getClientBuilderExtractor()
+        .apply(clientBuilder)
+        .configure(config);
+    ArmeriaClientTelemetry clientTelemetry = clientBuilder.build();
+
+    ArmeriaServerTelemetryBuilder serverBuilder =
+        ArmeriaServerTelemetry.builder(GlobalOpenTelemetry.get());
+    ArmeriaInstrumenterBuilderUtil.getServerBuilderExtractor()
+        .apply(serverBuilder)
+        .configure(config);
+    ArmeriaServerTelemetry serverTelemetry = serverBuilder.build();
+
+    CLIENT_DECORATOR = clientTelemetry.newDecorator();
     Function<? super HttpService, ? extends HttpService> libraryDecorator =
-        telemetry.newServiceDecorator().compose(ResponseCustomizingDecorator::new);
+        serverTelemetry.newDecorator().compose(ResponseCustomizingDecorator::new);
     SERVER_DECORATOR = service -> new ServerDecorator(service, libraryDecorator.apply(service));
   }
 

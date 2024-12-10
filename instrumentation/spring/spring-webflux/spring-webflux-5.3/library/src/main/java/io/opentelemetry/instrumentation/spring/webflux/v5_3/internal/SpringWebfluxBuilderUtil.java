@@ -7,7 +7,8 @@ package io.opentelemetry.instrumentation.spring.webflux.v5_3.internal;
 
 import io.opentelemetry.instrumentation.api.incubator.builder.internal.DefaultHttpClientInstrumenterBuilder;
 import io.opentelemetry.instrumentation.api.incubator.builder.internal.DefaultHttpServerInstrumenterBuilder;
-import io.opentelemetry.instrumentation.spring.webflux.v5_3.SpringWebfluxTelemetryBuilder;
+import io.opentelemetry.instrumentation.spring.webflux.v5_3.SpringWebfluxClientTelemetryBuilder;
+import io.opentelemetry.instrumentation.spring.webflux.v5_3.SpringWebfluxServerTelemetryBuilder;
 import java.util.function.Function;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -22,18 +23,18 @@ public final class SpringWebfluxBuilderUtil {
 
   // allows access to the private field for the spring starter
   private static Function<
-          SpringWebfluxTelemetryBuilder,
+          SpringWebfluxClientTelemetryBuilder,
           DefaultHttpClientInstrumenterBuilder<ClientRequest, ClientResponse>>
       clientBuilderExtractor;
 
   // allows access to the private field for the spring starter
   private static Function<
-          SpringWebfluxTelemetryBuilder,
+          SpringWebfluxServerTelemetryBuilder,
           DefaultHttpServerInstrumenterBuilder<ServerWebExchange, ServerWebExchange>>
       serverBuilderExtractor;
 
   public static Function<
-          SpringWebfluxTelemetryBuilder,
+          SpringWebfluxServerTelemetryBuilder,
           DefaultHttpServerInstrumenterBuilder<ServerWebExchange, ServerWebExchange>>
       getServerBuilderExtractor() {
     return serverBuilderExtractor;
@@ -41,14 +42,14 @@ public final class SpringWebfluxBuilderUtil {
 
   public static void setServerBuilderExtractor(
       Function<
-              SpringWebfluxTelemetryBuilder,
+              SpringWebfluxServerTelemetryBuilder,
               DefaultHttpServerInstrumenterBuilder<ServerWebExchange, ServerWebExchange>>
           serverBuilderExtractor) {
     SpringWebfluxBuilderUtil.serverBuilderExtractor = serverBuilderExtractor;
   }
 
   public static Function<
-          SpringWebfluxTelemetryBuilder,
+          SpringWebfluxClientTelemetryBuilder,
           DefaultHttpClientInstrumenterBuilder<ClientRequest, ClientResponse>>
       getClientBuilderExtractor() {
     return clientBuilderExtractor;
@@ -56,7 +57,7 @@ public final class SpringWebfluxBuilderUtil {
 
   public static void setClientBuilderExtractor(
       Function<
-              SpringWebfluxTelemetryBuilder,
+              SpringWebfluxClientTelemetryBuilder,
               DefaultHttpClientInstrumenterBuilder<ClientRequest, ClientResponse>>
           clientBuilderExtractor) {
     SpringWebfluxBuilderUtil.clientBuilderExtractor = clientBuilderExtractor;

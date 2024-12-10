@@ -13,7 +13,12 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.core5.http.HttpResponse;
 
-/** Entrypoint for instrumenting Apache HTTP Client. */
+/**
+ * Entrypoint for instrumenting Apache HTTP Client.
+ *
+ * @deprecated Use {@link ApacheHttpClientTelemetry} instead.
+ */
+@Deprecated
 public final class ApacheHttpClient5Telemetry {
 
   /**
@@ -53,6 +58,6 @@ public final class ApacheHttpClient5Telemetry {
         .addExecInterceptorAfter(
             ChainElement.PROTOCOL.name(),
             "OtelExecChainHandler",
-            new OtelExecChainHandler(instrumenter, propagators));
+            new OtelExecChainHandlerOld(instrumenter, propagators));
   }
 }

@@ -20,21 +20,6 @@ public final class InstrumentationConfigUtil {
   private InstrumentationConfigUtil() {}
 
   @CanIgnoreReturnValue
-  public static <T, CLIENTREQUEST, CLIENTRESPONSE, SERVERREQUEST, SERVERRESPONSE>
-      T configureClientAndServerBuilder(
-          ConfigProperties config,
-          T builder,
-          Function<T, DefaultHttpClientInstrumenterBuilder<CLIENTREQUEST, CLIENTRESPONSE>>
-              getClientBuilder,
-          Function<T, DefaultHttpServerInstrumenterBuilder<SERVERREQUEST, SERVERRESPONSE>>
-              getServerBuilder) {
-    CommonConfig commonConfig = getConfig(config);
-    getClientBuilder.apply(builder).configure(commonConfig);
-    getServerBuilder.apply(builder).configure(commonConfig);
-    return builder;
-  }
-
-  @CanIgnoreReturnValue
   public static <T, REQUEST, RESPONSE> T configureClientBuilder(
       ConfigProperties config,
       T builder,

@@ -40,7 +40,7 @@ public class SpringWebfluxInstrumentationAutoConfiguration {
 
   @Bean
   WebFilter telemetryFilter(OpenTelemetry openTelemetry, ConfigProperties config) {
-    return WebClientBeanPostProcessor.getWebfluxTelemetry(openTelemetry, config)
+    return WebClientBeanPostProcessor.getWebfluxServerTelemetry(openTelemetry, config)
         .createWebFilterAndRegisterReactorHook();
   }
 }

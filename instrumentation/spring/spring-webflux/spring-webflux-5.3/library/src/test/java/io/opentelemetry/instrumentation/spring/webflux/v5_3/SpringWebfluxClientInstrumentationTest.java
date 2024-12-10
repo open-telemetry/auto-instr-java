@@ -21,13 +21,13 @@ class SpringWebfluxClientInstrumentationTest
 
   @Override
   protected WebClient.Builder instrument(WebClient.Builder builder) {
-    SpringWebfluxTelemetry instrumentation =
-        SpringWebfluxTelemetry.builder(testing.getOpenTelemetry())
-            .setCapturedClientRequestHeaders(
+    SpringWebfluxClientTelemetry instrumentation =
+        SpringWebfluxClientTelemetry.builder(testing.getOpenTelemetry())
+            .setCapturedRequestHeaders(
                 Collections.singletonList(AbstractHttpClientTest.TEST_REQUEST_HEADER))
-            .setCapturedClientResponseHeaders(
+            .setCapturedResponseHeaders(
                 Collections.singletonList(AbstractHttpClientTest.TEST_RESPONSE_HEADER))
             .build();
-    return builder.filters(instrumentation::addClientTracingFilter);
+    return builder.filters(instrumentation::addTracingFilter);
   }
 }

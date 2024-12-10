@@ -21,13 +21,13 @@ class ArmeriaHttpClientTest extends AbstractArmeriaHttpClientTest {
   @Override
   protected WebClientBuilder configureClient(WebClientBuilder clientBuilder) {
     return clientBuilder.decorator(
-        ArmeriaTelemetry.builder(testing.getOpenTelemetry())
-            .setCapturedClientRequestHeaders(
+        ArmeriaClientTelemetry.builder(testing.getOpenTelemetry())
+            .setCapturedRequestHeaders(
                 Collections.singletonList(AbstractHttpClientTest.TEST_REQUEST_HEADER))
-            .setCapturedClientResponseHeaders(
+            .setCapturedResponseHeaders(
                 Collections.singletonList(AbstractHttpClientTest.TEST_RESPONSE_HEADER))
             .build()
-            .newClientDecorator());
+            .newDecorator());
   }
 
   @Override

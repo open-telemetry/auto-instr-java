@@ -17,12 +17,22 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 
-/** Entrypoint for instrumenting Spring Webflux HTTP clients. */
+/**
+ * Entrypoint for instrumenting Spring Webflux HTTP clients and services.
+ *
+ * @deprecated Use {@link SpringWebfluxClientTelemetry} and {@link SpringWebfluxServerTelemetry}
+ *     instead.
+ */
+@Deprecated
 public final class SpringWebfluxTelemetry {
 
   /**
    * Returns a new {@link SpringWebfluxTelemetry} configured with the given {@link OpenTelemetry}.
+   *
+   * @deprecated Use {@link SpringWebfluxClientTelemetry#create(OpenTelemetry)} and {@link
+   *     SpringWebfluxServerTelemetry#create(OpenTelemetry)} instead.
    */
+  @Deprecated
   public static SpringWebfluxTelemetry create(OpenTelemetry openTelemetry) {
     return builder(openTelemetry).build();
   }
@@ -30,7 +40,11 @@ public final class SpringWebfluxTelemetry {
   /**
    * Returns a new {@link SpringWebfluxTelemetryBuilder} configured with the given {@link
    * OpenTelemetry}.
+   *
+   * @deprecated Use {@link SpringWebfluxClientTelemetry#builder(OpenTelemetry)} and {@link
+   *     SpringWebfluxServerTelemetry#builder(OpenTelemetry)} instead.
    */
+  @Deprecated
   public static SpringWebfluxTelemetryBuilder builder(OpenTelemetry openTelemetry) {
     return new SpringWebfluxTelemetryBuilder(openTelemetry);
   }
@@ -50,6 +64,10 @@ public final class SpringWebfluxTelemetry {
     this.propagators = propagators;
   }
 
+  /**
+   * @deprecated Use {@link SpringWebfluxClientTelemetry#addTracingFilter(List)} instead.
+   */
+  @Deprecated
   public void addClientTracingFilter(List<ExchangeFilterFunction> exchangeFilterFunctions) {
     for (ExchangeFilterFunction filterFunction : exchangeFilterFunctions) {
       if (filterFunction instanceof WebClientTracingFilter) {
@@ -59,10 +77,19 @@ public final class SpringWebfluxTelemetry {
     exchangeFilterFunctions.add(new WebClientTracingFilter(clientInstrumenter, propagators));
   }
 
+  /**
+   * @deprecated Use {@link SpringWebfluxServerTelemetry#createWebFilter()} instead.
+   */
+  @Deprecated
   public WebFilter createWebFilter() {
     return new TelemetryProducingWebFilter(serverInstrumenter);
   }
 
+  /**
+   * @deprecated Use {@link SpringWebfluxServerTelemetry#createWebFilterAndRegisterReactorHook()}
+   *     instead.
+   */
+  @Deprecated
   public WebFilter createWebFilterAndRegisterReactorHook() {
     registerReactorHook();
     return this.createWebFilter();

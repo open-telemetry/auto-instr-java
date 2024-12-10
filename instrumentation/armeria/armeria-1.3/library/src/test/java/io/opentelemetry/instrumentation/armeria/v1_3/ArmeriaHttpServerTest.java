@@ -21,13 +21,13 @@ class ArmeriaHttpServerTest extends AbstractArmeriaHttpServerTest {
   @Override
   protected ServerBuilder configureServer(ServerBuilder sb) {
     return sb.decorator(
-        ArmeriaTelemetry.builder(testing.getOpenTelemetry())
-            .setCapturedServerRequestHeaders(
+        ArmeriaServerTelemetry.builder(testing.getOpenTelemetry())
+            .setCapturedRequestHeaders(
                 Collections.singletonList(AbstractHttpServerTest.TEST_REQUEST_HEADER))
-            .setCapturedServerResponseHeaders(
+            .setCapturedResponseHeaders(
                 Collections.singletonList(AbstractHttpServerTest.TEST_RESPONSE_HEADER))
             .build()
-            .newServiceDecorator());
+            .newDecorator());
   }
 
   @Override

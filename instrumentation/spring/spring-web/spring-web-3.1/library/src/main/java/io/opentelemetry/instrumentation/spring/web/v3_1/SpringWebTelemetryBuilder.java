@@ -10,7 +10,10 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.incubator.builder.internal.DefaultHttpClientInstrumenterBuilder;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.SpanStatusExtractor;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpClientAttributesExtractorBuilder;
+import io.opentelemetry.instrumentation.api.semconv.http.HttpClientTelemetryBuilder;
+import io.opentelemetry.instrumentation.spring.web.v3_1.internal.Experimental;
 import io.opentelemetry.instrumentation.spring.web.v3_1.internal.WebTelemetryUtil;
 import java.util.List;
 import java.util.Set;
@@ -19,7 +22,9 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
 
 /** A builder of {@link SpringWebTelemetry}. */
-public final class SpringWebTelemetryBuilder {
+public final class SpringWebTelemetryBuilder
+    implements HttpClientTelemetryBuilder<HttpRequest, ClientHttpResponse> {
+
   private static final String INSTRUMENTATION_NAME = "io.opentelemetry.spring-web-3.1";
   private final DefaultHttpClientInstrumenterBuilder<HttpRequest, ClientHttpResponse> builder;
 
@@ -43,11 +48,26 @@ public final class SpringWebTelemetryBuilder {
   /**
    * Adds an additional {@link AttributesExtractor} to invoke to set attributes to instrumented
    * items.
+   *
+   * @deprecated Use {@link #addAttributesExtractor(AttributesExtractor)} instead.
    */
+  @Deprecated
   @CanIgnoreReturnValue
   public SpringWebTelemetryBuilder addAttributeExtractor(
       AttributesExtractor<? super HttpRequest, ? super ClientHttpResponse> attributesExtractor) {
-    builder.addAttributeExtractor(attributesExtractor);
+    builder.addAttributesExtractor(attributesExtractor);
+    return this;
+  }
+
+  /**
+   * Adds an additional {@link AttributesExtractor} to invoke to set attributes to instrumented
+   * items.
+   */
+  @Override
+  @CanIgnoreReturnValue
+  public SpringWebTelemetryBuilder addAttributesExtractor(
+      AttributesExtractor<HttpRequest, ClientHttpResponse> attributesExtractor) {
+    builder.addAttributesExtractor(attributesExtractor);
     return this;
   }
 
@@ -56,6 +76,7 @@ public final class SpringWebTelemetryBuilder {
    *
    * @param requestHeaders A list of HTTP header names.
    */
+  @Override
   @CanIgnoreReturnValue
   public SpringWebTelemetryBuilder setCapturedRequestHeaders(List<String> requestHeaders) {
     builder.setCapturedRequestHeaders(requestHeaders);
@@ -67,6 +88,7 @@ public final class SpringWebTelemetryBuilder {
    *
    * @param responseHeaders A list of HTTP header names.
    */
+  @Override
   @CanIgnoreReturnValue
   public SpringWebTelemetryBuilder setCapturedResponseHeaders(List<String> responseHeaders) {
     builder.setCapturedResponseHeaders(responseHeaders);
@@ -74,13 +96,22 @@ public final class SpringWebTelemetryBuilder {
   }
 
   /** Sets custom {@link SpanNameExtractor} via transform function. */
+  @Override
   @CanIgnoreReturnValue
   public SpringWebTelemetryBuilder setSpanNameExtractor(
-      Function<
-              SpanNameExtractor<? super HttpRequest>,
-              ? extends SpanNameExtractor<? super HttpRequest>>
+      Function<SpanNameExtractor<HttpRequest>, SpanNameExtractor<HttpRequest>>
           spanNameExtractorTransformer) {
     builder.setSpanNameExtractor(spanNameExtractorTransformer);
+    return this;
+  }
+
+  @Override
+  public SpringWebTelemetryBuilder setStatusExtractor(
+      Function<
+              SpanStatusExtractor<HttpRequest, ClientHttpResponse>,
+              SpanStatusExtractor<HttpRequest, ClientHttpResponse>>
+          statusExtractorTransformer) {
+    builder.setStatusExtractor(statusExtractorTransformer);
     return this;
   }
 
@@ -97,6 +128,7 @@ public final class SpringWebTelemetryBuilder {
    * @param knownMethods A set of recognized HTTP request methods.
    * @see HttpClientAttributesExtractorBuilder#setKnownMethods(Set)
    */
+  @Override
   @CanIgnoreReturnValue
   public SpringWebTelemetryBuilder setKnownMethods(Set<String> knownMethods) {
     builder.setKnownMethods(knownMethods);
@@ -108,7 +140,10 @@ public final class SpringWebTelemetryBuilder {
    *
    * @param emitExperimentalHttpClientMetrics {@code true} if the experimental HTTP client metrics
    *     are to be emitted.
+   * @deprecated Use {@link Experimental#setEmitExperimentalTelemetry(SpringWebTelemetryBuilder,
+   *     boolean)} instead.
    */
+  @Deprecated
   @CanIgnoreReturnValue
   public SpringWebTelemetryBuilder setEmitExperimentalHttpClientMetrics(
       boolean emitExperimentalHttpClientMetrics) {
@@ -120,6 +155,7 @@ public final class SpringWebTelemetryBuilder {
    * Returns a new {@link SpringWebTelemetry} with the settings of this {@link
    * SpringWebTelemetryBuilder}.
    */
+  @Override
   public SpringWebTelemetry build() {
     return new SpringWebTelemetry(builder.build());
   }

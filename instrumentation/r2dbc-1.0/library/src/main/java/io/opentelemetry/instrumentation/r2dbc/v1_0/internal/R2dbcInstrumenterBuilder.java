@@ -37,7 +37,7 @@ public final class R2dbcInstrumenterBuilder {
   }
 
   @CanIgnoreReturnValue
-  public R2dbcInstrumenterBuilder addAttributeExtractor(
+  public R2dbcInstrumenterBuilder addAttributesExtractor(
       AttributesExtractor<DbExecution, Void> attributesExtractor) {
     additionalExtractors.add(attributesExtractor);
     return this;

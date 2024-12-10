@@ -11,7 +11,8 @@ import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.propagation.ContextPropagators
-import io.opentelemetry.instrumentation.ratpack.v1_7.RatpackTelemetry
+import io.opentelemetry.instrumentation.ratpack.v1_7.RatpackClientTelemetry
+import io.opentelemetry.instrumentation.ratpack.v1_7.RatpackServerTelemetry
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.SdkTracerProvider
@@ -34,9 +35,7 @@ import java.util.concurrent.TimeUnit
 
 import static io.opentelemetry.api.trace.SpanKind.CLIENT
 import static io.opentelemetry.api.trace.SpanKind.SERVER
-import static io.opentelemetry.semconv.HttpAttributes.HTTP_REQUEST_METHOD
-import static io.opentelemetry.semconv.HttpAttributes.HTTP_ROUTE
-import static io.opentelemetry.semconv.HttpAttributes.HTTP_RESPONSE_STATUS_CODE
+import static io.opentelemetry.semconv.HttpAttributes.*
 
 class InstrumentedHttpClientTest extends Specification {
 
@@ -49,7 +48,8 @@ class InstrumentedHttpClientTest extends Specification {
     .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
     .setTracerProvider(tracerProvider).build()
 
-  RatpackTelemetry telemetry = RatpackTelemetry.create(openTelemetry)
+  RatpackClientTelemetry telemetry = RatpackClientTelemetry.create(openTelemetry)
+  RatpackServerTelemetry serverTelemetry = RatpackServerTelemetry.create(openTelemetry)
 
   def cleanup() {
     spanExporter.reset()
@@ -60,7 +60,8 @@ class InstrumentedHttpClientTest extends Specification {
     def otherApp = EmbeddedApp.of { spec ->
       spec.registry(
         Guice.registry { bindings ->
-          telemetry.configureServerRegistry(bindings)
+          serverTelemetry.configureRegistry(bindings)
+          telemetry.configureRegistry(bindings)
         }
       )
       spec.handlers {
@@ -71,8 +72,9 @@ class InstrumentedHttpClientTest extends Specification {
     def app = EmbeddedApp.of { spec ->
       spec.registry(
         Guice.registry { bindings ->
-          telemetry.configureServerRegistry(bindings)
-          bindings.bindInstance(HttpClient, telemetry.instrumentHttpClient(HttpClient.of(Action.noop())))
+          serverTelemetry.configureRegistry(bindings)
+          telemetry.configureRegistry(bindings)
+          bindings.bindInstance(HttpClient, telemetry.instrument(HttpClient.of(Action.noop())))
         }
       )
 
@@ -132,8 +134,9 @@ class InstrumentedHttpClientTest extends Specification {
     def app = EmbeddedApp.of { spec ->
       spec.registry(
         Guice.registry { bindings ->
-          telemetry.configureServerRegistry(bindings)
-          bindings.bindInstance(HttpClient, telemetry.instrumentHttpClient(HttpClient.of(Action.noop())))
+          serverTelemetry.configureRegistry(bindings)
+          telemetry.configureRegistry(bindings)
+          bindings.bindInstance(HttpClient, telemetry.instrument(HttpClient.of(Action.noop())))
         }
       )
 
@@ -197,8 +200,9 @@ class InstrumentedHttpClientTest extends Specification {
     def app = EmbeddedApp.of { spec ->
       spec.registry(
         Guice.registry { bindings ->
-          telemetry.configureServerRegistry(bindings)
-          bindings.bindInstance(HttpClient, telemetry.instrumentHttpClient(
+          serverTelemetry.configureRegistry(bindings)
+          telemetry.configureRegistry(bindings)
+          bindings.bindInstance(HttpClient, telemetry.instrument(
             HttpClient.of { s -> s.readTimeout(Duration.ofMillis(10)) })
           )
         }
@@ -254,8 +258,9 @@ class InstrumentedHttpClientTest extends Specification {
     def app = EmbeddedApp.of { spec ->
       spec.registry(
         Guice.registry { bindings ->
-          telemetry.configureServerRegistry(bindings)
-          bindings.bindInstance(HttpClient, telemetry.instrumentHttpClient(HttpClient.of(Action.noop())))
+          serverTelemetry.configureRegistry(bindings)
+          telemetry.configureRegistry(bindings)
+          bindings.bindInstance(HttpClient, telemetry.instrument(HttpClient.of(Action.noop())))
           bindings.bindInstance(new BarService(latch, "${otherApp.address}foo", openTelemetry))
         },
       )
@@ -287,8 +292,9 @@ class InstrumentedHttpClientTest extends Specification {
     def app = EmbeddedApp.of { spec ->
       spec.registry(
         Guice.registry { bindings ->
-          telemetry.configureServerRegistry(bindings)
-          bindings.bindInstance(HttpClient, telemetry.instrumentHttpClient(HttpClient.of(Action.noop())))
+          serverTelemetry.configureRegistry(bindings)
+          telemetry.configureRegistry(bindings)
+          bindings.bindInstance(HttpClient, telemetry.instrument(HttpClient.of(Action.noop())))
           bindings.bindInstance(new BarForkService(latch, "${otherApp.address}foo", openTelemetry))
         },
       )
@@ -340,7 +346,6 @@ class BarService implements Service {
     }
   }
 }
-
 
 class BarForkService implements Service {
   private final String url

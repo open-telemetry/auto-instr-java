@@ -38,9 +38,23 @@ public final class QuartzTelemetryBuilder {
   /**
    * Adds an additional {@link AttributesExtractor} to invoke to set attributes to instrumented
    * items. The {@link AttributesExtractor} will be executed after all default extractors.
+   *
+   * @deprecated Use {@link #addAttributesExtractor(AttributesExtractor)} instead.
    */
+  @Deprecated
   @CanIgnoreReturnValue
   public QuartzTelemetryBuilder addAttributeExtractor(
+      AttributesExtractor<? super JobExecutionContext, ? super Void> attributesExtractor) {
+    additionalExtractors.add(attributesExtractor);
+    return this;
+  }
+
+  /**
+   * Adds an additional {@link AttributesExtractor} to invoke to set attributes to instrumented
+   * items. The {@link AttributesExtractor} will be executed after all default extractors.
+   */
+  @CanIgnoreReturnValue
+  public QuartzTelemetryBuilder addAttributesExtractor(
       AttributesExtractor<? super JobExecutionContext, ? super Void> attributesExtractor) {
     additionalExtractors.add(attributesExtractor);
     return this;

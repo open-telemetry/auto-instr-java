@@ -8,7 +8,7 @@ package io.opentelemetry.instrumentation.ratpack.v1_7.server
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
 import io.opentelemetry.context.propagation.ContextPropagators
-import io.opentelemetry.instrumentation.ratpack.v1_7.RatpackTelemetry
+import io.opentelemetry.instrumentation.ratpack.v1_7.RatpackServerTelemetry
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import io.opentelemetry.sdk.trace.SdkTracerProvider
@@ -32,7 +32,7 @@ class RatpackServerTest extends Specification {
     .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
     .setTracerProvider(tracerProvider).build()
 
-  def telemetry = RatpackTelemetry.create(openTelemetry)
+  def telemetry = RatpackServerTelemetry.create(openTelemetry)
 
   def cleanup() {
     spanExporter.reset()
@@ -41,7 +41,7 @@ class RatpackServerTest extends Specification {
   def "add span on handlers"() {
     given:
     def app = EmbeddedApp.of { spec ->
-      spec.registry { Registry.of { telemetry.configureServerRegistry(it) } }
+      spec.registry { Registry.of { telemetry.configureRegistry(it) } }
       spec.handlers { chain ->
         chain.get("foo") { ctx -> ctx.render("hi-foo") }
       }
@@ -67,7 +67,7 @@ class RatpackServerTest extends Specification {
   def "propagate trace with instrumented async operations"() {
     expect:
     def app = EmbeddedApp.of { spec ->
-      spec.registry { Registry.of { telemetry.configureServerRegistry(it) } }
+      spec.registry { Registry.of { telemetry.configureRegistry(it) } }
       spec.handlers { chain ->
         chain.get("foo") { ctx ->
           ctx.render("hi-foo")
@@ -106,7 +106,7 @@ class RatpackServerTest extends Specification {
   def "propagate trace with instrumented async concurrent operations"() {
     expect:
     def app = EmbeddedApp.of { spec ->
-      spec.registry { Registry.of { telemetry.configureServerRegistry(it) } }
+      spec.registry { Registry.of { telemetry.configureRegistry(it) } }
       spec.handlers { chain ->
         chain.get("bar") { ctx ->
           ctx.render("hi-bar")

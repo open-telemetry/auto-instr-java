@@ -15,6 +15,7 @@ import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.MessageHeaders;
 import org.apache.hc.core5.http.ProtocolVersion;
 
+@Deprecated
 enum ApacheHttpClient5HttpAttributesGetter
     implements HttpClientAttributesGetter<ApacheHttpClient5Request, HttpResponse> {
   INSTANCE;

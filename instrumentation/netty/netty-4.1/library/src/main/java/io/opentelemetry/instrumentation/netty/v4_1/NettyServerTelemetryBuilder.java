@@ -9,17 +9,24 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import io.netty.handler.codec.http.HttpResponse;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.incubator.builder.internal.DefaultHttpServerInstrumenterBuilder;
+import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor;
+import io.opentelemetry.instrumentation.api.instrumenter.SpanStatusExtractor;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpServerAttributesExtractorBuilder;
+import io.opentelemetry.instrumentation.api.semconv.http.HttpServerTelemetryBuilder;
 import io.opentelemetry.instrumentation.netty.v4.common.HttpRequestAndChannel;
 import io.opentelemetry.instrumentation.netty.v4.common.internal.server.HttpRequestHeadersGetter;
 import io.opentelemetry.instrumentation.netty.v4.common.internal.server.NettyHttpServerAttributesGetter;
+import io.opentelemetry.instrumentation.netty.v4_1.internal.Experimental;
 import io.opentelemetry.instrumentation.netty.v4_1.internal.ProtocolEventHandler;
 import io.opentelemetry.instrumentation.netty.v4_1.internal.server.NettyServerInstrumenterBuilderUtil;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 /** A builder of {@link NettyServerTelemetry}. */
-public final class NettyServerTelemetryBuilder {
+public final class NettyServerTelemetryBuilder
+    implements HttpServerTelemetryBuilder<HttpRequestAndChannel, HttpResponse> {
 
   private final DefaultHttpServerInstrumenterBuilder<HttpRequestAndChannel, HttpResponse> builder;
 
@@ -39,6 +46,31 @@ public final class NettyServerTelemetryBuilder {
             HttpRequestHeadersGetter.INSTANCE);
   }
 
+  @Override
+  public NettyServerTelemetryBuilder addAttributesExtractor(
+      AttributesExtractor<HttpRequestAndChannel, HttpResponse> attributesExtractor) {
+    builder.addAttributesExtractor(attributesExtractor);
+    return this;
+  }
+
+  @Override
+  public NettyServerTelemetryBuilder setSpanNameExtractor(
+      Function<SpanNameExtractor<HttpRequestAndChannel>, SpanNameExtractor<HttpRequestAndChannel>>
+          spanNameExtractorTransformer) {
+    builder.setSpanNameExtractor(spanNameExtractorTransformer);
+    return this;
+  }
+
+  @Override
+  public NettyServerTelemetryBuilder setStatusExtractor(
+      Function<
+              SpanStatusExtractor<HttpRequestAndChannel, HttpResponse>,
+              SpanStatusExtractor<HttpRequestAndChannel, HttpResponse>>
+          statusExtractorTransformer) {
+    builder.setStatusExtractor(statusExtractorTransformer);
+    return this;
+  }
+
   /**
    * Configures emission of experimental events.
    *
@@ -56,6 +88,7 @@ public final class NettyServerTelemetryBuilder {
    *
    * @param capturedRequestHeaders A list of HTTP header names.
    */
+  @Override
   @CanIgnoreReturnValue
   public NettyServerTelemetryBuilder setCapturedRequestHeaders(
       List<String> capturedRequestHeaders) {
@@ -68,6 +101,7 @@ public final class NettyServerTelemetryBuilder {
    *
    * @param capturedResponseHeaders A list of HTTP header names.
    */
+  @Override
   @CanIgnoreReturnValue
   public NettyServerTelemetryBuilder setCapturedResponseHeaders(
       List<String> capturedResponseHeaders) {
@@ -88,6 +122,7 @@ public final class NettyServerTelemetryBuilder {
    * @param knownMethods A set of recognized HTTP request methods.
    * @see HttpServerAttributesExtractorBuilder#setKnownMethods(Set)
    */
+  @Override
   @CanIgnoreReturnValue
   public NettyServerTelemetryBuilder setKnownMethods(Set<String> knownMethods) {
     builder.setKnownMethods(knownMethods);
@@ -99,7 +134,10 @@ public final class NettyServerTelemetryBuilder {
    *
    * @param emitExperimentalHttpServerMetrics {@code true} if the experimental HTTP server metrics
    *     are to be emitted.
+   * @deprecated Use {@link Experimental#setEmitExperimentalTelemetry(NettyServerTelemetryBuilder,
+   *     boolean)} instead.
    */
+  @Deprecated
   @CanIgnoreReturnValue
   public NettyServerTelemetryBuilder setEmitExperimentalHttpServerMetrics(
       boolean emitExperimentalHttpServerMetrics) {
@@ -108,6 +146,7 @@ public final class NettyServerTelemetryBuilder {
   }
 
   /** Returns a new {@link NettyServerTelemetry} with the given configuration. */
+  @Override
   public NettyServerTelemetry build() {
     return new NettyServerTelemetry(
         builder.build(),

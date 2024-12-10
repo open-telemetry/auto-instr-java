@@ -10,7 +10,8 @@ import com.linecorp.armeria.common.logging.RequestLog;
 import com.linecorp.armeria.server.ServiceRequestContext;
 import io.opentelemetry.instrumentation.api.incubator.builder.internal.DefaultHttpClientInstrumenterBuilder;
 import io.opentelemetry.instrumentation.api.incubator.builder.internal.DefaultHttpServerInstrumenterBuilder;
-import io.opentelemetry.instrumentation.armeria.v1_3.ArmeriaTelemetryBuilder;
+import io.opentelemetry.instrumentation.armeria.v1_3.ArmeriaClientTelemetryBuilder;
+import io.opentelemetry.instrumentation.armeria.v1_3.ArmeriaServerTelemetryBuilder;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
@@ -23,19 +24,19 @@ public class ArmeriaInstrumenterBuilderUtil {
 
   @Nullable
   private static Function<
-          ArmeriaTelemetryBuilder,
+          ArmeriaClientTelemetryBuilder,
           DefaultHttpClientInstrumenterBuilder<ClientRequestContext, RequestLog>>
       clientBuilderExtractor;
 
   @Nullable
   private static Function<
-          ArmeriaTelemetryBuilder,
+          ArmeriaServerTelemetryBuilder,
           DefaultHttpServerInstrumenterBuilder<ServiceRequestContext, RequestLog>>
       serverBuilderExtractor;
 
   @Nullable
   public static Function<
-          ArmeriaTelemetryBuilder,
+          ArmeriaClientTelemetryBuilder,
           DefaultHttpClientInstrumenterBuilder<ClientRequestContext, RequestLog>>
       getClientBuilderExtractor() {
     return clientBuilderExtractor;
@@ -43,7 +44,7 @@ public class ArmeriaInstrumenterBuilderUtil {
 
   public static void setClientBuilderExtractor(
       Function<
-              ArmeriaTelemetryBuilder,
+              ArmeriaClientTelemetryBuilder,
               DefaultHttpClientInstrumenterBuilder<ClientRequestContext, RequestLog>>
           clientBuilderExtractor) {
     ArmeriaInstrumenterBuilderUtil.clientBuilderExtractor = clientBuilderExtractor;
@@ -51,7 +52,7 @@ public class ArmeriaInstrumenterBuilderUtil {
 
   @Nullable
   public static Function<
-          ArmeriaTelemetryBuilder,
+          ArmeriaServerTelemetryBuilder,
           DefaultHttpServerInstrumenterBuilder<ServiceRequestContext, RequestLog>>
       getServerBuilderExtractor() {
     return serverBuilderExtractor;
@@ -59,7 +60,7 @@ public class ArmeriaInstrumenterBuilderUtil {
 
   public static void setServerBuilderExtractor(
       Function<
-              ArmeriaTelemetryBuilder,
+              ArmeriaServerTelemetryBuilder,
               DefaultHttpServerInstrumenterBuilder<ServiceRequestContext, RequestLog>>
           serverBuilderExtractor) {
     ArmeriaInstrumenterBuilderUtil.serverBuilderExtractor = serverBuilderExtractor;
