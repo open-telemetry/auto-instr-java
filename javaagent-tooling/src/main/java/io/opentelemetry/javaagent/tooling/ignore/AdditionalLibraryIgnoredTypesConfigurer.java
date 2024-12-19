@@ -253,7 +253,8 @@ public class AdditionalLibraryIgnoredTypesConfigurer implements IgnoredTypesConf
         // We instrument Runnable there
         .allowClass("com.google.inject.internal.AbstractBindingProcessor$")
         .allowClass("com.google.inject.internal.BytecodeGen$")
-        .allowClass("com.google.inject.internal.cglib.core.internal.$LoadingCache$");
+        .allowClass("com.google.inject.internal.cglib.core.internal.$LoadingCache$")
+        .allowClass("com.google.inject.internal.aop.ChildClassDefiner$ChildLoader");
 
     builder.ignoreClass("com.google.api.").allowClass("com.google.api.client.http.HttpRequest");
 
