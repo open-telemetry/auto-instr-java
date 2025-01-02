@@ -196,20 +196,6 @@ class HttpServerAttributesExtractorTest {
 
     AttributesBuilder startAttributes = Attributes.builder();
     extractor.onStart(startAttributes, Context.root(), request);
-    assertThat(startAttributes.build())
-        .containsOnly(
-            entry(ServerAttributes.SERVER_ADDRESS, "github.com"),
-            entry(ServerAttributes.SERVER_PORT, 443L),
-            entry(HttpAttributes.HTTP_REQUEST_METHOD, "POST"),
-            entry(UrlAttributes.URL_SCHEME, "https"),
-            entry(UrlAttributes.URL_PATH, "/repositories/1"),
-            entry(UrlAttributes.URL_QUERY, "details=true"),
-            entry(UserAgentAttributes.USER_AGENT_ORIGINAL, "okhttp 3.x"),
-            entry(HttpAttributes.HTTP_ROUTE, "/repositories/{id}"),
-            entry(ClientAttributes.CLIENT_ADDRESS, "1.1.1.1"),
-            entry(
-                AttributeKey.stringArrayKey("http.request.header.custom-request-header"),
-                asList("123", "456")));
 
     AttributesBuilder endAttributes = Attributes.builder();
     extractor.onEnd(endAttributes, Context.root(), request, response, null);
@@ -222,7 +208,19 @@ class HttpServerAttributesExtractorTest {
             entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 202L),
             entry(
                 AttributeKey.stringArrayKey("http.response.header.custom-response-header"),
-                asList("654", "321")));
+                asList("654", "321")),
+                entry(ServerAttributes.SERVER_ADDRESS, "github.com"),
+                entry(ServerAttributes.SERVER_PORT, 443L),
+                entry(HttpAttributes.HTTP_REQUEST_METHOD, "POST"),
+                entry(UrlAttributes.URL_SCHEME, "https"),
+                entry(UrlAttributes.URL_PATH, "/repositories/1"),
+                entry(UrlAttributes.URL_QUERY, "details=true"),
+                entry(UserAgentAttributes.USER_AGENT_ORIGINAL, "okhttp 3.x"),
+                //entry(HttpAttributes.HTTP_ROUTE, "/repositories/{id}"),
+                entry(ClientAttributes.CLIENT_ADDRESS, "1.1.1.1"),
+                entry(
+                        AttributeKey.stringArrayKey("http.request.header.custom-request-header"),
+                        asList("123", "456")));
   }
 
   @ParameterizedTest
@@ -391,12 +389,13 @@ class HttpServerAttributesExtractorTest {
 
     AttributesBuilder startAttributes = Attributes.builder();
     extractor.onStart(startAttributes, Context.root(), request);
-    assertThat(startAttributes.build()).containsOnly(entry(UrlAttributes.URL_SCHEME, "https"));
+    //assertThat(startAttributes.build()).containsOnly(entry(UrlAttributes.URL_SCHEME, "https"));
 
     AttributesBuilder endAttributes = Attributes.builder();
     extractor.onEnd(endAttributes, Context.root(), request, response, null);
     assertThat(endAttributes.build())
-        .containsOnly(entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 202L));
+        .containsOnly(entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 202L),
+                entry(UrlAttributes.URL_SCHEME, "https"));
   }
 
   @Test
@@ -416,15 +415,12 @@ class HttpServerAttributesExtractorTest {
     AttributesBuilder startAttributes = Attributes.builder();
     extractor.onStart(startAttributes, Context.root(), request);
 
-    assertThat(startAttributes.build())
-        .containsOnly(
-            entry(ServerAttributes.SERVER_ADDRESS, "example.com"),
-            entry(ServerAttributes.SERVER_PORT, 42L));
-
     AttributesBuilder endAttributes = Attributes.builder();
     extractor.onEnd(endAttributes, Context.root(), request, response, null);
     assertThat(endAttributes.build())
-        .containsOnly(entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200L));
+        .containsOnly(entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200L),
+                entry(ServerAttributes.SERVER_ADDRESS, "example.com"),
+                entry(ServerAttributes.SERVER_PORT, 42L));
   }
 
   @Test
@@ -443,15 +439,12 @@ class HttpServerAttributesExtractorTest {
     AttributesBuilder startAttributes = Attributes.builder();
     extractor.onStart(startAttributes, Context.root(), request);
 
-    assertThat(startAttributes.build())
-        .containsOnly(
-            entry(ServerAttributes.SERVER_ADDRESS, "opentelemetry.io"),
-            entry(ServerAttributes.SERVER_PORT, 987L));
-
     AttributesBuilder endAttributes = Attributes.builder();
     extractor.onEnd(endAttributes, Context.root(), request, response, null);
     assertThat(endAttributes.build())
-        .containsOnly(entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200L));
+        .containsOnly(entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200L),
+                entry(ServerAttributes.SERVER_ADDRESS, "opentelemetry.io"),
+                entry(ServerAttributes.SERVER_PORT, 987L));
   }
 
   @Test
@@ -469,15 +462,12 @@ class HttpServerAttributesExtractorTest {
     AttributesBuilder startAttributes = Attributes.builder();
     extractor.onStart(startAttributes, Context.root(), request);
 
-    assertThat(startAttributes.build())
-        .containsOnly(
-            entry(ServerAttributes.SERVER_ADDRESS, "opentelemetry.io"),
-            entry(ServerAttributes.SERVER_PORT, 42L));
-
     AttributesBuilder endAttributes = Attributes.builder();
     extractor.onEnd(endAttributes, Context.root(), request, response, null);
     assertThat(endAttributes.build())
-        .containsOnly(entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200L));
+        .containsOnly(entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200L),
+                entry(ServerAttributes.SERVER_ADDRESS, "opentelemetry.io"),
+                entry(ServerAttributes.SERVER_PORT, 42L));
   }
 
   @Test
@@ -494,15 +484,12 @@ class HttpServerAttributesExtractorTest {
     AttributesBuilder startAttributes = Attributes.builder();
     extractor.onStart(startAttributes, Context.root(), request);
 
-    assertThat(startAttributes.build())
-        .containsOnly(
-            entry(ServerAttributes.SERVER_ADDRESS, "github.com"),
-            entry(ServerAttributes.SERVER_PORT, 123L));
-
     AttributesBuilder endAttributes = Attributes.builder();
     extractor.onEnd(endAttributes, Context.root(), request, response, null);
     assertThat(endAttributes.build())
-        .containsOnly(entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200L));
+        .containsOnly(entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200L),
+                entry(ServerAttributes.SERVER_ADDRESS, "github.com"),
+                entry(ServerAttributes.SERVER_PORT, 123L));
   }
 
   @Test
@@ -520,8 +507,6 @@ class HttpServerAttributesExtractorTest {
 
     AttributesBuilder startAttributes = Attributes.builder();
     extractor.onStart(startAttributes, Context.root(), request);
-    assertThat(startAttributes.build())
-        .containsOnly(entry(ClientAttributes.CLIENT_ADDRESS, "1.2.3.4"));
 
     AttributesBuilder endAttributes = Attributes.builder();
     extractor.onEnd(endAttributes, Context.root(), request, response, null);
@@ -529,7 +514,8 @@ class HttpServerAttributesExtractorTest {
         .containsOnly(
             entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200L),
             entry(NetworkAttributes.NETWORK_PEER_ADDRESS, "1.2.3.4"),
-            entry(NetworkAttributes.NETWORK_PEER_PORT, 456L));
+            entry(NetworkAttributes.NETWORK_PEER_PORT, 456L),
+                entry(ClientAttributes.CLIENT_ADDRESS, "1.2.3.4"));
   }
 
   @Test

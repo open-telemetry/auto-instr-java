@@ -51,7 +51,10 @@ class HttpClientMetricsTest {
 
     Attributes responseAttributes =
         Attributes.builder()
-            .put(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200)
+                .put(HttpAttributes.HTTP_REQUEST_METHOD, "GET")
+                .put(ServerAttributes.SERVER_PORT, 1234)
+                .put(ServerAttributes.SERVER_ADDRESS, "localhost")
+                .put(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200)
             .put(ErrorAttributes.ERROR_TYPE, "400")
             .put(HttpIncubatingAttributes.HTTP_REQUEST_BODY_SIZE, 100)
             .put(HttpIncubatingAttributes.HTTP_RESPONSE_BODY_SIZE, 200)

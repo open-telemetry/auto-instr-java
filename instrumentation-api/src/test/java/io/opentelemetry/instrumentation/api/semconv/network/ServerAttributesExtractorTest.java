@@ -47,14 +47,14 @@ class ServerAttributesExtractorTest {
         ServerAttributesExtractor.create(new TestServerAttributesGetter());
 
     AttributesBuilder startAttributes = Attributes.builder();
-    extractor.onStart(startAttributes, Context.root(), request);
+    extractor.onEnd(startAttributes, Context.root(), request, null, null);
     assertThat(startAttributes.build())
         .containsOnly(
             entry(ServerAttributes.SERVER_ADDRESS, "opentelemetry.io"),
             entry(ServerAttributes.SERVER_PORT, 80L));
 
     AttributesBuilder endAttributes = Attributes.builder();
-    extractor.onEnd(endAttributes, Context.root(), request, null, null);
+    extractor.onStart(endAttributes, Context.root(), request);
     assertThat(endAttributes.build()).isEmpty();
   }
 
@@ -82,7 +82,7 @@ class ServerAttributesExtractorTest {
         ServerAttributesExtractor.create(new TestServerAttributesGetter());
 
     AttributesBuilder startAttributes = Attributes.builder();
-    extractor.onStart(startAttributes, Context.root(), request);
+    extractor.onEnd(startAttributes, Context.root(), request, null, null);
     assertThat(startAttributes.build())
         .containsOnly(entry(ServerAttributes.SERVER_ADDRESS, "opentelemetry.io"));
   }

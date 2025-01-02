@@ -57,7 +57,15 @@ abstract class HttpCommonAttributesExtractor<
   }
 
   @Override
-  public void onStart(AttributesBuilder attributes, Context parentContext, REQUEST request) {
+  public void onStart(AttributesBuilder attributes, Context parentContext, REQUEST request) {}
+
+  @Override
+  public void onEnd(
+      AttributesBuilder attributes,
+      Context context,
+      REQUEST request,
+      @Nullable RESPONSE response,
+      @Nullable Throwable error) {
     String method = getter.getHttpRequestMethod(request);
     if (method == null || knownMethods.contains(method)) {
       internalSet(attributes, HttpAttributes.HTTP_REQUEST_METHOD, method);
@@ -72,15 +80,6 @@ abstract class HttpCommonAttributesExtractor<
         internalSet(attributes, requestAttributeKey(name), values);
       }
     }
-  }
-
-  @Override
-  public void onEnd(
-      AttributesBuilder attributes,
-      Context context,
-      REQUEST request,
-      @Nullable RESPONSE response,
-      @Nullable Throwable error) {
 
     Integer statusCode = null;
     if (response != null) {

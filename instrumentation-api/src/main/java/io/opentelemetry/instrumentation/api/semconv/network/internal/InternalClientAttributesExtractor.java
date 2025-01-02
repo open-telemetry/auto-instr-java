@@ -25,7 +25,7 @@ public final class InternalClientAttributesExtractor<REQUEST> {
     this.capturePort = capturePort;
   }
 
-  public void onStart(AttributesBuilder attributes, REQUEST request) {
+  public void onEnd(AttributesBuilder attributes, REQUEST request) {
     AddressAndPort clientAddressAndPort = addressAndPortExtractor.extract(request);
 
     if (clientAddressAndPort.address != null) {

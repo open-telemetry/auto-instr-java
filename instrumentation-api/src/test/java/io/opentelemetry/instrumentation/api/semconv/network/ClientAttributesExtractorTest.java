@@ -47,14 +47,14 @@ class ClientAttributesExtractorTest {
         ClientAttributesExtractor.create(new TestClientAttributesGetter());
 
     AttributesBuilder startAttributes = Attributes.builder();
-    extractor.onStart(startAttributes, Context.root(), request);
+    extractor.onEnd(startAttributes, Context.root(), request, null, null);
     assertThat(startAttributes.build())
         .containsOnly(
             entry(ClientAttributes.CLIENT_ADDRESS, "opentelemetry.io"),
             entry(ClientAttributes.CLIENT_PORT, 80L));
 
     AttributesBuilder endAttributes = Attributes.builder();
-    extractor.onEnd(endAttributes, Context.root(), request, null, null);
+    extractor.onStart(endAttributes, Context.root(), request);
     assertThat(endAttributes.build()).isEmpty();
   }
 

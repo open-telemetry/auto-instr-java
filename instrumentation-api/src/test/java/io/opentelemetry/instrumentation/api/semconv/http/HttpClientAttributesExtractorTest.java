@@ -169,28 +169,26 @@ class HttpClientAttributesExtractorTest {
 
     AttributesBuilder startAttributes = Attributes.builder();
     extractor.onStart(startAttributes, Context.root(), request);
-    assertThat(startAttributes.build())
-        .containsOnly(
-            entry(HttpAttributes.HTTP_REQUEST_METHOD, "POST"),
-            entry(UrlAttributes.URL_FULL, "http://github.com"),
-            entry(
-                AttributeKey.stringArrayKey("http.request.header.custom-request-header"),
-                asList("123", "456")),
-            entry(ServerAttributes.SERVER_ADDRESS, "github.com"),
-            entry(ServerAttributes.SERVER_PORT, 80L),
-            entry(HttpAttributes.HTTP_REQUEST_RESEND_COUNT, 2L));
 
     AttributesBuilder endAttributes = Attributes.builder();
     extractor.onEnd(endAttributes, Context.root(), request, response, null);
     assertThat(endAttributes.build())
-        .containsOnly(
-            entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 202L),
-            entry(
-                AttributeKey.stringArrayKey("http.response.header.custom-response-header"),
-                asList("654", "321")),
-            entry(NetworkAttributes.NETWORK_PROTOCOL_VERSION, "1.1"),
-            entry(NetworkAttributes.NETWORK_PEER_ADDRESS, "4.3.2.1"),
-            entry(NetworkAttributes.NETWORK_PEER_PORT, 456L));
+            .containsOnly(
+                    entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 202L),
+                    entry(
+                            AttributeKey.stringArrayKey("http.response.header.custom-response-header"),
+                            asList("654", "321")),
+                    entry(NetworkAttributes.NETWORK_PROTOCOL_VERSION, "1.1"),
+                    entry(NetworkAttributes.NETWORK_PEER_ADDRESS, "4.3.2.1"),
+                    entry(HttpAttributes.HTTP_REQUEST_METHOD, "POST"),
+                    entry(UrlAttributes.URL_FULL, "http://github.com"),
+                    entry(
+                            AttributeKey.stringArrayKey("http.request.header.custom-request-header"),
+                            asList("123", "456")),
+                    entry(ServerAttributes.SERVER_ADDRESS, "github.com"),
+                    entry(ServerAttributes.SERVER_PORT, 80L),
+                    entry(HttpAttributes.HTTP_REQUEST_RESEND_COUNT, 2L),
+                    entry(NetworkAttributes.NETWORK_PEER_PORT, 456L));
   }
 
   @ParameterizedTest
@@ -354,19 +352,17 @@ class HttpClientAttributesExtractorTest {
     response.put("statusCode", "200");
 
     AttributesExtractor<Map<String, String>, Map<String, String>> extractor =
-        HttpClientAttributesExtractor.create(new TestHttpClientAttributesGetter());
+            HttpClientAttributesExtractor.create(new TestHttpClientAttributesGetter());
 
     AttributesBuilder startAttributes = Attributes.builder();
     extractor.onStart(startAttributes, Context.root(), request);
-    assertThat(startAttributes.build())
-        .containsOnly(
-            entry(ServerAttributes.SERVER_ADDRESS, "github.com"),
-            entry(ServerAttributes.SERVER_PORT, 123L));
 
     AttributesBuilder endAttributes = Attributes.builder();
     extractor.onEnd(endAttributes, Context.root(), request, response, null);
     assertThat(endAttributes.build())
-        .containsOnly(entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200L));
+            .containsOnly(entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200L),
+                    entry(ServerAttributes.SERVER_ADDRESS, "github.com"),
+                    entry(ServerAttributes.SERVER_PORT, 123L));
   }
 
   @Test
@@ -381,22 +377,20 @@ class HttpClientAttributesExtractorTest {
     response.put("statusCode", "200");
 
     AttributesExtractor<Map<String, String>, Map<String, String>> extractor =
-        HttpClientAttributesExtractor.create(new TestHttpClientAttributesGetter());
+            HttpClientAttributesExtractor.create(new TestHttpClientAttributesGetter());
 
     AttributesBuilder startAttributes = Attributes.builder();
     extractor.onStart(startAttributes, Context.root(), request);
-    assertThat(startAttributes.build())
-        .containsOnly(
-            entry(ServerAttributes.SERVER_ADDRESS, "1.2.3.4"),
-            entry(ServerAttributes.SERVER_PORT, 123L));
 
     AttributesBuilder endAttributes = Attributes.builder();
     extractor.onEnd(endAttributes, Context.root(), request, response, null);
     assertThat(endAttributes.build())
-        .containsOnly(
-            entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200L),
-            entry(NetworkAttributes.NETWORK_PEER_ADDRESS, "1.2.3.4"),
-            entry(NetworkAttributes.NETWORK_PEER_PORT, 456L));
+            .containsOnly(
+                    entry(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200L),
+                    entry(NetworkAttributes.NETWORK_PEER_ADDRESS, "1.2.3.4"),
+                    entry(NetworkAttributes.NETWORK_PEER_PORT, 456L),
+                    entry(ServerAttributes.SERVER_ADDRESS, "1.2.3.4"),
+                    entry(ServerAttributes.SERVER_PORT, 123L));
   }
 
   @Test

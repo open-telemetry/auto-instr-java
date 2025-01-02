@@ -70,16 +70,6 @@ public final class HttpClientAttributesExtractor<REQUEST, RESPONSE>
   @Override
   public void onStart(AttributesBuilder attributes, Context parentContext, REQUEST request) {
     super.onStart(attributes, parentContext, request);
-
-    internalServerExtractor.onStart(attributes, request);
-
-    String fullUrl = stripSensitiveData(getter.getUrlFull(request));
-    internalSet(attributes, UrlAttributes.URL_FULL, fullUrl);
-
-    int resendCount = resendCountIncrementer.applyAsInt(parentContext);
-    if (resendCount > 0) {
-      attributes.put(HttpAttributes.HTTP_REQUEST_RESEND_COUNT, resendCount);
-    }
   }
 
   @Override
@@ -90,7 +80,15 @@ public final class HttpClientAttributesExtractor<REQUEST, RESPONSE>
       @Nullable RESPONSE response,
       @Nullable Throwable error) {
     super.onEnd(attributes, context, request, response, error);
+    internalServerExtractor.onEnd(attributes, request);
 
+    String fullUrl = stripSensitiveData(getter.getUrlFull(request));
+    internalSet(attributes, UrlAttributes.URL_FULL, fullUrl);
+
+    int resendCount = resendCountIncrementer.applyAsInt(context);
+    if (resendCount > 0) {
+      attributes.put(HttpAttributes.HTTP_REQUEST_RESEND_COUNT, resendCount);
+    }
     internalNetworkExtractor.onEnd(attributes, request, response);
   }
 

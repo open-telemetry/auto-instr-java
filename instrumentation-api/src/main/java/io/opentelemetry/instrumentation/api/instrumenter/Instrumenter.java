@@ -250,6 +250,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
     if (operationListeners.length != 0) {
       long endNanos = getNanos(endTime);
       for (int i = operationListeners.length - 1; i >= 0; i--) {
+
         operationListeners[i].onEnd(context, attributes, endNanos);
       }
     }

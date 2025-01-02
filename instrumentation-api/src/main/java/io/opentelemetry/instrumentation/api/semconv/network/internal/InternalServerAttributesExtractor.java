@@ -23,7 +23,7 @@ public final class InternalServerAttributesExtractor<REQUEST> {
     this.addressAndPortExtractor = addressAndPortExtractor;
   }
 
-  public void onStart(AttributesBuilder attributes, REQUEST request) {
+  public void onEnd(AttributesBuilder attributes, REQUEST request) {
     AddressAndPort serverAddressAndPort = addressAndPortExtractor.extract(request);
 
     if (serverAddressAndPort.address != null) {

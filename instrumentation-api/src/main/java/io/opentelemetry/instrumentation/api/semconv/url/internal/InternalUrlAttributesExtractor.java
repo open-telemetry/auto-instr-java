@@ -27,7 +27,7 @@ public final class InternalUrlAttributesExtractor<REQUEST> {
     this.alternateSchemeProvider = alternateSchemeProvider;
   }
 
-  public void onStart(AttributesBuilder attributes, REQUEST request) {
+  public void onEnd(AttributesBuilder attributes, REQUEST request) {
     String urlScheme = getUrlScheme(request);
     String urlPath = getter.getUrlPath(request);
     String urlQuery = getter.getUrlQuery(request);

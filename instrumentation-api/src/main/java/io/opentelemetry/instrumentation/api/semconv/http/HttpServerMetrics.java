@@ -78,9 +78,7 @@ public final class HttpServerMetrics implements OperationListener {
       return;
     }
 
-    Attributes attributes = state.startAttributes().toBuilder().putAll(endAttributes).build();
-
-    duration.record((endNanos - state.startTimeNanos()) / NANOS_PER_S, attributes, context);
+    duration.record((endNanos - state.startTimeNanos()) / NANOS_PER_S, endAttributes, context);
   }
 
   @AutoValue

@@ -73,9 +73,7 @@ public final class RpcServerMetrics implements OperationListener {
       return;
     }
     serverDurationHistogram.record(
-        (endNanos - state.startTimeNanos()) / NANOS_PER_MS,
-        state.startAttributes().toBuilder().putAll(endAttributes).build(),
-        context);
+        (endNanos - state.startTimeNanos()) / NANOS_PER_MS, endAttributes, context);
   }
 
   @AutoValue

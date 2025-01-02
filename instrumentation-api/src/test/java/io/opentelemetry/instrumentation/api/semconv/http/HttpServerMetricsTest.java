@@ -55,6 +55,10 @@ class HttpServerMetricsTest {
 
     Attributes responseAttributes =
         Attributes.builder()
+                .put(HttpAttributes.HTTP_REQUEST_METHOD, "GET")
+                .put(UrlAttributes.URL_SCHEME, "https")
+                .put(NetworkAttributes.NETWORK_PROTOCOL_NAME, "http")
+                .put(NetworkAttributes.NETWORK_PROTOCOL_VERSION, "2.0")
             .put(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200)
             .put(ErrorAttributes.ERROR_TYPE, "500")
             .put(HttpIncubatingAttributes.HTTP_REQUEST_BODY_SIZE, 100)
@@ -151,7 +155,9 @@ class HttpServerMetricsTest {
             .build();
 
     Attributes responseAttributes =
-        Attributes.builder().put(HttpAttributes.HTTP_ROUTE, "/test/{id}").build();
+        Attributes.builder()
+                .put(UrlAttributes.URL_SCHEME, "https")
+                .put(HttpAttributes.HTTP_ROUTE, "/test/{id}").build();
 
     Context parentContext = Context.root();
 

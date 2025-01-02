@@ -53,7 +53,7 @@ class UrlAttributesExtractorTest {
         UrlAttributesExtractor.create(new TestUrlAttributesGetter());
 
     AttributesBuilder startAttributes = Attributes.builder();
-    extractor.onStart(startAttributes, Context.root(), request);
+    extractor.onEnd(startAttributes, Context.root(), request, null, null);
     assertThat(startAttributes.build())
         .containsOnly(
             entry(UrlAttributes.URL_SCHEME, "https"),
@@ -61,7 +61,7 @@ class UrlAttributesExtractorTest {
             entry(UrlAttributes.URL_QUERY, "q=Java"));
 
     AttributesBuilder endAttributes = Attributes.builder();
-    extractor.onEnd(endAttributes, Context.root(), request, null, null);
+    extractor.onStart(endAttributes, Context.root(), request);
     assertThat(endAttributes.build()).isEmpty();
   }
 

@@ -76,13 +76,6 @@ public final class HttpServerAttributesExtractor<REQUEST, RESPONSE>
   @Override
   public void onStart(AttributesBuilder attributes, Context parentContext, REQUEST request) {
     super.onStart(attributes, parentContext, request);
-
-    internalUrlExtractor.onStart(attributes, request);
-    internalServerExtractor.onStart(attributes, request);
-    internalClientExtractor.onStart(attributes, request);
-
-    internalSet(attributes, HttpAttributes.HTTP_ROUTE, getter.getHttpRoute(request));
-    internalSet(attributes, UserAgentAttributes.USER_AGENT_ORIGINAL, userAgent(request));
   }
 
   @Override
@@ -94,7 +87,13 @@ public final class HttpServerAttributesExtractor<REQUEST, RESPONSE>
       @Nullable Throwable error) {
 
     super.onEnd(attributes, context, request, response, error);
+    internalSet(attributes, UserAgentAttributes.USER_AGENT_ORIGINAL, userAgent(request));
 
+    internalUrlExtractor.onEnd(attributes, request);
+    internalServerExtractor.onEnd(attributes, request);
+    internalClientExtractor.onEnd(attributes, request);
+
+    internalSet(attributes, HttpAttributes.HTTP_ROUTE, getter.getHttpRoute(request));
     internalNetworkExtractor.onEnd(attributes, request, response);
 
     internalSet(attributes, HttpAttributes.HTTP_ROUTE, httpRouteGetter.apply(context));
