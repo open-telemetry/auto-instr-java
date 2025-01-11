@@ -39,6 +39,7 @@ For more information, see the `extendedAgent` task in [build.gradle](https://git
 [DemoPropagator]: src/main/java/com/example/javaagent/DemoPropagator.java
 [DemoSampler]: src/main/java/com/example/javaagent/DemoSampler.java
 [DemoSpanProcessor]: src/main/java/com/example/javaagent/DemoSpanProcessor.java
+[DemoBaggageSpanProcessor]: src/main/java/com/example/javaagent/DemoBaggageSpanProcessor.java
 [DemoSpanExporter]: src/main/java/com/example/javaagent/DemoSpanExporter.java
 [DemoServlet3InstrumentationModule]: src/main/java/com/example/javaagent/instrumentation/DemoServlet3InstrumentationModule.java
 
@@ -47,6 +48,7 @@ For more information, see the `extendedAgent` task in [build.gradle](https://git
 - Custom `TextMapPropagator`: [DemoPropagator][DemoPropagator]
 - Custom `Sampler`: [DemoSampler][DemoSampler]
 - Custom `SpanProcessor`: [DemoSpanProcessor][DemoSpanProcessor]
+- Custom `SpanProcessor`: [DemoBaggageSpanProcessor][DemoBaggageSpanProcessor]
 - Custom `SpanExporter`: [DemoSpanExporter][DemoSpanExporter]
 - Additional instrumentation: [DemoServlet3InstrumentationModule][DemoServlet3InstrumentationModule]
 
