@@ -39,6 +39,20 @@ To run these tests locally, add `-PtestLatestDeps=true` to your existing `gradle
 
 Executing `./gradlew :instrumentation:<INSTRUMENTATION_NAME>:test --tests <TEST FILE NAME>` will run only the selected test.
 
+### Debugging tests
+
+If you have trouble debugging tests in IntelliJ IDEA (because the classpath is not correct),
+you can use remote debugging:
+
+1. Run the tests with the `--debug-jvm` flag.
+2. Create a new remote debug configuration in IntelliJ IDEA.
+
+This example shows how to debug a single test:
+
+```shell
+./gradlew :instrumentation:spring:spring-batch-3.0:javaagent:test --tests "io.opentelemetry.javaagent.instrumentation.spring.batch.v3_0.basic.JavaConfigBatchJobTest.shouldTraceTaskletJobStep" --debug-jvm
+```
+
 ### How to prevent linting and formatting warnings from failing tests
 
 During local development, you may want to ignore lint warnings when running tests.

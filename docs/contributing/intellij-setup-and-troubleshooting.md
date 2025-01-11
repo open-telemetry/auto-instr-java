@@ -41,6 +41,10 @@ For example, to load the modules for the Spring Boot autoconfigure instrumentati
 Install the [Kotlin executable](https://kotlinlang.org/docs/tutorials/command-line.html)
 if you don't have it already.
 
+## Debugging tests
+
+See [Debugging tests](running-tests.md#debugging-tests) for more information on debugging tests.
+
 ## Troubleshooting
 
 Occasionally, Intellij gets confused, maybe due to the number of modules in this project,
