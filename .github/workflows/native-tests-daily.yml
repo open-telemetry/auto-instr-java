@@ -8,6 +8,7 @@ on:
 
 jobs:
   graalvm-native-tests:
+    if: github.repository == 'open-telemetry/opentelemetry-java-instrumentation'
     uses: ./.github/workflows/reusable-native-tests.yml
     with:
       test-latest-deps: true

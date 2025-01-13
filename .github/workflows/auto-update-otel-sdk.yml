@@ -9,6 +9,7 @@ on:
 jobs:
   check-versions:
     runs-on: ubuntu-latest
+    if: github.repository == 'open-telemetry/opentelemetry-java-instrumentation'
     outputs:
       current-version: ${{ steps.check-versions.outputs.current-version }}
       latest-version: ${{ steps.check-versions.outputs.latest-version }}
@@ -48,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       needs.check-versions.outputs.current-version != needs.check-versions.outputs.latest-version &&
-      needs.check-versions.outputs.already-opened != 'true'
+      needs.check-versions.outputs.already-opened != 'true' && github.repository == 'open-telemetry/opentelemetry-java-instrumentation'
     needs:
       - check-versions
     steps:

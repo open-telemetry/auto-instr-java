@@ -8,11 +8,13 @@ on:
 
 jobs:
   common:
+    if: github.repository == 'open-telemetry/opentelemetry-java-instrumentation'
     uses: ./.github/workflows/build-common.yml
     with:
       max-test-retries: 0
 
   test-latest-deps:
+    if: github.repository == 'open-telemetry/opentelemetry-java-instrumentation'
     uses: ./.github/workflows/reusable-test-latest-deps.yml
     with:
       max-test-retries: 0
