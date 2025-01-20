@@ -7,6 +7,7 @@ package io.opentelemetry.instrumentation.runtimemetrics.java17;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.instrumentation.api.incubator.config.internal.InstrumentationConfig;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.Classes;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.Cpu;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.GarbageCollector;
@@ -88,6 +89,35 @@ public final class RuntimeMetricsBuilder {
   public RuntimeMetricsBuilder enableExperimentalJmxTelemetry() {
     enableExperimentalJmxTelemetry = true;
     return this;
+  }
+
+  public void startFromInstrumentationConfig(InstrumentationConfig config) {
+    /*
+    By default, don't use any JFR metrics. May change this once semantic conventions are updated.
+    If enabled, default to only the metrics not already covered by runtime-telemetry-java8
+    */
+    boolean defaultEnabled = config.getBoolean("otel.instrumentation.common.default-enabled", true);
+    if (config.getBoolean("otel.instrumentation.runtime-telemetry-java17.enable-all", false)) {
+      this.enableAllFeatures();
+    } else if (config.getBoolean("otel.instrumentation.runtime-telemetry-java17.enabled", false)) {
+      // default configuration
+    } else if (config.getBoolean(
+        "otel.instrumentation.runtime-telemetry.enabled", defaultEnabled)) {
+      // This only uses metrics gathered by JMX
+      this.disableAllFeatures();
+    } else {
+      // nothing is enabled
+      return;
+    }
+
+    if (config.getBoolean(
+        "otel.instrumentation.runtime-telemetry.emit-experimental-telemetry", false)) {
+      this.enableExperimentalJmxTelemetry();
+    }
+
+    RuntimeMetrics finalJfrTelemetry = this.build();
+    Thread cleanupTelemetry = new Thread(finalJfrTelemetry::close);
+    Runtime.getRuntime().addShutdownHook(cleanupTelemetry);
   }
 
   /** Build and start an {@link RuntimeMetrics} with the config from this builder. */
