@@ -16,7 +16,6 @@ public final class RuntimeMetricsBuilder {
 
   private final OpenTelemetry openTelemetry;
 
-  private boolean disableJmx = false;
   private boolean enableExperimentalJmxTelemetry = false;
 
   RuntimeMetricsBuilder(OpenTelemetry openTelemetry) {
@@ -34,7 +33,7 @@ public final class RuntimeMetricsBuilder {
   public RuntimeMetrics build() {
     List<AutoCloseable> observables =
         JmxRuntimeMetricsFactory.buildObservables(
-            openTelemetry, disableJmx, enableExperimentalJmxTelemetry);
+            openTelemetry, false, enableExperimentalJmxTelemetry);
     return new RuntimeMetrics(observables);
   }
 
