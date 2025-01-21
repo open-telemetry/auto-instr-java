@@ -7,7 +7,6 @@ package io.opentelemetry.instrumentation.javaagent.runtimemetrics.java17;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.runtimemetrics.java17.RuntimeMetrics;
 import io.opentelemetry.javaagent.bootstrap.internal.AgentInstrumentationConfig;
 import io.opentelemetry.javaagent.extension.AgentListener;
@@ -19,9 +18,7 @@ public class Java17RuntimeMetricsInstaller implements AgentListener {
 
   @Override
   public void afterAgent(AutoConfiguredOpenTelemetrySdk autoConfiguredSdk) {
-    OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
-
-    RuntimeMetrics.builder(openTelemetry)
+    RuntimeMetrics.builder(GlobalOpenTelemetry.get())
         .startFromInstrumentationConfig(AgentInstrumentationConfig.get());
   }
 }

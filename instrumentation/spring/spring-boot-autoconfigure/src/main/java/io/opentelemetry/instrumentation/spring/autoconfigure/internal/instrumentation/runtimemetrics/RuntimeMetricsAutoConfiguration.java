@@ -6,7 +6,6 @@
 package io.opentelemetry.instrumentation.spring.autoconfigure.internal.instrumentation.runtimemetrics;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.instrumentation.runtimemetrics.java17.RuntimeMetrics;
 import io.opentelemetry.instrumentation.spring.autoconfigure.internal.ConditionalOnEnabledInstrumentation;
 import io.opentelemetry.instrumentation.spring.autoconfigure.internal.properties.ConfigPropertiesBridge;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -23,26 +22,28 @@ import org.springframework.context.event.EventListener;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-@ConditionalOnEnabledInstrumentation(module = "runtime-telemetry-java17")
+@ConditionalOnEnabledInstrumentation(module = "runtime-telemetry")
 @Configuration
-public class Java17RuntimeMetricsAutoConfiguration {
+public class RuntimeMetricsAutoConfiguration {
 
   private static final Logger logger =
-      LoggerFactory.getLogger(Java17RuntimeMetricsAutoConfiguration.class);
+      LoggerFactory.getLogger(RuntimeMetricsAutoConfiguration.class);
 
   @EventListener
   public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
-    if (Double.parseDouble(System.getProperty("java.specification.version")) < 17) {
-      logger.debug(
-          "Java 17 runtime metrics instrumentation enabled but running on Java version < 17");
-      return;
-    }
-    logger.debug(
-        "Java 17 runtime metrics instrumentation enabled and running on Java version >= 17");
     ConfigurableApplicationContext applicationContext = event.getApplicationContext();
     OpenTelemetry openTelemetry = applicationContext.getBean(OpenTelemetry.class);
-    ConfigProperties configProperties = applicationContext.getBean(ConfigProperties.class);
-    RuntimeMetrics.builder(openTelemetry)
-        .startFromInstrumentationConfig(new ConfigPropertiesBridge(configProperties));
+    ConfigPropertiesBridge config =
+        new ConfigPropertiesBridge(applicationContext.getBean(ConfigProperties.class));
+
+    if (Double.parseDouble(System.getProperty("java.specification.version")) >= 17) {
+      logger.debug("Use runtime metrics instrumentation for Java 17+");
+      io.opentelemetry.instrumentation.runtimemetrics.java17.RuntimeMetrics.builder(openTelemetry)
+          .startFromInstrumentationConfig(config);
+    } else {
+      logger.debug("Use runtime metrics instrumentation for Java 8");
+      io.opentelemetry.instrumentation.runtimemetrics.java8.RuntimeMetrics.builder(openTelemetry)
+          .startFromInstrumentationConfig(config);
+    }
   }
 }

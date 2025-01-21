@@ -11,7 +11,7 @@ io.opentelemetry.instrumentation.spring.autoconfigure.internal.instrumentation.w
 io.opentelemetry.instrumentation.spring.autoconfigure.internal.instrumentation.webflux.SpringWebfluxInstrumentationAutoConfiguration,\
 io.opentelemetry.instrumentation.spring.autoconfigure.internal.instrumentation.webmvc.SpringWebMvc5InstrumentationAutoConfiguration,\
 io.opentelemetry.instrumentation.spring.autoconfigure.internal.instrumentation.scheduling.SpringSchedulingInstrumentationAutoConfiguration,\
-io.opentelemetry.instrumentation.spring.autoconfigure.internal.instrumentation.runtimemetrics.Java17RuntimeMetricsAutoConfiguration
+io.opentelemetry.instrumentation.spring.autoconfigure.internal.instrumentation.runtimemetrics.RuntimeMetricsAutoConfiguration
 
 org.springframework.context.ApplicationListener=\
 io.opentelemetry.instrumentation.spring.autoconfigure.internal.instrumentation.logging.LogbackAppenderApplicationListener
