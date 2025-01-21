@@ -14,6 +14,7 @@ import io.opentelemetry.instrumentation.runtimemetrics.java8.MemoryPools;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.Threads;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.ExperimentalBufferPools;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.ExperimentalCpu;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.ExperimentalFileDescriptor;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.ExperimentalMemoryPools;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -114,6 +115,7 @@ public final class RuntimeMetricsBuilder {
         observables.addAll(ExperimentalBufferPools.registerObservers(openTelemetry));
         observables.addAll(ExperimentalCpu.registerObservers(openTelemetry));
         observables.addAll(ExperimentalMemoryPools.registerObservers(openTelemetry));
+        observables.addAll(ExperimentalFileDescriptor.registerObservers(openTelemetry));
       }
       return observables;
     } catch (Exception e) {

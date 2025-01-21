@@ -15,6 +15,7 @@ import io.opentelemetry.instrumentation.runtimemetrics.java8.MemoryPools;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.Threads;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.ExperimentalBufferPools;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.ExperimentalCpu;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.ExperimentalFileDescriptor;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.ExperimentalMemoryPools;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.JmxRuntimeMetricsUtil;
 import io.opentelemetry.javaagent.extension.AgentListener;
@@ -50,6 +51,7 @@ public class Java8RuntimeMetricsInstaller implements AgentListener {
       observables.addAll(ExperimentalBufferPools.registerObservers(openTelemetry));
       observables.addAll(ExperimentalCpu.registerObservers(openTelemetry));
       observables.addAll(ExperimentalMemoryPools.registerObservers(openTelemetry));
+      observables.addAll(ExperimentalFileDescriptor.registerObservers(openTelemetry));
     }
 
     Thread cleanupTelemetry = new Thread(() -> JmxRuntimeMetricsUtil.closeObservers(observables));

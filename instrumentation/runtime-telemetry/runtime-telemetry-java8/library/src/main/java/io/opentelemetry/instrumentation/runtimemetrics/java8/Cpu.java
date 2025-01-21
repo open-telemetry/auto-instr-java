@@ -7,8 +7,8 @@ package io.opentelemetry.instrumentation.runtimemetrics.java8;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.CpuMethods;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.JmxRuntimeMetricsUtil;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.OperatingSystemMethods;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -48,8 +48,8 @@ public final class Cpu {
     return INSTANCE.registerObservers(
         openTelemetry,
         Runtime.getRuntime()::availableProcessors,
-        CpuMethods.processCpuTime(),
-        CpuMethods.processCpuUtilization());
+        OperatingSystemMethods.processCpuTime(),
+        OperatingSystemMethods.processCpuUtilization());
   }
 
   // Visible for testing
