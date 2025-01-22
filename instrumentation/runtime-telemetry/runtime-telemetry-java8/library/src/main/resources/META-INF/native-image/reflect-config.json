@@ -1,0 +1,10 @@
+[
+  {
+    "name": "com.sun.management.OperatingSystemMXBean",
+    "allPublicMethods": true
+  },
+  {
+    "name": "com.ibm.lang.management.OperatingSystemMXBean",
+    "allPublicMethods": true
+  }
+]
