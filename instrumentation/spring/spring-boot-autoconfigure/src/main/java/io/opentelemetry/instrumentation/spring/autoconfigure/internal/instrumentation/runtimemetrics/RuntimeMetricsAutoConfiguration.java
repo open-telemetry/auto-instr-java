@@ -9,6 +9,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.spring.autoconfigure.internal.ConditionalOnEnabledInstrumentation;
 import io.opentelemetry.instrumentation.spring.autoconfigure.internal.properties.ConfigPropertiesBridge;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -29,6 +30,15 @@ public class RuntimeMetricsAutoConfiguration {
   private static final Logger logger =
       LoggerFactory.getLogger(RuntimeMetricsAutoConfiguration.class);
 
+  private Runnable shutdownHook;
+
+  @PreDestroy
+  public void stopMetrics() {
+    if (shutdownHook != null) {
+      shutdownHook.run();
+    }
+  }
+
   @EventListener
   public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
     ConfigurableApplicationContext applicationContext = event.getApplicationContext();
@@ -39,10 +49,12 @@ public class RuntimeMetricsAutoConfiguration {
     if (Double.parseDouble(System.getProperty("java.specification.version")) >= 17) {
       logger.debug("Use runtime metrics instrumentation for Java 17+");
       io.opentelemetry.instrumentation.runtimemetrics.java17.RuntimeMetrics.builder(openTelemetry)
+          .setShutdownHook(runnable -> shutdownHook = runnable)
           .startFromInstrumentationConfig(config);
     } else {
       logger.debug("Use runtime metrics instrumentation for Java 8");
       io.opentelemetry.instrumentation.runtimemetrics.java8.RuntimeMetrics.builder(openTelemetry)
+          .setShutdownHook(runnable -> shutdownHook = runnable)
           .startFromInstrumentationConfig(config);
     }
   }

@@ -10,6 +10,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.incubator.config.internal.InstrumentationConfig;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.JmxRuntimeMetricsFactory;
 import java.util.List;
+import java.util.function.Consumer;
 
 /** Builder for {@link RuntimeMetrics}. */
 public final class RuntimeMetricsBuilder {
@@ -17,6 +18,10 @@ public final class RuntimeMetricsBuilder {
   private final OpenTelemetry openTelemetry;
 
   private boolean enableExperimentalJmxTelemetry = false;
+  private Consumer<Runnable> shutdownHook =
+      runnable -> {
+        Runtime.getRuntime().addShutdownHook(new Thread(runnable));
+      };
 
   RuntimeMetricsBuilder(OpenTelemetry openTelemetry) {
     this.openTelemetry = openTelemetry;
@@ -32,9 +37,15 @@ public final class RuntimeMetricsBuilder {
   /** Build and start an {@link RuntimeMetrics} with the config from this builder. */
   public RuntimeMetrics build() {
     List<AutoCloseable> observables =
-        JmxRuntimeMetricsFactory.buildObservables(
-            openTelemetry, false, enableExperimentalJmxTelemetry);
+        JmxRuntimeMetricsFactory.buildObservables(openTelemetry, enableExperimentalJmxTelemetry);
     return new RuntimeMetrics(observables);
+  }
+
+  /** Set a custom shutdown hook for the {@link RuntimeMetrics}. */
+  @CanIgnoreReturnValue
+  public RuntimeMetricsBuilder setShutdownHook(Consumer<Runnable> shutdownHook) {
+    this.shutdownHook = shutdownHook;
+    return this;
   }
 
   public void startFromInstrumentationConfig(InstrumentationConfig config) {
@@ -53,8 +64,7 @@ public final class RuntimeMetricsBuilder {
       this.enableExperimentalJmxTelemetry();
     }
 
-    RuntimeMetrics finalJfrTelemetry = this.build();
-    Thread cleanupTelemetry = new Thread(finalJfrTelemetry::close);
-    Runtime.getRuntime().addShutdownHook(cleanupTelemetry);
+    RuntimeMetrics runtimeMetrics = this.build();
+    shutdownHook.accept(runtimeMetrics::close);
   }
 }

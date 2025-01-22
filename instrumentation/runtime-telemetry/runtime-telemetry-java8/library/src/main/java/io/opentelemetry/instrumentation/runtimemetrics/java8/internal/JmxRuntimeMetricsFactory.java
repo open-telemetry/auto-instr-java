@@ -12,7 +12,6 @@ import io.opentelemetry.instrumentation.runtimemetrics.java8.GarbageCollector;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.MemoryPools;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.Threads;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -22,10 +21,7 @@ import java.util.List;
 public class JmxRuntimeMetricsFactory {
   @SuppressWarnings("CatchingUnchecked")
   public static List<AutoCloseable> buildObservables(
-      OpenTelemetry openTelemetry, boolean disableJmx, boolean enableExperimentalJmxTelemetry) {
-    if (disableJmx) {
-      return Collections.emptyList();
-    }
+      OpenTelemetry openTelemetry, boolean enableExperimentalJmxTelemetry) {
     try {
       // Set up metrics gathered by JMX
       List<AutoCloseable> observables = new ArrayList<>();

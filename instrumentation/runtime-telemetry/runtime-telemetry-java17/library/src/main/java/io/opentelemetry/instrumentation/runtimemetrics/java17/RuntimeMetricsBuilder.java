@@ -12,6 +12,7 @@ import io.opentelemetry.instrumentation.runtimemetrics.java8.internal.JmxRuntime
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 /** Builder for {@link RuntimeMetrics}. */
@@ -23,6 +24,10 @@ public final class RuntimeMetricsBuilder {
 
   private boolean disableJmx = false;
   private boolean enableExperimentalJmxTelemetry = false;
+  private Consumer<Runnable> shutdownHook =
+      runnable -> {
+        Runtime.getRuntime().addShutdownHook(new Thread(runnable));
+      };
 
   RuntimeMetricsBuilder(OpenTelemetry openTelemetry) {
     this.openTelemetry = openTelemetry;
@@ -82,6 +87,13 @@ public final class RuntimeMetricsBuilder {
     return this;
   }
 
+  /** Set a custom shutdown hook for the {@link RuntimeMetrics}. */
+  @CanIgnoreReturnValue
+  public RuntimeMetricsBuilder setShutdownHook(Consumer<Runnable> shutdownHook) {
+    this.shutdownHook = shutdownHook;
+    return this;
+  }
+
   public void startFromInstrumentationConfig(InstrumentationConfig config) {
     /*
     By default, don't use any JFR metrics. May change this once semantic conventions are updated.
@@ -106,16 +118,17 @@ public final class RuntimeMetricsBuilder {
       this.enableExperimentalJmxTelemetry();
     }
 
-    RuntimeMetrics finalJfrTelemetry = this.build();
-    Thread cleanupTelemetry = new Thread(finalJfrTelemetry::close);
-    Runtime.getRuntime().addShutdownHook(cleanupTelemetry);
+    RuntimeMetrics runtimeMetrics = this.build();
+    shutdownHook.accept(runtimeMetrics::close);
   }
 
   /** Build and start an {@link RuntimeMetrics} with the config from this builder. */
   public RuntimeMetrics build() {
     List<AutoCloseable> observables =
-        JmxRuntimeMetricsFactory.buildObservables(
-            openTelemetry, disableJmx, enableExperimentalJmxTelemetry);
+        disableJmx
+            ? List.of()
+            : JmxRuntimeMetricsFactory.buildObservables(
+                openTelemetry, enableExperimentalJmxTelemetry);
     RuntimeMetrics.JfrRuntimeMetrics jfrRuntimeMetrics = buildJfrMetrics();
     return new RuntimeMetrics(openTelemetry, observables, jfrRuntimeMetrics);
   }
