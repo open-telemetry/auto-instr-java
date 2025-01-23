@@ -24,7 +24,10 @@ import org.springframework.context.annotation.Configuration;
 // configure after the SimpleMeterRegistry has initialized; it is normally the last MeterRegistry
 // implementation to be configured, as it's used as a fallback
 // the OTel registry should be added in addition to that fallback and not replace it
-@AutoConfigureAfter({SimpleMetricsExportAutoConfiguration.class, PrometheusMetricsExportAutoConfiguration.class})
+@AutoConfigureAfter({
+  SimpleMetricsExportAutoConfiguration.class,
+  PrometheusMetricsExportAutoConfiguration.class
+})
 @ConditionalOnBean(Clock.class)
 @ConditionalOnClass(MeterRegistry.class)
 public class OpenTelemetryMeterRegistryAutoConfiguration {
