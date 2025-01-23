@@ -29,6 +29,17 @@ tasks.withType<Test>().configureEach {
 
   jvmArgs("-Dotel.instrumentation.spring-boot-actuator-autoconfigure.enabled=true")
 }
+tasks {
+  val testPrometheus by registering(Test::class) {
+    dependencies {
+      runtimeOnly("io.micrometer:micrometer-registry-prometheus:1.14.3")
+    }
+  }
+
+  check {
+    dependsOn(testPrometheus)
+  }
+}
 
 val latestDepTest = findProperty("testLatestDeps") as Boolean
 
