@@ -213,6 +213,9 @@ jobs:
           - 1
           - 2
           - 3
+        test-indy:
+          - false
+          - true
         exclude:
           - vm: ${{ inputs.skip-openj9-tests && 'openj9' || '' }}
       fail-fast: false
@@ -281,6 +284,7 @@ jobs:
           ${{ env.test-tasks }}
           -PtestJavaVersion=${{ matrix.test-java-version }}
           -PtestJavaVM=${{ matrix.vm }}
+          -PtestIndy=${{ matrix.test-indy }}
           -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }}
           -Porg.gradle.java.installations.auto-download=false
           ${{ inputs.no-build-cache && ' --no-build-cache' || '' }}

@@ -19,12 +19,6 @@ jobs:
       max-test-retries: 0
       no-build-cache: true
 
-  test-indy:
-    uses: ./.github/workflows/reusable-test-indy.yml
-    with:
-      max-test-retries: 0
-      no-build-cache: true
-
   # muzzle is not included here because it doesn't use gradle cache anyway and so is already covered
   # by the normal daily build
 
