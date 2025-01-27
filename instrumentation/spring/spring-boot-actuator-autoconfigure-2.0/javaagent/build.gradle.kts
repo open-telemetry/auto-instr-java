@@ -22,13 +22,6 @@ dependencies {
   latestDepTestLibrary("ch.qos.logback:logback-classic:+")
 }
 
-tasks.withType<Test>().configureEach {
-  // required on jdk17
-  jvmArgs("--add-opens=java.base/java.lang=ALL-UNNAMED")
-  jvmArgs("-XX:+IgnoreUnrecognizedVMOptions")
-
-  jvmArgs("-Dotel.instrumentation.spring-boot-actuator-autoconfigure.enabled=true")
-}
 tasks {
   val testPrometheus by registering(Test::class) {
     dependencies {
@@ -39,6 +32,14 @@ tasks {
   check {
     dependsOn(testPrometheus)
   }
+}
+
+tasks.withType<Test>().configureEach {
+  // required on jdk17
+  jvmArgs("--add-opens=java.base/java.lang=ALL-UNNAMED")
+  jvmArgs("-XX:+IgnoreUnrecognizedVMOptions")
+
+  jvmArgs("-Dotel.instrumentation.spring-boot-actuator-autoconfigure.enabled=true")
 }
 
 val latestDepTest = findProperty("testLatestDeps") as Boolean
