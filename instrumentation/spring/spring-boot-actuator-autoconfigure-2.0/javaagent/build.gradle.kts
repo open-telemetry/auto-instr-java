@@ -22,15 +22,13 @@ dependencies {
   latestDepTestLibrary("ch.qos.logback:logback-classic:+")
 }
 
-tasks {
-  val testPrometheus by registering(Test::class) {
-    dependencies {
-      runtimeOnly("io.micrometer:micrometer-registry-prometheus:1.14.3")
+testing {
+  suites {
+    val testPrometheus by registering(JvmTestSuite::class) {
+      dependencies {
+        runtimeOnly("io.micrometer:micrometer-registry-prometheus:1.14.3")
+      }
     }
-  }
-
-  check {
-    dependsOn(testPrometheus)
   }
 }
 
@@ -59,5 +57,11 @@ if (!latestDepTest) {
       force("ch.qos.logback:logback-classic:1.2.11")
       force("org.slf4j:slf4j-api:1.7.36")
     }
+  }
+}
+
+tasks {
+  check {
+    dependsOn(testing.suites)
   }
 }
