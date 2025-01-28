@@ -1,2 +1,4 @@
 Comparing source compatibility of opentelemetry-instrumentation-annotations-2.13.0-SNAPSHOT.jar against opentelemetry-instrumentation-annotations-2.12.0.jar
-No changes.
+**** MODIFIED ANNOTATION: PUBLIC ABSTRACT io.opentelemetry.instrumentation.annotations.WithSpan  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean withParent()

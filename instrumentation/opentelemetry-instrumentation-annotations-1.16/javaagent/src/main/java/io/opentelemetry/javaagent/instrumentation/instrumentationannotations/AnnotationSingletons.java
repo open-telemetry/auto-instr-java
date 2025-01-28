@@ -9,7 +9,9 @@ import static java.util.logging.Level.FINE;
 
 import application.io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.annotation.support.MethodSpanAttributesExtractor;
 import io.opentelemetry.instrumentation.api.annotation.support.SpanAttributesExtractor;
 import io.opentelemetry.instrumentation.api.incubator.semconv.code.CodeAttributesExtractor;
@@ -47,6 +49,7 @@ public final class AnnotationSingletons {
             INSTRUMENTATION_NAME,
             AnnotationSingletons::spanNameFromMethod)
         .addAttributesExtractor(CodeAttributesExtractor.create(MethodCodeAttributesGetter.INSTANCE))
+        .addContextCustomizer(AnnotationSingletons::parentContextFromMethod)
         .buildInstrumenter(AnnotationSingletons::spanKindFromMethod);
   }
 
@@ -62,6 +65,7 @@ public final class AnnotationSingletons {
                 MethodRequest::method,
                 WithSpanParameterAttributeNamesExtractor.INSTANCE,
                 MethodRequest::args))
+        .addContextCustomizer(AnnotationSingletons::parentContextFromMethodRequest)
         .buildInstrumenter(AnnotationSingletons::spanKindFromMethodRequest);
   }
 
@@ -102,6 +106,21 @@ public final class AnnotationSingletons {
       spanName = SpanNames.fromMethod(method);
     }
     return spanName;
+  }
+
+  private static Context parentContextFromMethodRequest(
+      Context context, MethodRequest request, Attributes attributes) {
+    return parentContextFromMethod(context, request.method(), attributes);
+  }
+
+  private static Context parentContextFromMethod(
+      Context context, Method method, Attributes attributes) {
+    WithSpan annotation = method.getDeclaredAnnotation(WithSpan.class);
+    if (annotation.withParent()) {
+      return context;
+    }
+
+    return Context.root();
   }
 
   private AnnotationSingletons() {}

@@ -108,6 +108,31 @@ class WithSpanInstrumentationTest {
   }
 
   @Test
+  void multipleSpansWithoutParent() {
+    new TracedWithSpan().consumer();
+
+    testing.waitAndAssertTraces(
+        trace ->
+            trace.hasSpansSatisfyingExactly(
+                span ->
+                    span.hasName("TracedWithSpan.consumer")
+                        .hasKind(SpanKind.CONSUMER)
+                        .hasNoParent()
+                        .hasAttributesSatisfyingExactly(
+                            equalTo(CODE_NAMESPACE, TracedWithSpan.class.getName()),
+                            equalTo(CODE_FUNCTION, "consumer"))),
+        trace ->
+            trace.hasSpansSatisfyingExactly(
+                span ->
+                    span.hasName("TracedWithSpan.withoutParent")
+                        .hasKind(SpanKind.INTERNAL)
+                        .hasNoParent()
+                        .hasAttributesSatisfyingExactly(
+                            equalTo(CODE_NAMESPACE, TracedWithSpan.class.getName()),
+                            equalTo(CODE_FUNCTION, "withoutParent"))));
+  }
+
+  @Test
   void excludedMethod() throws Exception {
     new TracedWithSpan().ignored();
 

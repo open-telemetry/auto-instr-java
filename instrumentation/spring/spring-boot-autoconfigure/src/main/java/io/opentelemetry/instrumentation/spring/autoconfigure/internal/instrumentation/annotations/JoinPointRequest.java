@@ -18,8 +18,10 @@ final class JoinPointRequest {
   private final Method method;
   private final String spanName;
   private final SpanKind spanKind;
+  private final boolean withParent;
 
-  private JoinPointRequest(JoinPoint joinPoint, Method method, String spanName, SpanKind spanKind) {
+  private JoinPointRequest(
+      JoinPoint joinPoint, Method method, String spanName, SpanKind spanKind, boolean withParent) {
     if (spanName.isEmpty()) {
       spanName = SpanNames.fromMethod(method);
     }
@@ -28,6 +30,7 @@ final class JoinPointRequest {
     this.method = method;
     this.spanName = spanName;
     this.spanKind = spanKind;
+    this.withParent = withParent;
   }
 
   String spanName() {
@@ -44,6 +47,10 @@ final class JoinPointRequest {
 
   Object[] args() {
     return joinPoint.getArgs();
+  }
+
+  boolean withParent() {
+    return withParent;
   }
 
   interface Factory {
@@ -65,8 +72,9 @@ final class JoinPointRequest {
       WithSpan annotation = method.getDeclaredAnnotation(WithSpan.class);
       String spanName = annotation != null ? annotation.value() : "";
       SpanKind spanKind = annotation != null ? annotation.kind() : SpanKind.INTERNAL;
+      boolean withParent = annotation == null || annotation.withParent();
 
-      return new JoinPointRequest(joinPoint, method, spanName, spanKind);
+      return new JoinPointRequest(joinPoint, method, spanName, spanKind, withParent);
     }
   }
 }

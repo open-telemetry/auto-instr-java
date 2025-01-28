@@ -34,4 +34,7 @@ public @interface WithSpan {
 
   /** Specify the {@link SpanKind} of span to be created. Defaults to {@link SpanKind#INTERNAL}. */
   SpanKind kind() default SpanKind.INTERNAL;
+
+  /** Specify whether to create a new span with parent. Defaults to {@code true}. */
+  boolean withParent() default true;
 }
