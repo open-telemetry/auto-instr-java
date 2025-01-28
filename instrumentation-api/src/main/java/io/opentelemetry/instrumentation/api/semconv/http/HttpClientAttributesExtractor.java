@@ -17,6 +17,9 @@ import io.opentelemetry.instrumentation.api.semconv.network.internal.InternalNet
 import io.opentelemetry.instrumentation.api.semconv.network.internal.InternalServerAttributesExtractor;
 import io.opentelemetry.semconv.HttpAttributes;
 import io.opentelemetry.semconv.UrlAttributes;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.ToIntFunction;
 import javax.annotation.Nullable;
 
@@ -31,6 +34,9 @@ public final class HttpClientAttributesExtractor<REQUEST, RESPONSE>
     extends HttpCommonAttributesExtractor<
         REQUEST, RESPONSE, HttpClientAttributesGetter<REQUEST, RESPONSE>>
     implements SpanKeyProvider {
+
+  private static final Set<String> PARAMS_TO_REDACT =
+      new HashSet<>(Arrays.asList("AWSAccessKeyId", "Signature", "sig", "X-Goog-Signature"));
 
   /**
    * Creates the HTTP client attributes extractor with default configuration.
@@ -54,6 +60,7 @@ public final class HttpClientAttributesExtractor<REQUEST, RESPONSE>
   private final InternalNetworkAttributesExtractor<REQUEST, RESPONSE> internalNetworkExtractor;
   private final InternalServerAttributesExtractor<REQUEST> internalServerExtractor;
   private final ToIntFunction<Context> resendCountIncrementer;
+  private final boolean redactSensitiveParameters;
 
   HttpClientAttributesExtractor(HttpClientAttributesExtractorBuilder<REQUEST, RESPONSE> builder) {
     super(
@@ -65,6 +72,9 @@ public final class HttpClientAttributesExtractor<REQUEST, RESPONSE>
     internalNetworkExtractor = builder.buildNetworkExtractor();
     internalServerExtractor = builder.buildServerExtractor();
     resendCountIncrementer = builder.resendCountIncrementer;
+    redactSensitiveParameters =
+        Boolean.getBoolean(
+            "otel.instrumentation.http.client.experimental.redact-sensitive-parameters");
   }
 
   @Override
@@ -104,7 +114,7 @@ public final class HttpClientAttributesExtractor<REQUEST, RESPONSE>
   }
 
   @Nullable
-  private static String stripSensitiveData(@Nullable String url) {
+  private String stripSensitiveData(@Nullable String url) {
     if (url == null || url.isEmpty()) {
       return url;
     }
@@ -141,8 +151,69 @@ public final class HttpClientAttributesExtractor<REQUEST, RESPONSE>
     }
 
     if (atIndex == -1 || atIndex == len - 1) {
-      return url;
+      return redactSensitiveParameters ? redactUrlParameters(url) : url;
     }
-    return url.substring(0, schemeEndIndex + 3) + "REDACTED:REDACTED" + url.substring(atIndex);
+
+    String afterUserPwdRedaction = url.substring(atIndex);
+    return url.substring(0, schemeEndIndex + 3)
+        + "REDACTED:REDACTED"
+        + (redactSensitiveParameters
+            ? redactUrlParameters(afterUserPwdRedaction)
+            : afterUserPwdRedaction);
+  }
+
+  private static String redactUrlParameters(String urlpart) {
+
+    int questionMarkIndex = urlpart.indexOf('?');
+
+    if (questionMarkIndex == -1) {
+      return urlpart;
+    }
+
+    if (!containsParamToRedact(urlpart)) {
+      return urlpart;
+    }
+
+    StringBuilder redactedParameters = new StringBuilder();
+    boolean paramToRedact = false;
+    boolean paramNameDetected = false;
+    boolean reference = false;
+
+    StringBuilder currentParamName = new StringBuilder();
+
+    for (int i = questionMarkIndex + 1; i < urlpart.length(); i++) {
+      char currentChar = urlpart.charAt(i);
+      if (currentChar == '=') {
+        paramNameDetected = true;
+        redactedParameters.append(currentParamName);
+        redactedParameters.append('=');
+        if (PARAMS_TO_REDACT.contains(currentParamName.toString())) {
+          redactedParameters.append("REDACTED");
+          paramToRedact = true;
+        }
+      } else if (currentChar == '&') {
+        redactedParameters.append('&');
+        paramNameDetected = false;
+        paramToRedact = false;
+        currentParamName.setLength(0);
+      } else if (currentChar == '#') {
+        reference = true;
+        redactedParameters.append('#');
+      } else if (!paramNameDetected) {
+        currentParamName.append(currentChar);
+      } else if (!paramToRedact || reference) {
+        redactedParameters.append(currentChar);
+      }
+    }
+    return urlpart.substring(0, questionMarkIndex) + "?" + redactedParameters;
+  }
+
+  private static boolean containsParamToRedact(String urlpart) {
+    for (String param : PARAMS_TO_REDACT) {
+      if (urlpart.contains(param)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
