@@ -15,12 +15,20 @@ import io.opentelemetry.instrumentation.api.util.VirtualField;
 import kotlin.coroutines.Continuation;
 import kotlin.coroutines.intrinsics.IntrinsicsKt;
 
+/**
+ * Instrumentation helper that is called through bytecode instrumentation. When using invokedynamic
+ * instrumentation this class is called through an injected proxy, and thus it should not pull any
+ * other class references than the ones that are already present in the target classloader or the
+ * bootstrap classloader. This is why the {@link MethodRequest} class is here passed as an {@link
+ * Object} as it allows to avoid having to inject extra classes in the target classloader
+ */
+@SuppressWarnings("unused") // methods calls injected through bytecode instrumentation
 public final class AnnotationInstrumentationHelper {
 
   private static final VirtualField<Continuation<?>, Context> contextField =
       VirtualField.find(Continuation.class, Context.class);
 
-  public static MethodRequest createMethodRequest(
+  public static Object createMethodRequest(
       Class<?> declaringClass, String methodName, String withSpanValue, String spanKindString) {
     SpanKind spanKind = SpanKind.INTERNAL;
     if (spanKindString != null) {
@@ -34,11 +42,10 @@ public final class AnnotationInstrumentationHelper {
     return MethodRequest.create(declaringClass, methodName, withSpanValue, spanKind);
   }
 
-  public static Context enterCoroutine(
-      int label, Continuation<?> continuation, MethodRequest request) {
+  public static Context enterCoroutine(int label, Continuation<?> continuation, Object request) {
     // label 0 means that coroutine is started, any other label means that coroutine is resumed
     if (label == 0) {
-      Context context = instrumenter().start(Context.current(), request);
+      Context context = instrumenter().start(Context.current(), (MethodRequest) request);
       // null continuation means that this method is not going to be resumed, and we don't need to
       // store the context
       if (continuation != null) {
@@ -55,18 +62,14 @@ public final class AnnotationInstrumentationHelper {
   }
 
   public static void exitCoroutine(
-      Object result,
-      MethodRequest request,
-      Continuation<?> continuation,
-      Context context,
-      Scope scope) {
+      Object result, Object request, Continuation<?> continuation, Context context, Scope scope) {
     exitCoroutine(null, result, request, continuation, context, scope);
   }
 
   public static void exitCoroutine(
       Throwable error,
       Object result,
-      MethodRequest request,
+      Object request,
       Continuation<?> continuation,
       Context context,
       Scope scope) {
@@ -78,7 +81,7 @@ public final class AnnotationInstrumentationHelper {
     // end the span when this method can not be resumed (coroutine is null) or if it has reached
     // final state (returns anything else besides COROUTINE_SUSPENDED)
     if (continuation == null || result != IntrinsicsKt.getCOROUTINE_SUSPENDED()) {
-      instrumenter().end(context, request, null, error);
+      instrumenter().end(context, (MethodRequest) request, null, error);
     }
   }
 

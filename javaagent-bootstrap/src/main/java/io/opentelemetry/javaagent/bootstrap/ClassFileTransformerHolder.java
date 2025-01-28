@@ -16,11 +16,21 @@ public final class ClassFileTransformerHolder {
 
   private static volatile ClassFileTransformer classFileTransformer;
 
-  public static ClassFileTransformer getClassFileTransformer() {
+  /**
+   * get class transformer for defining lambdas
+   *
+   * @return class transformer for defining lambdas
+   */
+  public static ClassFileTransformer getLambdaClassFileTransformer() {
     return classFileTransformer;
   }
 
-  public static void setClassFileTransformer(ClassFileTransformer transformer) {
+  /**
+   * set class transformer for defining lambdas
+   *
+   * @param transformer transformer
+   */
+  public static void setLambdaClassFileTransformer(ClassFileTransformer transformer) {
     classFileTransformer = transformer;
   }
 

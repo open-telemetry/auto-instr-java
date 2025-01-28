@@ -10,13 +10,14 @@ import static java.util.Collections.singletonList;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.internal.ExperimentalInstrumentationModule;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import net.bytebuddy.utility.JavaModule;
 
 @AutoService(InstrumentationModule.class)
-public class LambdaInstrumentationModule extends InstrumentationModule {
+public class LambdaInstrumentationModule extends InstrumentationModule
+    implements ExperimentalInstrumentationModule {
   public LambdaInstrumentationModule() {
     super("internal-lambda");
   }
@@ -28,21 +29,16 @@ public class LambdaInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
-  public boolean isIndyModule() {
-    return false;
+  public List<String> injectedClassNames() {
+    return Collections.singletonList(
+        "io.opentelemetry.javaagent.instrumentation.internal.lambda.LambdaTransformer");
   }
 
   @Override
   public List<String> getAdditionalHelperClassNames() {
     // this instrumentation uses ASM not ByteBuddy so muzzle doesn't automatically add helper
     // classes
-    List<String> classNames = new ArrayList<>();
-    classNames.add("io.opentelemetry.javaagent.instrumentation.internal.lambda.LambdaTransformer");
-    if (JavaModule.isSupported()) {
-      classNames.add(
-          "io.opentelemetry.javaagent.instrumentation.internal.lambda.Java9LambdaTransformer");
-    }
-    return classNames;
+    return injectedClassNames();
   }
 
   @Override

@@ -11,7 +11,7 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
-public class InlineResourceLevelInstrumentation implements TypeInstrumentation {
+public class ResourceLevelInstrumentation implements TypeInstrumentation {
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
     return named("com.ibm.as400.resource.ResourceLevel");
@@ -26,8 +26,9 @@ public class InlineResourceLevelInstrumentation implements TypeInstrumentation {
   @SuppressWarnings("unused")
   public static class ToStringAdvice {
     @Advice.OnMethodExit(suppress = Throwable.class)
-    static void toStringReplace(@Advice.Return(readOnly = false) String ret) {
-      ret = "instrumented";
+    @Advice.AssignReturned.ToReturned
+    public static String toStringReplace() {
+      return "instrumented";
     }
   }
 }

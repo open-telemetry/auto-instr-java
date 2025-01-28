@@ -232,7 +232,7 @@ class WithSpanInstrumentation implements TypeInstrumentation {
             public void visitCode() {
               super.visitCode();
               // add our local variables after method arguments, this will shift rest of the locals
-              requestLocal = newLocal(Type.getType(MethodRequest.class));
+              requestLocal = newLocal(Type.getType(Object.class));
               ourContinuationLocal = newLocal(Type.getType(Continuation.class));
               contextLocal = newLocal(Type.getType(Context.class));
               scopeLocal = newLocal(Type.getType(Scope.class));
@@ -324,13 +324,6 @@ class WithSpanInstrumentation implements TypeInstrumentation {
               // initialize our local variables, start span and open scope
               {
                 MethodNode temp = new MethodNode();
-                // insert
-                // request =
-                // AnnotationInstrumentationHelper.createMethodRequest(InstrumentedClass.class,
-                //   instrumentedMethodName, withSpanValue, withSpanKind)
-                // context = AnnotationInstrumentationHelper.enterCoroutine(label, continuation,
-                // request)
-                // scope = AnnotationInstrumentationHelper.openScope(context)
                 if (hasBlockingOperation) {
                   // value of label is on stack
                   // label is used in call to enterCoroutine and later in @SpanAttribute handling
@@ -360,32 +353,26 @@ class WithSpanInstrumentation implements TypeInstrumentation {
                 } else {
                   temp.visitInsn(Opcodes.ACONST_NULL);
                 }
-                temp.visitMethodInsn(
-                    Opcodes.INVOKESTATIC,
-                    Type.getInternalName(AnnotationInstrumentationHelper.class),
+                visitInvokeHelperMethod(
+                    temp,
                     "createMethodRequest",
-                    "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)"
-                        + Type.getDescriptor(MethodRequest.class),
-                    false);
+                    "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;");
                 temp.visitInsn(Opcodes.DUP);
                 temp.visitVarInsn(Opcodes.ASTORE, requestLocal);
-                temp.visitMethodInsn(
-                    Opcodes.INVOKESTATIC,
-                    Type.getInternalName(AnnotationInstrumentationHelper.class),
+                visitInvokeHelperMethod(
+                    temp,
                     "enterCoroutine",
-                    "(ILkotlin/coroutines/Continuation;"
-                        + Type.getDescriptor(MethodRequest.class)
-                        + ")"
-                        + Type.getDescriptor(Context.class),
-                    false);
+                    "(ILkotlin/coroutines/Continuation;Ljava/lang/Object;)"
+                        + Type.getDescriptor(Context.class));
                 temp.visitInsn(Opcodes.DUP);
                 temp.visitVarInsn(Opcodes.ASTORE, contextLocal);
-                temp.visitMethodInsn(
-                    Opcodes.INVOKESTATIC,
-                    Type.getInternalName(AnnotationInstrumentationHelper.class),
+                visitInvokeHelperMethod(
+                    temp,
                     "openScope",
-                    "(" + Type.getDescriptor(Context.class) + ")" + Type.getDescriptor(Scope.class),
-                    false);
+                    "("
+                        + Type.getDescriptor(Context.class)
+                        + ")"
+                        + Type.getDescriptor(Scope.class));
                 temp.visitVarInsn(Opcodes.ASTORE, scopeLocal);
                 // @SpanAttribute handling
                 for (Parameter parameter : annotatedParameters) {
@@ -396,14 +383,12 @@ class WithSpanInstrumentation implements TypeInstrumentation {
                   boolean primitive =
                       parameter.type.getSort() != Type.ARRAY
                           && parameter.type.getSort() != Type.OBJECT;
-                  temp.visitMethodInsn(
-                      Opcodes.INVOKESTATIC,
-                      Type.getInternalName(AnnotationInstrumentationHelper.class),
+                  visitInvokeHelperMethod(
+                      temp,
                       "setSpanAttribute",
                       "(ILjava/lang/String;"
                           + (primitive ? parameter.type.getDescriptor() : "Ljava/lang/Object;")
-                          + ")V",
-                      false);
+                          + ")V");
                 }
                 // pop label
                 temp.visitInsn(Opcodes.POP);
@@ -446,7 +431,7 @@ class WithSpanInstrumentation implements TypeInstrumentation {
                 // in this handler we are using only the locals we added, we don't care about method
                 // arguments and this, so we don't list them in the stack frame
                 Arrays.fill(locals, Opcodes.TOP);
-                locals[requestLocal] = Type.getInternalName(MethodRequest.class);
+                locals[requestLocal] = Type.getInternalName(Object.class);
                 locals[ourContinuationLocal] = Type.getInternalName(Continuation.class);
                 locals[contextLocal] = Type.getInternalName(Context.class);
                 locals[scopeLocal] = Type.getInternalName(Scope.class);
@@ -463,17 +448,15 @@ class WithSpanInstrumentation implements TypeInstrumentation {
                 temp.visitVarInsn(Opcodes.ALOAD, ourContinuationLocal);
                 temp.visitVarInsn(Opcodes.ALOAD, contextLocal);
                 temp.visitVarInsn(Opcodes.ALOAD, scopeLocal);
-                temp.visitMethodInsn(
-                    Opcodes.INVOKESTATIC,
-                    Type.getInternalName(AnnotationInstrumentationHelper.class),
+                visitInvokeHelperMethod(
+                    temp,
                     "exitCoroutine",
                     "(Ljava/lang/Throwable;Ljava/lang/Object;"
-                        + Type.getDescriptor(MethodRequest.class)
+                        + "Ljava/lang/Object;"
                         + Type.getDescriptor(Continuation.class)
                         + Type.getDescriptor(Context.class)
                         + Type.getDescriptor(Scope.class)
-                        + ")V",
-                    false);
+                        + ")V");
 
                 // rethrow the exception
                 temp.visitInsn(Opcodes.ATHROW);
@@ -498,17 +481,15 @@ class WithSpanInstrumentation implements TypeInstrumentation {
                   temp.visitVarInsn(Opcodes.ALOAD, ourContinuationLocal);
                   temp.visitVarInsn(Opcodes.ALOAD, contextLocal);
                   temp.visitVarInsn(Opcodes.ALOAD, scopeLocal);
-                  temp.visitMethodInsn(
-                      Opcodes.INVOKESTATIC,
-                      Type.getInternalName(AnnotationInstrumentationHelper.class),
+                  visitInvokeHelperMethod(
+                      temp,
                       "exitCoroutine",
                       "(Ljava/lang/Object;"
-                          + Type.getDescriptor(MethodRequest.class)
+                          + "Ljava/lang/Object;"
                           + Type.getDescriptor(Continuation.class)
                           + Type.getDescriptor(Context.class)
                           + Type.getDescriptor(Scope.class)
-                          + ")V",
-                      false);
+                          + ")V");
                   methodNode.instructions.insertBefore(instruction, temp.instructions);
                 }
               }
@@ -518,6 +499,16 @@ class WithSpanInstrumentation implements TypeInstrumentation {
           };
 
       return generatorAdapter;
+    }
+
+    private static void visitInvokeHelperMethod(
+        MethodNode methodNode, String methodName, String descriptor) {
+      methodNode.visitMethodInsn(
+          Opcodes.INVOKESTATIC,
+          Type.getInternalName(AnnotationInstrumentationHelper.class),
+          methodName,
+          descriptor,
+          false);
     }
   }
 }

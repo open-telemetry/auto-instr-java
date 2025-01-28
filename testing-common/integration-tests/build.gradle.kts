@@ -52,7 +52,6 @@ tasks {
       includeTestsMatching("InstrumentOldBytecode")
     }
     include("**/InstrumentOldBytecode.*")
-    jvmArgs("-Dotel.instrumentation.inline-ibm-resource-level.enabled=false")
   }
 
   val testInlineModuleOldBytecodeInstrumentation by registering(Test::class) {
@@ -60,7 +59,6 @@ tasks {
       includeTestsMatching("InstrumentOldBytecode")
     }
     include("**/InstrumentOldBytecode.*")
-    jvmArgs("-Dotel.instrumentation.indy-ibm-resource-level.enabled=false")
   }
 
   test {

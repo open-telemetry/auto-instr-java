@@ -48,6 +48,7 @@ import io.opentelemetry.javaagent.tooling.util.Trie;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.SdkAutoconfigureAccess;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,7 +64,6 @@ import javax.annotation.Nullable;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.AgentBuilderUtil;
-import net.bytebuddy.agent.builder.ResettableClassFileTransformer;
 import net.bytebuddy.description.type.TypeDefinition;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
@@ -199,9 +199,17 @@ public class AgentInstaller {
     logger.log(FINE, "Installed {0} extension(s)", numberOfLoadedExtensions);
 
     agentBuilder = AgentBuilderUtil.optimize(agentBuilder);
-    ResettableClassFileTransformer resettableClassFileTransformer = agentBuilder.installOn(inst);
+    ClassFileTransformer transformer = agentBuilder.installOn(inst);
+    if (JavaModule.isSupported()) {
+      // wrapping in a JPMS compliant implementation
+      transformer = new Java9LambdaClassFileTransformer(transformer);
+    } else {
+      // wrapping in a java 8 compliant transformer
+      transformer = new LambdaClassFileTransformer(transformer);
+    }
+    ClassFileTransformerHolder.setLambdaClassFileTransformer(transformer);
+
     instrumentationInstalled = true;
-    ClassFileTransformerHolder.setClassFileTransformer(resettableClassFileTransformer);
 
     addHttpServerResponseCustomizers(extensionClassLoader);
 
