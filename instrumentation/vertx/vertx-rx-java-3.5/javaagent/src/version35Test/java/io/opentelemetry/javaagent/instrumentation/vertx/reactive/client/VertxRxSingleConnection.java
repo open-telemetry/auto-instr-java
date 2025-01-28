@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package client;
+package io.opentelemetry.javaagent.instrumentation.vertx.reactive.client;
 
 import io.opentelemetry.instrumentation.testing.junit.http.SingleConnection;
 import io.vertx.core.VertxOptions;
@@ -17,7 +17,7 @@ import io.vertx.reactivex.ext.web.client.WebClient;
 import java.util.Map;
 import java.util.Objects;
 
-public class VertxRxSingleConnection implements SingleConnection {
+class VertxRxSingleConnection implements SingleConnection {
   private final WebClient webClient;
   private final String host;
   private final int port;

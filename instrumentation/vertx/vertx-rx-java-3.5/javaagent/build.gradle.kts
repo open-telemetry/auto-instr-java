@@ -29,8 +29,11 @@ testing {
   suites {
     val version35Test by registering(JvmTestSuite::class) {
       dependencies {
-        implementation("org.hsqldb:hsqldb:2.3.4")
+        // this only exists to make Intellij happy since it doesn't (currently at least) understand our
+        // inclusion of this artifact inside :testing-common
+        compileOnly(project.dependencies.project(":testing:armeria-shaded-for-testing", configuration = "shadow"))
 
+        implementation("org.hsqldb:hsqldb:2.3.4")
         compileOnly("io.vertx:vertx-codegen:$vertxVersion")
         implementation("io.vertx:vertx-web:$vertxVersion")
         implementation("io.vertx:vertx-rx-java2:$vertxVersion")
@@ -42,8 +45,11 @@ testing {
 
     val latestDepTest by registering(JvmTestSuite::class) {
       dependencies {
-        implementation("org.hsqldb:hsqldb:2.3.4")
+        // this only exists to make Intellij happy since it doesn't (currently at least) understand our
+        // inclusion of this artifact inside :testing-common
+        compileOnly(project.dependencies.project(":testing:armeria-shaded-for-testing", configuration = "shadow"))
 
+        implementation("org.hsqldb:hsqldb:2.3.4")
         implementation("io.vertx:vertx-web:latest.release")
         implementation("io.vertx:vertx-rx-java2:latest.release")
         implementation("io.vertx:vertx-web-client:latest.release")

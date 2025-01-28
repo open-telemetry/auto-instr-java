@@ -3,6 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+package io.opentelemetry.javaagent.instrumentation.vertx.reactive.server; /*
+                                                                           * Copyright The OpenTelemetry Authors
+                                                                           * SPDX-License-Identifier: Apache-2.0
+                                                                           */
+
 import static io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint.SUCCESS;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;

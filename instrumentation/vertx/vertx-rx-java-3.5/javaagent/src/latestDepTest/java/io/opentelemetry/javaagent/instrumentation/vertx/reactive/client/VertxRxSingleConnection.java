@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package client;
+package io.opentelemetry.javaagent.instrumentation.vertx.reactive.client;
 
 import io.opentelemetry.instrumentation.testing.junit.http.SingleConnection;
 import io.vertx.core.VertxOptions;

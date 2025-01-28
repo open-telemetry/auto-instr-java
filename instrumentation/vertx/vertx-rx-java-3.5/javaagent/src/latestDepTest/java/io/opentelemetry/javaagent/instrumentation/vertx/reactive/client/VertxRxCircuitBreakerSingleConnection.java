@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package client;
+package io.opentelemetry.javaagent.instrumentation.vertx.reactive.client;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.reactivex.circuitbreaker.CircuitBreaker;
@@ -38,7 +38,7 @@ public class VertxRxCircuitBreakerSingleConnection extends VertxRxSingleConnecti
   }
 
   private void sendRequestWithCallback(HttpRequest<?> request, Consumer<AsyncResult<?>> consumer) {
-    breaker.executeCommand(
+    breaker.execute(
         command ->
             request.rxSend().doOnSuccess(command::complete).doOnError(command::fail).subscribe(),
         consumer::accept);
