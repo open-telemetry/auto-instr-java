@@ -57,7 +57,7 @@ public final class Threads {
 
   /** Register observers for java runtime class metrics. */
   public static List<AutoCloseable> registerObservers(OpenTelemetry openTelemetry) {
-    return INSTANCE.registerObservers(openTelemetry, !isJava9OrNewer());
+    return INSTANCE.registerObservers(openTelemetry, useThreads());
   }
 
   private List<AutoCloseable> registerObservers(OpenTelemetry openTelemetry, boolean useThread) {
@@ -114,6 +114,12 @@ public final class Threads {
 
   private static boolean isJava9OrNewer() {
     return THREAD_INFO_IS_DAEMON != null;
+  }
+
+  private static boolean useThreads() {
+    // GraalVM native image does not support ThreadMXBean yet
+    // see https://github.com/oracle/graal/issues/6101
+    return !isJava9OrNewer() || System.getProperty("org.graalvm.nativeimage.imagecode") != null;
   }
 
   private static Consumer<ObservableLongMeasurement> java8Callback(ThreadMXBean threadBean) {

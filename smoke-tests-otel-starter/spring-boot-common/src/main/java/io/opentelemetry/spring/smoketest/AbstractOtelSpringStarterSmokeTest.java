@@ -209,6 +209,11 @@ class AbstractOtelSpringStarterSmokeTest extends AbstractSpringStarterSmokeTest 
         OtelSpringStarterSmokeTestController.METER_SCOPE_NAME,
         OtelSpringStarterSmokeTestController.TEST_HISTOGRAM,
         AbstractIterableAssert::isNotEmpty);
+    // runtime metrics
+    testing.waitAndAssertMetrics(
+        "io.opentelemetry.runtime-telemetry-java8",
+        "jvm.thread.count",
+        AbstractIterableAssert::isNotEmpty);
 
     // Log
     List<LogRecordData> exportedLogRecords = testing.getExportedLogRecords();

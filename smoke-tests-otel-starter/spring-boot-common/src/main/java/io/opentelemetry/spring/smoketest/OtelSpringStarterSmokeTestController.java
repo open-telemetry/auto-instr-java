@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class OtelSpringStarterSmokeTestController {
 
   public static final String PING = "/ping";
-  public static final String REST_CLIENT = "/rest-client";
-  public static final String REST_TEMPLATE = "/rest-template";
   public static final String TEST_HISTOGRAM = "histogram-test-otel-spring-starter";
   public static final String METER_SCOPE_NAME = "scope";
   private final LongHistogram histogram;
