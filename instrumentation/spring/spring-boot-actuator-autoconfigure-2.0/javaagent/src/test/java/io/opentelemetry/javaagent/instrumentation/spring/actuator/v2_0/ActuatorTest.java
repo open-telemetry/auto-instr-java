@@ -15,6 +15,9 @@ import io.opentelemetry.instrumentation.testing.internal.AutoCleanupExtension;
 import io.opentelemetry.instrumentation.testing.junit.AgentInstrumentationExtension;
 import io.opentelemetry.instrumentation.testing.junit.InstrumentationExtension;
 import io.opentelemetry.javaagent.instrumentation.spring.actuator.v2_0.SpringApp.TestBean;
+import java.util.Collection;
+import org.assertj.core.api.AbstractCollectionAssert;
+import org.assertj.core.api.ObjectAssert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.boot.SpringApplication;
@@ -57,9 +60,19 @@ class ActuatorTest {
                                                         "value"))))));
 
     MeterRegistry meterRegistry = context.getBean(MeterRegistry.class);
-    assertThat(meterRegistry).isNotNull().isInstanceOf(CompositeMeterRegistry.class);
-    assertThat(((CompositeMeterRegistry) meterRegistry).getRegistries())
-        .anyMatch(r -> r.getClass().getSimpleName().equals("OpenTelemetryMeterRegistry"))
-        .anyMatch(r -> r.getClass().getSimpleName().equals("SimpleMeterRegistry"));
+    assertThat(meterRegistry).isInstanceOf(CompositeMeterRegistry.class);
+    AbstractCollectionAssert<
+            ?, Collection<? extends MeterRegistry>, MeterRegistry, ObjectAssert<MeterRegistry>>
+        match =
+            assertThat(((CompositeMeterRegistry) meterRegistry).getRegistries())
+                .anyMatch(r -> r.getClass().getSimpleName().equals("OpenTelemetryMeterRegistry"))
+                .anyMatch(r -> r.getClass().getSimpleName().equals("SimpleMeterRegistry"));
+
+    try {
+      Class.forName("io.micrometer.prometheusmetrics.PrometheusMeterRegistry");
+      match.anyMatch(r -> r.getClass().getSimpleName().equals("PrometheusMeterRegistry"));
+    } catch (ClassNotFoundException e) {
+      // not testing prometheus
+    }
   }
 }
