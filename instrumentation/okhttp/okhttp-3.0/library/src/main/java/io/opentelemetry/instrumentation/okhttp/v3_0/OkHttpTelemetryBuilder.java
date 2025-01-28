@@ -54,7 +54,7 @@ public final class OkHttpTelemetryBuilder {
    */
   @CanIgnoreReturnValue
   public OkHttpTelemetryBuilder addAttributesExtractor(
-      AttributesExtractor<? super Interceptor.Chain, ? super Response> attributesExtractor) {
+      AttributesExtractor<Interceptor.Chain, Response> attributesExtractor) {
     builder.addAttributesExtractor(attributesExtractor);
     return this;
   }
@@ -119,9 +119,7 @@ public final class OkHttpTelemetryBuilder {
   /** Sets custom {@link SpanNameExtractor} via transform function. */
   @CanIgnoreReturnValue
   public OkHttpTelemetryBuilder setSpanNameExtractor(
-      Function<
-              SpanNameExtractor<? super Interceptor.Chain>,
-              ? extends SpanNameExtractor<? super Interceptor.Chain>>
+      Function<SpanNameExtractor<Interceptor.Chain>, SpanNameExtractor<Interceptor.Chain>>
           spanNameExtractorTransformer) {
     builder.setSpanNameExtractor(spanNameExtractorTransformer);
     return this;

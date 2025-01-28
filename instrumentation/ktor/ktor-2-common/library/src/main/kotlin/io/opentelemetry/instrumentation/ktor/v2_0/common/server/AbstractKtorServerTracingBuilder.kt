@@ -46,14 +46,14 @@ abstract class AbstractKtorServerTracingBuilder(private val instrumentationName:
 
   @Deprecated("Please use method `spanStatusExtractor`")
   fun setStatusExtractor(
-    extractor: (SpanStatusExtractor<in ApplicationRequest, in ApplicationResponse>) -> SpanStatusExtractor<in ApplicationRequest, in ApplicationResponse>
+    extractor: (SpanStatusExtractor<ApplicationRequest, ApplicationResponse>) -> SpanStatusExtractor<ApplicationRequest, ApplicationResponse>
   ) {
     spanStatusExtractor { prevStatusExtractor ->
       extractor(prevStatusExtractor).extract(spanStatusBuilder, request, response, error)
     }
   }
 
-  fun spanStatusExtractor(extract: SpanStatusData.(SpanStatusExtractor<in ApplicationRequest, in ApplicationResponse>) -> Unit) {
+  fun spanStatusExtractor(extract: SpanStatusData.(SpanStatusExtractor<ApplicationRequest, ApplicationResponse>) -> Unit) {
     serverBuilder.setStatusExtractor { prevExtractor ->
       SpanStatusExtractor {
           spanStatusBuilder: SpanStatusBuilder,
@@ -91,12 +91,12 @@ abstract class AbstractKtorServerTracingBuilder(private val instrumentationName:
     }
   }
 
-  fun spanNameExtractor(spanNameExtractorTransformer: Function<SpanNameExtractor<in ApplicationRequest>, out SpanNameExtractor<in ApplicationRequest>>) {
+  fun spanNameExtractor(spanNameExtractorTransformer: Function<SpanNameExtractor<ApplicationRequest>, SpanNameExtractor<ApplicationRequest>>) {
     serverBuilder.setSpanNameExtractor(spanNameExtractorTransformer)
   }
 
   @Deprecated("Please use method `attributeExtractor`")
-  fun addAttributeExtractor(extractor: AttributesExtractor<in ApplicationRequest, in ApplicationResponse>) {
+  fun addAttributeExtractor(extractor: AttributesExtractor<ApplicationRequest, ApplicationResponse>) {
     attributeExtractor {
       onStart {
         extractor.onStart(attributes, parentContext, request)

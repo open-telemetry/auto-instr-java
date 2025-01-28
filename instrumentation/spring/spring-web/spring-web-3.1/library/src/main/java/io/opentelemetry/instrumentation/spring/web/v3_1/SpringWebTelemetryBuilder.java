@@ -62,7 +62,7 @@ public final class SpringWebTelemetryBuilder {
    */
   @CanIgnoreReturnValue
   public SpringWebTelemetryBuilder addAttributesExtractor(
-      AttributesExtractor<? super HttpRequest, ? super ClientHttpResponse> attributesExtractor) {
+      AttributesExtractor<HttpRequest, ClientHttpResponse> attributesExtractor) {
     builder.addAttributesExtractor(attributesExtractor);
     return this;
   }
@@ -92,9 +92,7 @@ public final class SpringWebTelemetryBuilder {
   /** Sets custom {@link SpanNameExtractor} via transform function. */
   @CanIgnoreReturnValue
   public SpringWebTelemetryBuilder setSpanNameExtractor(
-      Function<
-              SpanNameExtractor<? super HttpRequest>,
-              ? extends SpanNameExtractor<? super HttpRequest>>
+      Function<SpanNameExtractor<HttpRequest>, SpanNameExtractor<HttpRequest>>
           spanNameExtractorTransformer) {
     builder.setSpanNameExtractor(spanNameExtractorTransformer);
     return this;

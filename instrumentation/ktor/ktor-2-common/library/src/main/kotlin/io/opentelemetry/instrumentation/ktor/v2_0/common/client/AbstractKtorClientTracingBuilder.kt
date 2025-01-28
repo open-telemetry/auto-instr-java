@@ -96,10 +96,10 @@ abstract class AbstractKtorClientTracingBuilder(
   }
 
   @Deprecated("Please use method `attributeExtractor`")
-  fun addAttributesExtractors(vararg extractors: AttributesExtractor<in HttpRequestData, in HttpResponse>) = addAttributesExtractors(extractors.asList())
+  fun addAttributesExtractors(vararg extractors: AttributesExtractor<HttpRequestData, HttpResponse>) = addAttributesExtractors(extractors.asList())
 
   @Deprecated("Please use method `attributeExtractor`")
-  fun addAttributesExtractors(extractors: Iterable<AttributesExtractor<in HttpRequestData, in HttpResponse>>) {
+  fun addAttributesExtractors(extractors: Iterable<AttributesExtractor<HttpRequestData, HttpResponse>>) {
     extractors.forEach {
       attributeExtractor {
         onStart { it.onStart(attributes, parentContext, request) }
@@ -171,7 +171,7 @@ abstract class AbstractKtorClientTracingBuilder(
     clientBuilder.setEmitExperimentalHttpClientMetrics(true)
   }
 
-  fun spanNameExtractor(spanNameExtractorTransformer: Function<SpanNameExtractor<in HttpRequestData>, out SpanNameExtractor<in HttpRequestData>>) {
+  fun spanNameExtractor(spanNameExtractorTransformer: Function<SpanNameExtractor<HttpRequestData>, SpanNameExtractor<HttpRequestData>>) {
     clientBuilder.setSpanNameExtractor(spanNameExtractorTransformer)
   }
 }

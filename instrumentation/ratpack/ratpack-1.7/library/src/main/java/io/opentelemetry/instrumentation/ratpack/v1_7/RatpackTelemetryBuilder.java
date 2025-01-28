@@ -193,9 +193,7 @@ public final class RatpackTelemetryBuilder {
   @Deprecated
   @CanIgnoreReturnValue
   public RatpackTelemetryBuilder setClientSpanNameExtractor(
-      Function<
-              SpanNameExtractor<? super RequestSpec>,
-              ? extends SpanNameExtractor<? super RequestSpec>>
+      Function<SpanNameExtractor<RequestSpec>, SpanNameExtractor<RequestSpec>>
           clientSpanNameExtractor) {
     clientBuilder.setSpanNameExtractor(clientSpanNameExtractor);
     return this;
@@ -209,8 +207,7 @@ public final class RatpackTelemetryBuilder {
   @Deprecated
   @CanIgnoreReturnValue
   public RatpackTelemetryBuilder setServerSpanNameExtractor(
-      Function<SpanNameExtractor<? super Request>, ? extends SpanNameExtractor<? super Request>>
-          serverSpanNameExtractor) {
+      Function<SpanNameExtractor<Request>, SpanNameExtractor<Request>> serverSpanNameExtractor) {
     serverBuilder.setSpanNameExtractor(serverSpanNameExtractor);
     return this;
   }

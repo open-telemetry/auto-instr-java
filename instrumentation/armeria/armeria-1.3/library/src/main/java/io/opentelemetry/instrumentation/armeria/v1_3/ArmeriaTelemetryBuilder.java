@@ -70,8 +70,8 @@ public final class ArmeriaTelemetryBuilder {
   @CanIgnoreReturnValue
   public ArmeriaTelemetryBuilder setClientStatusExtractor(
       Function<
-              SpanStatusExtractor<? super ClientRequestContext, ? super RequestLog>,
-              ? extends SpanStatusExtractor<? super ClientRequestContext, ? super RequestLog>>
+              SpanStatusExtractor<ClientRequestContext, RequestLog>,
+              SpanStatusExtractor<ClientRequestContext, RequestLog>>
           statusExtractor) {
     clientBuilder.setStatusExtractor(statusExtractor);
     return this;
@@ -86,8 +86,8 @@ public final class ArmeriaTelemetryBuilder {
   @CanIgnoreReturnValue
   public ArmeriaTelemetryBuilder setServerStatusExtractor(
       Function<
-              SpanStatusExtractor<? super ServiceRequestContext, ? super RequestLog>,
-              ? extends SpanStatusExtractor<? super ServiceRequestContext, ? super RequestLog>>
+              SpanStatusExtractor<ServiceRequestContext, RequestLog>,
+              SpanStatusExtractor<ServiceRequestContext, RequestLog>>
           statusExtractor) {
     serverBuilder.setStatusExtractor(statusExtractor);
     return this;
@@ -275,9 +275,7 @@ public final class ArmeriaTelemetryBuilder {
   @Deprecated
   @CanIgnoreReturnValue
   public ArmeriaTelemetryBuilder setClientSpanNameExtractor(
-      Function<
-              SpanNameExtractor<? super ClientRequestContext>,
-              ? extends SpanNameExtractor<? super ClientRequestContext>>
+      Function<SpanNameExtractor<ClientRequestContext>, SpanNameExtractor<ClientRequestContext>>
           clientSpanNameExtractor) {
     clientBuilder.setSpanNameExtractor(clientSpanNameExtractor);
     return this;
@@ -291,9 +289,7 @@ public final class ArmeriaTelemetryBuilder {
   @Deprecated
   @CanIgnoreReturnValue
   public ArmeriaTelemetryBuilder setServerSpanNameExtractor(
-      Function<
-              SpanNameExtractor<? super ServiceRequestContext>,
-              ? extends SpanNameExtractor<? super ServiceRequestContext>>
+      Function<SpanNameExtractor<ServiceRequestContext>, SpanNameExtractor<ServiceRequestContext>>
           serverSpanNameExtractor) {
     serverBuilder.setSpanNameExtractor(serverSpanNameExtractor);
     return this;

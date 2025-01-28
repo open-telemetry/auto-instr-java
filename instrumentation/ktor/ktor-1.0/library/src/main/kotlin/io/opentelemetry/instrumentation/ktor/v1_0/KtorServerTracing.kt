@@ -46,7 +46,7 @@ class KtorServerTracing private constructor(
     }
 
     fun setStatusExtractor(
-      extractor: (SpanStatusExtractor<in ApplicationRequest, in ApplicationResponse>) -> SpanStatusExtractor<in ApplicationRequest, in ApplicationResponse>
+      extractor: (SpanStatusExtractor<ApplicationRequest, ApplicationResponse>) -> SpanStatusExtractor<ApplicationRequest, in ApplicationResponse>
     ) {
       builder.setStatusExtractor { prevExtractor ->
         SpanStatusExtractor {
@@ -64,7 +64,7 @@ class KtorServerTracing private constructor(
       this.spanKindExtractor = extractor
     }
 
-    fun addAttributeExtractor(extractor: AttributesExtractor<in ApplicationRequest, in ApplicationResponse>) {
+    fun addAttributeExtractor(extractor: AttributesExtractor<ApplicationRequest, ApplicationResponse>) {
       builder.addAttributesExtractor(extractor)
     }
 
