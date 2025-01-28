@@ -16,8 +16,8 @@ muzzle {
 
 dependencies {
   compileOnly(project(":instrumentation-annotations-support"))
-
   compileOnly(project(":javaagent-tooling"))
+  implementation(project(":instrumentation:opentelemetry-instrumentation-annotations:opentelemetry-instrumentation-annotations-common:javaagent"))
 
   // this instrumentation needs to do similar shading dance as opentelemetry-api-1.0 because
   // the @WithSpan annotation references the OpenTelemetry API's SpanKind class
