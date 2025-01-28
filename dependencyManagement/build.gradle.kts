@@ -46,7 +46,7 @@ val asmVersion = "9.7.1"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.16"
-val semConvVersion = "1.29.0-alpha"
+val semConvVersion = "1.30.0-rc.1"
 
 val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.semconv:opentelemetry-semconv:${semConvVersion}",
