@@ -5,6 +5,7 @@ on:
       - "benchmark-overhead/Dockerfile.petclinic"
     branches:
       - main
+  merge_group:
   workflow_dispatch:
 
 permissions:

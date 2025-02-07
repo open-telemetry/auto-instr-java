@@ -69,6 +69,20 @@ settings](https://github.com/open-telemetry/community/blob/main/docs/how-to-conf
   - Require linear history: CHECKED
   - Block force pushes: CHECKED
 
+### Merge queue
+
+- Targeted branches:
+  - Default
+- Branch rules
+  - Require merge queue: CHECKED
+    - Merge method: Squash and merge
+    - Build concurrency: 5
+    - Minimum group size: 1
+    - Maximum group size: 5
+    - Wait time to meet minimum group size (minutes): 5
+    - Require all queue entries to pass required checks: CHECKED
+    - Status check timeout (minutes): 120
+
 ### Restrict branch creation
 
 - Targeted branches

@@ -17,6 +17,7 @@ on:
       - v1.*
       - cloudfoundry
       - gh-pages
+  merge_group:
   schedule:
     - cron: "29 13 * * 2"  # weekly at 13:29 UTC on Tuesday
 
