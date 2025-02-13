@@ -27,7 +27,7 @@ public final class ExperimentalCpu {
     return registerObservers(
         openTelemetry,
         ManagementFactory.getOperatingSystemMXBean(),
-        CpuMethods.systemCpuUtilization());
+        OperatingSystemMethods.systemCpuUtilization());
   }
 
   // Visible for testing

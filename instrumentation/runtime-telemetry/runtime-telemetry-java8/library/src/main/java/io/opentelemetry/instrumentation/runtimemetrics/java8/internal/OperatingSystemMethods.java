@@ -16,38 +16,33 @@ import javax.annotation.Nullable;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
-public final class CpuMethods {
+public final class OperatingSystemMethods {
 
   private static final String OS_BEAN_J9 = "com.ibm.lang.management.OperatingSystemMXBean";
   private static final String OS_BEAN_HOTSPOT = "com.sun.management.OperatingSystemMXBean";
+  private static final String UNIX_OS_BEAN_J9 = "com.ibm.lang.management.UnixOperatingSystemMXBean";
+  private static final String UNIX_OS_BEAN_HOTSPOT = "com.sun.management.UnixOperatingSystemMXBean";
   private static final String METHOD_PROCESS_CPU_TIME = "getProcessCpuTime";
   private static final String METHOD_PROCESS_CPU_LOAD = "getProcessCpuLoad";
   private static final String METHOD_CPU_LOAD = "getCpuLoad";
   private static final String METHOD_SYSTEM_CPU_LOAD = "getSystemCpuLoad";
+  private static final String METHOD_OPEN_FILE_DESCRIPTOR_COUNT = "getOpenFileDescriptorCount";
+  private static final String METHOD_MAX_FILE_DESCRIPTOR_COUNT = "getMaxFileDescriptorCount";
 
   @Nullable private static final Supplier<Long> processCpuTime;
   @Nullable private static final Supplier<Double> processCpuUtilization;
   @Nullable private static final Supplier<Double> systemCpuUtilization;
+  @Nullable private static final Supplier<Long> openFileDescriptorCount;
+  @Nullable private static final Supplier<Long> maxFileDescriptorCount;
 
   static {
     OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
 
-    Supplier<Long> processCpuTimeSupplier =
-        methodInvoker(osBean, OS_BEAN_HOTSPOT, METHOD_PROCESS_CPU_TIME, Long.class);
-    if (processCpuTimeSupplier == null) {
-      // More users will be on hotspot than j9, so check for j9 second
-      processCpuTimeSupplier =
-          methodInvoker(osBean, OS_BEAN_J9, METHOD_PROCESS_CPU_TIME, Long.class);
-    }
-    processCpuTime = processCpuTimeSupplier;
+    processCpuTime =
+        findMethod(osBean, OS_BEAN_HOTSPOT, OS_BEAN_J9, METHOD_PROCESS_CPU_TIME, Long.class);
 
-    Supplier<Double> processCpuSupplier =
-        methodInvoker(osBean, OS_BEAN_HOTSPOT, METHOD_PROCESS_CPU_LOAD, Double.class);
-    if (processCpuSupplier == null) {
-      // More users will be on hotspot than j9, so check for j9 second
-      processCpuSupplier = methodInvoker(osBean, OS_BEAN_J9, METHOD_PROCESS_CPU_LOAD, Double.class);
-    }
-    processCpuUtilization = processCpuSupplier;
+    processCpuUtilization =
+        findMethod(osBean, OS_BEAN_HOTSPOT, OS_BEAN_J9, METHOD_PROCESS_CPU_LOAD, Double.class);
 
     // As of java 14, com.sun.management.OperatingSystemMXBean#getCpuLoad() is preferred and
     // #getSystemCpuLoad() is deprecated
@@ -55,13 +50,25 @@ public final class CpuMethods {
         methodInvoker(osBean, OS_BEAN_HOTSPOT, METHOD_CPU_LOAD, Double.class);
     if (systemCpuSupplier == null) {
       systemCpuSupplier =
-          methodInvoker(osBean, OS_BEAN_HOTSPOT, METHOD_SYSTEM_CPU_LOAD, Double.class);
-    }
-    if (systemCpuSupplier == null) {
-      // More users will be on hotspot than j9, so check for j9 second
-      systemCpuSupplier = methodInvoker(osBean, OS_BEAN_J9, METHOD_SYSTEM_CPU_LOAD, Double.class);
+          findMethod(osBean, OS_BEAN_HOTSPOT, OS_BEAN_J9, METHOD_SYSTEM_CPU_LOAD, Double.class);
     }
     systemCpuUtilization = systemCpuSupplier;
+
+    openFileDescriptorCount =
+        findMethod(
+            osBean,
+            UNIX_OS_BEAN_HOTSPOT,
+            UNIX_OS_BEAN_J9,
+            METHOD_OPEN_FILE_DESCRIPTOR_COUNT,
+            Long.class);
+
+    maxFileDescriptorCount =
+        findMethod(
+            osBean,
+            UNIX_OS_BEAN_HOTSPOT,
+            UNIX_OS_BEAN_J9,
+            METHOD_MAX_FILE_DESCRIPTOR_COUNT,
+            Long.class);
   }
 
   @Nullable
@@ -87,6 +94,22 @@ public final class CpuMethods {
     }
   }
 
+  // judge whether use hotspots or openj9
+  private static <T extends Number> Supplier<T> findMethod(
+      OperatingSystemMXBean osBean,
+      String osBeanClassName,
+      String osBeanJ9ClassName,
+      String methodName,
+      Class<T> returnType) {
+    Supplier<T> processSupplier = methodInvoker(osBean, osBeanClassName, methodName, returnType);
+    if (processSupplier == null) {
+      // More users will be on hotspot than j9, so check for j9 second
+      processSupplier = methodInvoker(osBean, osBeanJ9ClassName, methodName, returnType);
+    }
+
+    return processSupplier;
+  }
+
   public static Supplier<Long> processCpuTime() {
     return processCpuTime;
   }
@@ -99,5 +122,13 @@ public final class CpuMethods {
     return systemCpuUtilization;
   }
 
-  private CpuMethods() {}
+  public static Supplier<Long> openFileDescriptorCount() {
+    return openFileDescriptorCount;
+  }
+
+  public static Supplier<Long> maxFileDescriptorCount() {
+    return maxFileDescriptorCount;
+  }
+
+  private OperatingSystemMethods() {}
 }
