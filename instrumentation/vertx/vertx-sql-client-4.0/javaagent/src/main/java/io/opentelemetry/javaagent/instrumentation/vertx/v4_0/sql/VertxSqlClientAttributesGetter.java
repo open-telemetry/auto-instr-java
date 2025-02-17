@@ -12,7 +12,7 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 
 public enum VertxSqlClientAttributesGetter
-    implements SqlClientAttributesGetter<VertxSqlClientRequest> {
+    implements SqlClientAttributesGetter<VertxSqlClientRequest, Void> {
   INSTANCE;
 
   @Override

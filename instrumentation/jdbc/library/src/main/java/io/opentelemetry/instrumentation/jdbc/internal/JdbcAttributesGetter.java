@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
-public final class JdbcAttributesGetter implements SqlClientAttributesGetter<DbRequest> {
+public final class JdbcAttributesGetter implements SqlClientAttributesGetter<DbRequest, Void> {
 
   @Nullable
   @Override
@@ -55,7 +55,7 @@ public final class JdbcAttributesGetter implements SqlClientAttributesGetter<DbR
   }
 
   @Override
-  public String getResponseStatus(Throwable throwable) {
+  public String getResponseStatusFromException(Throwable throwable) {
     if (throwable instanceof SQLException) {
       return String.valueOf(((SQLException) throwable).getErrorCode());
     }

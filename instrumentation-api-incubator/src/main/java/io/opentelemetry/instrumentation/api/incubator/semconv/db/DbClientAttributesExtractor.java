@@ -23,23 +23,23 @@ import io.opentelemetry.instrumentation.api.internal.SemconvStability;
  */
 public final class DbClientAttributesExtractor<REQUEST, RESPONSE>
     extends DbClientCommonAttributesExtractor<
-        REQUEST, RESPONSE, DbClientAttributesGetter<REQUEST>> {
+        REQUEST, RESPONSE, DbClientAttributesGetter<REQUEST, RESPONSE>> {
 
   // copied from DbIncubatingAttributes
   private static final AttributeKey<String> DB_STATEMENT = AttributeKey.stringKey("db.statement");
   private static final AttributeKey<String> DB_QUERY_TEXT = AttributeKey.stringKey("db.query.text");
   static final AttributeKey<String> DB_OPERATION = AttributeKey.stringKey("db.operation");
   static final AttributeKey<String> DB_OPERATION_NAME = AttributeKey.stringKey("db.operation.name");
-  static final AttributeKey<Long> DB_RESPONSE_STATUS_CODE =
-      AttributeKey.longKey("db.response.status_code");
+  static final AttributeKey<String> DB_RESPONSE_STATUS_CODE =
+      AttributeKey.stringKey("db.response.status_code");
 
   /** Creates the database client attributes extractor with default configuration. */
   public static <REQUEST, RESPONSE> AttributesExtractor<REQUEST, RESPONSE> create(
-      DbClientAttributesGetter<REQUEST> getter) {
+      DbClientAttributesGetter<REQUEST, RESPONSE> getter) {
     return new DbClientAttributesExtractor<>(getter);
   }
 
-  DbClientAttributesExtractor(DbClientAttributesGetter<REQUEST> getter) {
+  DbClientAttributesExtractor(DbClientAttributesGetter<REQUEST, RESPONSE> getter) {
     super(getter);
   }
 

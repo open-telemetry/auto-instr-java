@@ -8,7 +8,7 @@ package io.opentelemetry.instrumentation.api.incubator.semconv.db;
 import javax.annotation.Nullable;
 
 /** An interface for getting attributes common to database clients. */
-public interface DbClientCommonAttributesGetter<REQUEST> {
+public interface DbClientCommonAttributesGetter<REQUEST, RESPONSE> {
 
   @Deprecated
   @Nullable
@@ -45,9 +45,13 @@ public interface DbClientCommonAttributesGetter<REQUEST> {
   @Nullable
   String getConnectionString(REQUEST request);
 
-  // TODO: make this required to implement
   @Nullable
-  default String getResponseStatus(Throwable throwable) {
+  default String getResponseStatusFromException(Throwable throwable) {
+    return null;
+  }
+
+  @Nullable
+  default String getResponseStatus(RESPONSE response) {
     return null;
   }
 }

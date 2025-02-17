@@ -17,7 +17,7 @@ import io.opentelemetry.instrumentation.api.internal.SpanKeyProvider;
 import javax.annotation.Nullable;
 
 abstract class DbClientCommonAttributesExtractor<
-        REQUEST, RESPONSE, GETTER extends DbClientCommonAttributesGetter<REQUEST>>
+        REQUEST, RESPONSE, GETTER extends DbClientCommonAttributesGetter<REQUEST, RESPONSE>>
     implements AttributesExtractor<REQUEST, RESPONSE>, SpanKeyProvider {
 
   // copied from DbIncubatingAttributes
@@ -66,9 +66,10 @@ abstract class DbClientCommonAttributesExtractor<
       @Nullable Throwable error) {
     if (error != null) {
       internalSet(attributes, ERROR_TYPE, error.getClass().getName());
+      internalSet(attributes, DB_RESPONSE_STATUS_CODE, getter.getResponseStatusFromException(error));
     }
     if (response != null) {
-      internalSet(attributes, DB_RESPONSE_STATUS_CODE, getter.getResponseStatus(error));
+      internalSet(attributes, DB_RESPONSE_STATUS_CODE, getter.getResponseStatus(response));
     }
   }
 

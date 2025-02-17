@@ -23,7 +23,7 @@ import org.bson.codecs.EncoderContext;
 import org.bson.json.JsonWriter;
 import org.bson.json.JsonWriterSettings;
 
-class MongoDbAttributesGetter implements DbClientAttributesGetter<CommandStartedEvent> {
+class MongoDbAttributesGetter implements DbClientAttributesGetter<CommandStartedEvent, Void> {
 
   // copied from DbIncubatingAttributes.DbSystemIncubatingValues
   private static final String MONGODB = "mongodb";
