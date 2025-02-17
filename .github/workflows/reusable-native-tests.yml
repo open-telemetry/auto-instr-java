@@ -17,14 +17,17 @@ jobs:
   graalvm-native-tests:
     if: "!inputs.skip-native-tests"
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-java-version:
+          - 21 # latest LTS
+          - 23 # latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - id: read-java
-        run: echo "version=$(cat .java-version)" >> "$GITHUB_OUTPUT"
       - uses: graalvm/setup-graalvm@aafbedb8d382ed0ca6167d3a051415f20c859274 # v1.2.8.1
         with:
           version: "latest"
-          java-version: "${{ steps.read-java.outputs.version }}"
+          java-version: ${{ matrix.test-java-version }}
           components: "native-image"
       - name: Running test
         env:
