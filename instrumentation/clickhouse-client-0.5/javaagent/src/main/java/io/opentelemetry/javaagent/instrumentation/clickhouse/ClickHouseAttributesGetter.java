@@ -9,7 +9,8 @@ import io.opentelemetry.instrumentation.api.incubator.semconv.db.DbClientAttribu
 import io.opentelemetry.semconv.incubating.DbIncubatingAttributes;
 import javax.annotation.Nullable;
 
-final class ClickHouseAttributesGetter implements DbClientAttributesGetter<ClickHouseDbRequest, Void> {
+final class ClickHouseAttributesGetter
+    implements DbClientAttributesGetter<ClickHouseDbRequest, Void> {
 
   @Nullable
   @Override

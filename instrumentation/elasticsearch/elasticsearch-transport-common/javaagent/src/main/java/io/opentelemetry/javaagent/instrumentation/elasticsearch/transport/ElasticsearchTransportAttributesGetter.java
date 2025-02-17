@@ -7,8 +7,8 @@ package io.opentelemetry.javaagent.instrumentation.elasticsearch.transport;
 
 import io.opentelemetry.instrumentation.api.incubator.semconv.db.DbClientAttributesGetter;
 import io.opentelemetry.semconv.incubating.DbIncubatingAttributes;
-import org.elasticsearch.client.Response;
 import javax.annotation.Nullable;
+import org.elasticsearch.client.Response;
 
 final class ElasticsearchTransportAttributesGetter
     implements DbClientAttributesGetter<ElasticTransportRequest, Response> {

@@ -85,10 +85,11 @@ class JdbcTelemetryTest {
     DataSource dataSource = telemetry.wrap(source);
 
     assertThatCode(
-        () -> testing.runWithSpan(
-            "parent", () -> dataSource.getConnection()
-                    .createStatement().execute("SELECT 1;"))
-    ).isInstanceOf(SQLException.class);
+            () ->
+                testing.runWithSpan(
+                    "parent",
+                    () -> dataSource.getConnection().createStatement().execute("SELECT 1;")))
+        .isInstanceOf(SQLException.class);
 
     testing.waitAndAssertTraces(
         trace ->
@@ -98,8 +99,7 @@ class JdbcTelemetryTest {
                 span ->
                     span.hasName("SELECT dbname")
                         .hasAttribute(equalTo(DB_RESPONSE_STATUS_CODE, "42"))
-                        .hasAttribute(equalTo(ERROR_TYPE, "java.sql.SQLException"))
-            ));
+                        .hasAttribute(equalTo(ERROR_TYPE, "java.sql.SQLException"))));
 
     assertDurationMetric(
         testing,

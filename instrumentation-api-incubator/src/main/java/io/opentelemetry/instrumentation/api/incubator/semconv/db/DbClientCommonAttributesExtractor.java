@@ -66,7 +66,8 @@ abstract class DbClientCommonAttributesExtractor<
       @Nullable Throwable error) {
     if (error != null) {
       internalSet(attributes, ERROR_TYPE, error.getClass().getName());
-      internalSet(attributes, DB_RESPONSE_STATUS_CODE, getter.getResponseStatusFromException(error));
+      internalSet(
+          attributes, DB_RESPONSE_STATUS_CODE, getter.getResponseStatusFromException(error));
     }
     if (response != null) {
       internalSet(attributes, DB_RESPONSE_STATUS_CODE, getter.getResponseStatus(response));

@@ -12,7 +12,8 @@ import io.opentelemetry.semconv.incubating.DbIncubatingAttributes;
 import java.util.Collection;
 import javax.annotation.Nullable;
 
-final class CassandraSqlAttributesGetter implements SqlClientAttributesGetter<CassandraRequest, Void> {
+final class CassandraSqlAttributesGetter
+    implements SqlClientAttributesGetter<CassandraRequest, Void> {
 
   @SuppressWarnings("deprecation") // using deprecated DbSystemIncubatingValues
   @Override
