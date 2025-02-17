@@ -44,4 +44,10 @@ public interface DbClientCommonAttributesGetter<REQUEST> {
   @Deprecated
   @Nullable
   String getConnectionString(REQUEST request);
+
+  // TODO: make this required to implement
+  @Nullable
+  default String getResponseStatus(Throwable throwable) {
+    return null;
+  }
 }

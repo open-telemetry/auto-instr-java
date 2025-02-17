@@ -7,6 +7,7 @@ package io.opentelemetry.instrumentation.jdbc.internal;
 
 import io.opentelemetry.instrumentation.api.incubator.semconv.db.SqlClientAttributesGetter;
 import io.opentelemetry.instrumentation.jdbc.internal.dbinfo.DbInfo;
+import java.sql.SQLException;
 import java.util.Collection;
 import javax.annotation.Nullable;
 
@@ -51,5 +52,13 @@ public final class JdbcAttributesGetter implements SqlClientAttributesGetter<DbR
   @Override
   public Long getBatchSize(DbRequest request) {
     return request.getBatchSize();
+  }
+
+  @Override
+  public String getResponseStatus(Throwable throwable) {
+    if (throwable instanceof SQLException) {
+      return String.valueOf(((SQLException) throwable).getErrorCode());
+    }
+    return null;
   }
 }

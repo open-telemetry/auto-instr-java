@@ -29,6 +29,9 @@ abstract class DbClientCommonAttributesExtractor<
   private static final AttributeKey<String> DB_USER = AttributeKey.stringKey("db.user");
   private static final AttributeKey<String> DB_CONNECTION_STRING =
       AttributeKey.stringKey("db.connection_string");
+  private static final AttributeKey<String> ERROR_TYPE = AttributeKey.stringKey("error.type");
+  private static final AttributeKey<String> DB_RESPONSE_STATUS_CODE =
+      AttributeKey.stringKey("db.response.status_code");
 
   final GETTER getter;
 
@@ -60,7 +63,14 @@ abstract class DbClientCommonAttributesExtractor<
       Context context,
       REQUEST request,
       @Nullable RESPONSE response,
-      @Nullable Throwable error) {}
+      @Nullable Throwable error) {
+    if (error != null) {
+      internalSet(attributes, ERROR_TYPE, error.getClass().getName());
+    }
+    if (response != null) {
+      internalSet(attributes, DB_RESPONSE_STATUS_CODE, getter.getResponseStatus(error));
+    }
+  }
 
   /**
    * This method is internal and is hence not for public use. Its API is unstable and can change at
