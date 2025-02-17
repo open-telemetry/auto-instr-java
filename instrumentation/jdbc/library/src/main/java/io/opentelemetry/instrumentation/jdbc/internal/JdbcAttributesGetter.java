@@ -57,7 +57,7 @@ public final class JdbcAttributesGetter implements SqlClientAttributesGetter<DbR
   @Override
   public String getResponseStatusFromException(Throwable throwable) {
     if (throwable instanceof SQLException) {
-      return String.valueOf(((SQLException) throwable).getErrorCode());
+      return Integer.toString(((SQLException) throwable).getErrorCode());
     }
     return null;
   }
