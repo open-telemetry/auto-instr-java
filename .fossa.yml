@@ -894,6 +894,9 @@ targets:
       target: ':instrumentation:spring:spring-kafka-2.7:library'
     - type: gradle
       path: ./
+      target: ':instrumentation:spring:spring-pulsar-1.0:javaagent'
+    - type: gradle
+      path: ./
       target: ':instrumentation:spring:spring-rabbit-1.0:javaagent'
     - type: gradle
       path: ./
