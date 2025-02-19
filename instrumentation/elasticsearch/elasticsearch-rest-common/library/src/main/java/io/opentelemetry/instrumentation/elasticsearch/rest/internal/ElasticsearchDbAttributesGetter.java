@@ -95,6 +95,6 @@ final class ElasticsearchDbAttributesGetter
 
   @Override
   public String getResponseStatus(Response response) {
-    return String.valueOf(response.getStatusLine().getStatusCode());
+    return httpStatusToResponseStatus(response.getStatusLine().getStatusCode());
   }
 }

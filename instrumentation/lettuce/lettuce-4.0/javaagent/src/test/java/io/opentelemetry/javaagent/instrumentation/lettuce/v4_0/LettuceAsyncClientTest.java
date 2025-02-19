@@ -8,6 +8,7 @@ package io.opentelemetry.javaagent.instrumentation.lettuce.v4_0;
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.instrumentation.testing.junit.db.SemconvStabilityUtil.maybeStable;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static io.opentelemetry.semconv.ErrorAttributes.ERROR_TYPE;
 import static io.opentelemetry.semconv.ServerAttributes.SERVER_ADDRESS;
 import static io.opentelemetry.semconv.ServerAttributes.SERVER_PORT;
 import static io.opentelemetry.semconv.incubating.DbIncubatingAttributes.DB_OPERATION;
@@ -422,7 +423,9 @@ class LettuceAsyncClientTest {
                         .hasException(new IllegalStateException("TestException"))
                         .hasAttributesSatisfyingExactly(
                             equalTo(maybeStable(DB_SYSTEM), "redis"),
-                            equalTo(maybeStable(DB_OPERATION), "DEL"))));
+                            equalTo(maybeStable(DB_OPERATION), "DEL"),
+                            equalTo(maybeStable(ERROR_TYPE), "java.lang.IllegalStateException")
+                        )));
   }
 
   @Test
