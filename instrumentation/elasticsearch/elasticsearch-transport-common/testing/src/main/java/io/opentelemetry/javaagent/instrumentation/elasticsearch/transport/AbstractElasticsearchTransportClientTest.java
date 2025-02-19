@@ -11,6 +11,7 @@ import static io.opentelemetry.instrumentation.testing.junit.db.SemconvStability
 import static io.opentelemetry.instrumentation.testing.util.TelemetryDataUtil.orderByRootSpanName;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.satisfies;
+import static io.opentelemetry.semconv.ErrorAttributes.ERROR_TYPE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_TYPE;
 import static io.opentelemetry.semconv.NetworkAttributes.NETWORK_PEER_ADDRESS;
 import static io.opentelemetry.semconv.NetworkAttributes.NETWORK_PEER_PORT;
@@ -145,6 +146,8 @@ public abstract class AbstractElasticsearchTransportClientTest
                                 maybeStable(DB_SYSTEM),
                                 DbIncubatingAttributes.DbSystemIncubatingValues.ELASTICSEARCH),
                             equalTo(maybeStable(DB_OPERATION), "GetAction"),
+                            equalTo(
+                                ERROR_TYPE, "org.elasticsearch.transport.RemoteTransportException"),
                             equalTo(ELASTICSEARCH_ACTION, "GetAction"),
                             equalTo(ELASTICSEARCH_REQUEST, "GetRequest"),
                             equalTo(ELASTICSEARCH_REQUEST_INDICES, "invalid-index")),

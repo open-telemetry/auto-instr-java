@@ -884,9 +884,7 @@ class SpymemcachedTest {
                                 maybeStable(DB_SYSTEM),
                                 DbIncubatingAttributes.DbSystemIncubatingValues.MEMCACHED),
                             equalTo(maybeStable(DB_OPERATION), "decr"),
-                            equalTo(
-                                ERROR_TYPE,
-                                "net.spy.memcached.internal.CheckedOperationTimeoutException"))));
+                            equalTo(ERROR_TYPE, "java.lang.IllegalArgumentException"))));
   }
 
   @Test
