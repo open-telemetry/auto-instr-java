@@ -425,7 +425,7 @@ class LettuceAsyncClientTest extends AbstractLettuceClientTest {
                             equalTo(maybeStable(DB_SYSTEM), "redis"),
                             equalTo(maybeStable(DB_STATEMENT), "DEL key1 key2"),
                             equalTo(maybeStable(DB_OPERATION), "DEL"),
-                            equalTo(maybeStable(ERROR_TYPE), "java.lang.IllegalStateException"))));
+                            equalTo(ERROR_TYPE, "java.lang.IllegalStateException"))));
   }
 
   @Test

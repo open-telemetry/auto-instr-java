@@ -9,6 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.instrumentation.testing.junit.db.SemconvStabilityUtil.maybeStable;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static io.opentelemetry.semconv.ErrorAttributes.ERROR_TYPE;
 import static io.opentelemetry.semconv.incubating.DbIncubatingAttributes.DB_OPERATION;
 import static io.opentelemetry.semconv.incubating.DbIncubatingAttributes.DB_SYSTEM;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -123,6 +124,7 @@ public abstract class AbstractElasticsearchNodeClientTest extends AbstractElasti
                                 maybeStable(DB_SYSTEM),
                                 DbIncubatingAttributes.DbSystemIncubatingValues.ELASTICSEARCH),
                             equalTo(maybeStable(DB_OPERATION), "GetAction"),
+                            equalTo(ERROR_TYPE, "org.elasticsearch.index.IndexNotFoundException"),
                             equalTo(ELASTICSEARCH_ACTION, "GetAction"),
                             equalTo(ELASTICSEARCH_REQUEST, "GetRequest"),
                             equalTo(ELASTICSEARCH_REQUEST_INDICES, "invalid-index")),
