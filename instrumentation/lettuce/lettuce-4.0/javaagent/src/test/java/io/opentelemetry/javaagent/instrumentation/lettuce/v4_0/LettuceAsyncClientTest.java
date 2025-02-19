@@ -424,7 +424,7 @@ class LettuceAsyncClientTest {
                         .hasAttributesSatisfyingExactly(
                             equalTo(maybeStable(DB_SYSTEM), "redis"),
                             equalTo(maybeStable(DB_OPERATION), "DEL"),
-                            equalTo(maybeStable(ERROR_TYPE), "java.lang.IllegalStateException"))));
+                            equalTo(ERROR_TYPE, "java.lang.IllegalStateException"))));
   }
 
   @Test
