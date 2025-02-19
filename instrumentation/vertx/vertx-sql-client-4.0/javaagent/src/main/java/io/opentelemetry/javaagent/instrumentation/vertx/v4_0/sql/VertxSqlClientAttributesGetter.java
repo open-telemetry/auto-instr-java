@@ -44,4 +44,14 @@ public enum VertxSqlClientAttributesGetter
   public Collection<String> getRawQueryTexts(VertxSqlClientRequest request) {
     return singleton(request.getQueryText());
   }
+
+  @Nullable
+  @Override
+  public String getResponseStatusFromException(Throwable throwable) {
+    // 4.4.2 has this
+    //    if (throwable instanceof io.vertx.sqlclient.DatabaseException) {
+    //
+    //    }
+    return null;
+  }
 }
