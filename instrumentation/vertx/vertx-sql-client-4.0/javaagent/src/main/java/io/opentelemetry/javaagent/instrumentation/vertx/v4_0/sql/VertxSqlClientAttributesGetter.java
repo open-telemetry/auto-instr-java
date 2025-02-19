@@ -48,6 +48,7 @@ public enum VertxSqlClientAttributesGetter
   @Nullable
   @Override
   public String getResponseStatusFromException(Throwable throwable) {
+    // todo
     // 4.4.2 has this
     //    if (throwable instanceof io.vertx.sqlclient.DatabaseException) {
     //

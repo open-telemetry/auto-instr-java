@@ -55,6 +55,7 @@ final class CouchbaseAttributesGetter
   @Override
   public String getResponseStatusFromException(Throwable throwable) {
     if (throwable instanceof CouchbaseException) {
+      // todo
       //      ResponseStatusDetails details = ((CouchbaseException) throwable).details();
       // in newer versions of the SDK, this is available as a method on the exception
       // check if it's available and contains the status
