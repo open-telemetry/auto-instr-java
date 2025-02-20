@@ -40,7 +40,7 @@ public final class RatpackServerTelemetryBuilder {
    */
   @CanIgnoreReturnValue
   public RatpackServerTelemetryBuilder addAttributesExtractor(
-      AttributesExtractor<? super Request, ? super Response> attributesExtractor) {
+      AttributesExtractor<Request, Response> attributesExtractor) {
     builder.addAttributesExtractor(attributesExtractor);
     return this;
   }
@@ -91,8 +91,7 @@ public final class RatpackServerTelemetryBuilder {
   /** Sets custom server {@link SpanNameExtractor} via transform function. */
   @CanIgnoreReturnValue
   public RatpackServerTelemetryBuilder setSpanNameExtractor(
-      Function<SpanNameExtractor<? super Request>, ? extends SpanNameExtractor<? super Request>>
-          serverSpanNameExtractor) {
+      Function<SpanNameExtractor<Request>, SpanNameExtractor<Request>> serverSpanNameExtractor) {
     builder.setSpanNameExtractor(serverSpanNameExtractor);
     return this;
   }

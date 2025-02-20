@@ -96,9 +96,7 @@ public final class SpringWebfluxClientTelemetryBuilder {
   /** Sets custom client {@link SpanNameExtractor} via transform function. */
   @CanIgnoreReturnValue
   public SpringWebfluxClientTelemetryBuilder setSpanNameExtractor(
-      Function<
-              SpanNameExtractor<? super ClientRequest>,
-              ? extends SpanNameExtractor<? super ClientRequest>>
+      Function<SpanNameExtractor<ClientRequest>, SpanNameExtractor<ClientRequest>>
           clientSpanNameExtractor) {
     builder.setSpanNameExtractor(clientSpanNameExtractor);
     return this;

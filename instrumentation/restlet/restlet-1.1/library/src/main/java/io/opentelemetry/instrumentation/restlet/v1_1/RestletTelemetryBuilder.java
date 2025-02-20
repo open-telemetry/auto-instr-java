@@ -103,7 +103,7 @@ public final class RestletTelemetryBuilder {
   /** Sets custom {@link SpanNameExtractor} via transform function. */
   @CanIgnoreReturnValue
   public RestletTelemetryBuilder setSpanNameExtractor(
-      Function<SpanNameExtractor<? super Request>, ? extends SpanNameExtractor<? super Request>>
+      Function<SpanNameExtractor<Request>, SpanNameExtractor<Request>>
           spanNameExtractorTransformer) {
     builder.setSpanNameExtractor(spanNameExtractorTransformer);
     return this;
