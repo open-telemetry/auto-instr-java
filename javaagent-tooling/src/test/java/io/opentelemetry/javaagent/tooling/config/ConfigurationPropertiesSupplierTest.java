@@ -32,6 +32,7 @@ class ConfigurationPropertiesSupplierTest {
   @AfterAll
   static void cleanUp() {
     GlobalOpenTelemetry.resetForTest();
+    ConfigurationFile.resetForTest();
   }
 
   // regression for https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/6696

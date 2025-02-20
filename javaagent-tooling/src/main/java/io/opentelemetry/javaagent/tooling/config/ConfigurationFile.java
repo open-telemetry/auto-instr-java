@@ -40,6 +40,11 @@ final class ConfigurationFile {
   }
 
   // visible for tests
+  static void resetForTest() {
+    configFileContents = null;
+  }
+
+  // visible for tests
   static Map<String, String> loadConfigFile() {
     // Reading from system property first and from env after
     String configurationFilePath = ConfigPropertiesUtil.getString(CONFIGURATION_FILE_PROPERTY);
