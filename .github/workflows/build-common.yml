@@ -223,7 +223,7 @@ jobs:
           path: "sboms/*.json"
 
   test:
-    name: test${{ matrix.test-partition }} (${{ matrix.test-java-version }}, ${{ matrix.vm }})
+    name: test${{ matrix.test-partition }} (${{ matrix.test-java-version }}, ${{ matrix.vm }}, indy ${{ matrix.test-indy }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -241,6 +241,9 @@ jobs:
           - 1
           - 2
           - 3
+        test-indy:
+          - false
+          - true
         exclude:
           - vm: ${{ inputs.skip-openj9-tests && 'openj9' || '' }}
       fail-fast: false
@@ -307,6 +310,7 @@ jobs:
           ${{ env.test-tasks }}
           -PtestJavaVersion=${{ matrix.test-java-version }}
           -PtestJavaVM=${{ matrix.vm }}
+          -PtestIndy=${{ matrix.test-indy }}
           -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }}
           -Porg.gradle.java.installations.auto-download=false
           ${{ inputs.no-build-cache && ' --no-build-cache' || '' }}
@@ -324,15 +328,22 @@ jobs:
         with:
           result-encoding: string
           script: |
-            const { data: workflow_run } = await github.rest.actions.listJobsForWorkflowRun({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.runId,
-              per_page: 100
-            });
             const matrix = JSON.parse(process.env.matrix);
-            const job_name = `common / test${ matrix['test-partition'] } (${ matrix['test-java-version'] }, ${ matrix.vm })`;
-            return workflow_run.jobs.find((job) => job.name === job_name).html_url;
+            const job_name = `common / test${ matrix['test-partition'] } (${ matrix['test-java-version'] }, ${ matrix.vm }, indy ${ matrix['test-indy'] })`;
+            
+            const workflow_jobs_nested = await github.paginate(
+              github.rest.actions.listJobsForWorkflowRun,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: context.runId,
+                per_page: 100
+              },
+              (response) => {
+                return response.data;
+              },
+            );
+            return workflow_jobs_nested.flat().find((job) => job.name === job_name).html_url;
 
       - name: Flaky test report
         if: ${{ !cancelled() }}
@@ -349,7 +360,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
-          name: deadlock-detector-test-${{ matrix.test-java-version }}-${{ matrix.vm }}-${{ matrix.test-partition }}
+          name: deadlock-detector-test-${{ matrix.test-java-version }}-${{ matrix.vm }}-${{ matrix.test-partition }}-indy-${{ matrix.test-indy }}
           path: /tmp/deadlock-detector-*
           if-no-files-found: ignore
 
