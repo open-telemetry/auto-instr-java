@@ -51,6 +51,9 @@ targets:
       target: ':testing:agent-for-testing'
     - type: gradle
       path: ./
+      target: ':instrumentation:activej-http-6.0:javaagent'
+    - type: gradle
+      path: ./
       target: ':instrumentation:alibaba-druid-1.0:javaagent'
     - type: gradle
       path: ./
