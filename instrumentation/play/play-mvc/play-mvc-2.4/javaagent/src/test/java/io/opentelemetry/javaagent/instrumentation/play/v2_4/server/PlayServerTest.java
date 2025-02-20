@@ -13,7 +13,10 @@ import static io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint
 import static io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint.QUERY_PARAM;
 import static io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint.REDIRECT;
 import static io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint.SUCCESS;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static io.opentelemetry.semconv.HttpAttributes.HTTP_ROUTE;
+import static io.opentelemetry.semconv.incubating.CodeIncubatingAttributes.CODE_FUNCTION;
+import static io.opentelemetry.semconv.incubating.CodeIncubatingAttributes.CODE_NAMESPACE;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.instrumentation.testing.junit.InstrumentationExtension;
@@ -112,9 +115,15 @@ class PlayServerTest extends AbstractHttpServerTest<Server> {
   }
 
   @Override
+  @SuppressWarnings("deprecation") // uses deprecated semconv
   public SpanDataAssert assertHandlerSpan(
       SpanDataAssert span, String method, ServerEndpoint endpoint) {
-    span.hasName("play.request").hasKind(INTERNAL);
+    span.hasName("play.request")
+        .hasKind(INTERNAL)
+        .hasAttributesSatisfyingExactly(
+            equalTo(CODE_NAMESPACE, "play.api.mvc.ActionBuilder$$anon$2"),
+            equalTo(CODE_FUNCTION, "apply"));
+
     if (endpoint == EXCEPTION) {
       span.hasStatus(StatusData.error());
       span.hasException(new IllegalArgumentException(EXCEPTION.getBody()));
