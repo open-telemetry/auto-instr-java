@@ -12,8 +12,8 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.annotation.support.async.AsyncOperationEndHandler;
 import io.opentelemetry.instrumentation.api.annotation.support.async.AsyncOperationEndStrategy;
-import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 
 public final class GuavaAsyncOperationEndStrategy implements AsyncOperationEndStrategy {
   // Visible for testing
@@ -41,19 +41,19 @@ public final class GuavaAsyncOperationEndStrategy implements AsyncOperationEndSt
 
   @Override
   public <REQUEST, RESPONSE> Object end(
-      Instrumenter<REQUEST, RESPONSE> instrumenter,
+      AsyncOperationEndHandler<REQUEST, RESPONSE> handler,
       Context context,
       REQUEST request,
       Object asyncValue,
       Class<RESPONSE> responseType) {
 
     ListenableFuture<?> future = (ListenableFuture<?>) asyncValue;
-    end(instrumenter, context, request, future, responseType);
+    end(handler, context, request, future, responseType);
     return future;
   }
 
   private <REQUEST, RESPONSE> void end(
-      Instrumenter<REQUEST, RESPONSE> instrumenter,
+      AsyncOperationEndHandler<REQUEST, RESPONSE> handler,
       Context context,
       REQUEST request,
       ListenableFuture<?> future,
@@ -63,18 +63,17 @@ public final class GuavaAsyncOperationEndStrategy implements AsyncOperationEndSt
         if (captureExperimentalSpanAttributes) {
           Span.fromContext(context).setAttribute(CANCELED_ATTRIBUTE_KEY, true);
         }
-        instrumenter.end(context, request, null, null);
+        handler.handle(context, request, null, null);
       } else {
         try {
           Object response = Uninterruptibles.getUninterruptibly(future);
-          instrumenter.end(context, request, tryToGetResponse(responseType, response), null);
+          handler.handle(context, request, tryToGetResponse(responseType, response), null);
         } catch (Throwable exception) {
-          instrumenter.end(context, request, null, exception);
+          handler.handle(context, request, null, exception);
         }
       }
     } else {
-      future.addListener(
-          () -> end(instrumenter, context, request, future, responseType), Runnable::run);
+      future.addListener(() -> end(handler, context, request, future, responseType), Runnable::run);
     }
   }
 }

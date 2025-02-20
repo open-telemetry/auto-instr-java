@@ -12,6 +12,7 @@ dependencies {
   compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0")
   compileOnly("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   compileOnly(project(":instrumentation-api"))
+  compileOnly(project(":instrumentation-annotations-support"))
 }
 
 kotlin {
