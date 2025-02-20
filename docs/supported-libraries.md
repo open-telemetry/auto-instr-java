@@ -234,6 +234,13 @@ For this reason, the following instrumentations are disabled by default:
 - `jdbc-datasource` which creates spans whenever the `java.sql.DataSource#getConnection` method is called.
 - `dropwizard-metrics` which might create a very low quality metrics data, because of lack of label/attribute support
   in the Dropwizard metrics API.
+- `jaxws-jws-api` which create only internal spans that don't have any defined semantic conventions.
+- `mybatis` for the same reason as above.
+- `spring-ws` for the same reason as above.
+- `jaxrs` for the same reason as above.
+- `spring-batch`
+- `micrometer` which produces a lot of metrics that are already captured
+- `spring-boot-actuator-autoconfigure` which will enable `micrometer`
 
 To enable them, add the `otel.instrumentation.<name>.enabled` system property:
 `-Dotel.instrumentation.jdbc-datasource.enabled=true`
