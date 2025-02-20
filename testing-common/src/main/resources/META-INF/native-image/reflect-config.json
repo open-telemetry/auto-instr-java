@@ -1,0 +1,46 @@
+[
+  {
+    "condition": {
+      "typeReachable": "io.opentelemetry.testing.internal.armeria.internal.shaded.jctools.maps.NonBlockingHashMap"
+    },
+    "name": "io.opentelemetry.testing.internal.armeria.internal.shaded.jctools.maps.NonBlockingHashMap",
+    "fields": [
+      {
+        "name": "_kvs"
+      }
+    ]
+  },
+  {
+    "condition": {
+      "typeReachable": "io.opentelemetry.testing.internal.io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueProducerFields"
+    },
+    "name": "io.opentelemetry.testing.internal.io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueProducerFields",
+    "fields": [
+      {
+        "name": "producerIndex"
+      }
+    ]
+  },
+  {
+    "condition": {
+      "typeReachable": "io.opentelemetry.testing.internal.io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueConsumerFields"
+    },
+    "name": "io.opentelemetry.testing.internal.io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueConsumerFields",
+    "fields": [
+      {
+        "name": "consumerIndex"
+      }
+    ]
+  },
+  {
+    "condition": {
+      "typeReachable": "io.opentelemetry.testing.internal.io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueColdProducerFields"
+    },
+    "name": "io.opentelemetry.testing.internal.io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueColdProducerFields",
+    "fields": [
+      {
+        "name": "producerLimit"
+      }
+    ]
+  }
+]
