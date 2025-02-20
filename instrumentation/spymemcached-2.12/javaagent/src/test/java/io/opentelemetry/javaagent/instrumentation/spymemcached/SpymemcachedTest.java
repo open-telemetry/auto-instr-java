@@ -970,7 +970,8 @@ class SpymemcachedTest {
                             equalTo(
                                 maybeStable(DB_SYSTEM),
                                 DbIncubatingAttributes.DbSystemIncubatingValues.MEMCACHED),
-                            equalTo(maybeStable(DB_OPERATION), "incr"))));
+                            equalTo(maybeStable(DB_OPERATION), "incr"),
+                            equalTo(ERROR_TYPE, "java.lang.IllegalArgumentException"))));
   }
 
   private static String key(String k) {
