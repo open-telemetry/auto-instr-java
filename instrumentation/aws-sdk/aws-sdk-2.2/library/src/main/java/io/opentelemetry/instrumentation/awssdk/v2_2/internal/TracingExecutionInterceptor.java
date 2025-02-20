@@ -27,7 +27,6 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import software.amazon.awssdk.auth.signer.AwsSignerExecutionAttribute;
 import software.amazon.awssdk.awscore.AwsResponse;
 import software.amazon.awssdk.core.ClientType;
 import software.amazon.awssdk.core.SdkRequest;
@@ -77,6 +76,7 @@ public final class TracingExecutionInterceptor implements ExecutionInterceptor {
   private final Instrumenter<SqsProcessRequest, Response> consumerProcessInstrumenter;
   private final Instrumenter<ExecutionAttributes, Response> producerInstrumenter;
   private final Instrumenter<ExecutionAttributes, Response> dynamoDbInstrumenter;
+  private final Instrumenter<ExecutionAttributes, Response> bedrockRuntimeInstrumenter;
   private final boolean captureExperimentalSpanAttributes;
 
   static final AttributeKey<String> HTTP_ERROR_MSG =
@@ -105,12 +105,14 @@ public final class TracingExecutionInterceptor implements ExecutionInterceptor {
   private final boolean recordIndividualHttpError;
   private final FieldMapper fieldMapper;
 
+  @SuppressWarnings("TooManyParameters") // internal method
   public TracingExecutionInterceptor(
       Instrumenter<ExecutionAttributes, Response> requestInstrumenter,
       Instrumenter<SqsReceiveRequest, Response> consumerReceiveInstrumenter,
       Instrumenter<SqsProcessRequest, Response> consumerProcessInstrumenter,
       Instrumenter<ExecutionAttributes, Response> producerInstrumenter,
       Instrumenter<ExecutionAttributes, Response> dynamoDbInstrumenter,
+      Instrumenter<ExecutionAttributes, Response> bedrockRuntimeInstrumenter,
       boolean captureExperimentalSpanAttributes,
       TextMapPropagator messagingPropagator,
       boolean useXrayPropagator,
@@ -120,6 +122,7 @@ public final class TracingExecutionInterceptor implements ExecutionInterceptor {
     this.consumerProcessInstrumenter = consumerProcessInstrumenter;
     this.producerInstrumenter = producerInstrumenter;
     this.dynamoDbInstrumenter = dynamoDbInstrumenter;
+    this.bedrockRuntimeInstrumenter = bedrockRuntimeInstrumenter;
     this.captureExperimentalSpanAttributes = captureExperimentalSpanAttributes;
     this.messagingPropagator = messagingPropagator;
     this.useXrayPropagator = useXrayPropagator;
@@ -128,6 +131,7 @@ public final class TracingExecutionInterceptor implements ExecutionInterceptor {
   }
 
   @Override
+  @SuppressWarnings("deprecation") // need to access deprecated signer
   public SdkRequest modifyRequest(
       Context.ModifyRequest context, ExecutionAttributes executionAttributes) {
 
@@ -144,7 +148,8 @@ public final class TracingExecutionInterceptor implements ExecutionInterceptor {
 
     // Ignore presign request. These requests don't run all interceptor methods and the span created
     // here would never be ended and scope closed.
-    if (executionAttributes.getAttribute(AwsSignerExecutionAttribute.PRESIGNER_EXPIRATION)
+    if (executionAttributes.getAttribute(
+            software.amazon.awssdk.auth.signer.AwsSignerExecutionAttribute.PRESIGNER_EXPIRATION)
         != null) {
       return request;
     }
@@ -450,6 +455,9 @@ public final class TracingExecutionInterceptor implements ExecutionInterceptor {
       SdkRequest request, AwsSdkRequest awsSdkRequest) {
     if (SqsAccess.isSqsProducerRequest(request)) {
       return producerInstrumenter;
+    }
+    if (BedrockRuntimeAccess.isBedrockRuntimeRequest(request)) {
+      return bedrockRuntimeInstrumenter;
     }
     if (awsSdkRequest != null && awsSdkRequest.type() == DYNAMODB) {
       return dynamoDbInstrumenter;

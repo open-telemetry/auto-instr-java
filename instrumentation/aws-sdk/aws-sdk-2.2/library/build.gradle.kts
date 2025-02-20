@@ -14,6 +14,11 @@ dependencies {
   compileOnly("software.amazon.awssdk:json-utils:2.17.0")
   compileOnly(project(":muzzle")) // For @NoMuzzle
 
+  // Don't use library to make sure base test is run with the floor version.
+  // bedrock runtime is tested separately in testBedrockRuntime.
+  // First release with Converse API
+  compileOnly("software.amazon.awssdk:bedrockruntime:2.25.63")
+
   testImplementation(project(":instrumentation:aws-sdk:aws-sdk-2.2:testing"))
 
   testLibrary("software.amazon.awssdk:dynamodb:2.2.0")
@@ -56,6 +61,18 @@ testing {
         }
       }
     }
+
+    val testBedrockRuntime by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project())
+        implementation(project(":instrumentation:aws-sdk:aws-sdk-2.2:testing"))
+        if (findProperty("testLatestDeps") as Boolean) {
+          implementation("software.amazon.awssdk:bedrockruntime:+")
+        } else {
+          implementation("software.amazon.awssdk:bedrockruntime:2.25.63")
+        }
+      }
+    }
   }
 }
 
@@ -72,6 +89,7 @@ tasks {
   }
 
   check {
+    dependsOn(testing.suites)
     dependsOn(testStableSemconv)
   }
 }

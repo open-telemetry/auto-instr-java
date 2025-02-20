@@ -11,6 +11,7 @@ muzzle {
     // client, which is not target of instrumentation anyways.
     extraDependency("software.amazon.awssdk:protocol-core")
 
+    excludeInstrumentationName("aws-sdk-2.2-bedrock-runtime")
     excludeInstrumentationName("aws-sdk-2.2-sqs")
     excludeInstrumentationName("aws-sdk-2.2-sns")
     excludeInstrumentationName("aws-sdk-2.2-lambda")
@@ -43,6 +44,7 @@ muzzle {
     // client, which is not target of instrumentation anyways.
     extraDependency("software.amazon.awssdk:protocol-core")
 
+    excludeInstrumentationName("aws-sdk-2.2-bedrock-runtime")
     excludeInstrumentationName("aws-sdk-2.2-sns")
     excludeInstrumentationName("aws-sdk-2.2-lambda")
 
@@ -58,6 +60,7 @@ muzzle {
     // client, which is not target of instrumentation anyways.
     extraDependency("software.amazon.awssdk:protocol-core")
 
+    excludeInstrumentationName("aws-sdk-2.2-bedrock-runtime")
     excludeInstrumentationName("aws-sdk-2.2-sqs")
     excludeInstrumentationName("aws-sdk-2.2-lambda")
 
@@ -72,11 +75,24 @@ muzzle {
     // client, which is not target of instrumentation anyways.
     extraDependency("software.amazon.awssdk:protocol-core")
 
+    excludeInstrumentationName("aws-sdk-2.2-bedrock-runtime")
     excludeInstrumentationName("aws-sdk-2.2-sqs")
     excludeInstrumentationName("aws-sdk-2.2-sns")
 
     // several software.amazon.awssdk artifacts are missing for this version
     skip("2.17.200")
+  }
+  pass {
+    group.set("software.amazon.awssdk")
+    module.set("bedrock-runtime")
+    versions.set("[2.25.63,)")
+    // Used by all SDK services, the only case it isn't is an SDK extension such as a custom HTTP
+    // client, which is not target of instrumentation anyways.
+    extraDependency("software.amazon.awssdk:protocol-core")
+
+    excludeInstrumentationName("aws-sdk-2.2-lambda")
+    excludeInstrumentationName("aws-sdk-2.2-sqs")
+    excludeInstrumentationName("aws-sdk-2.2-sns")
   }
 }
 
@@ -118,6 +134,18 @@ testing {
           implementation("software.amazon.awssdk:s3:2.10.12")
         }
         implementation(project(":instrumentation:aws-sdk:aws-sdk-2.2:library"))
+      }
+    }
+
+    val testBedrockRuntime by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":instrumentation:aws-sdk:aws-sdk-2.2:testing"))
+        if (findProperty("testLatestDeps") as Boolean) {
+          implementation("software.amazon.awssdk:bedrockruntime:+")
+        } else {
+          // First release with Converse API
+          implementation("software.amazon.awssdk:bedrockruntime:2.25.63")
+        }
       }
     }
   }
