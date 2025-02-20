@@ -6,6 +6,8 @@
 package io.opentelemetry.javaagent.instrumentation.pulsar.v2_8.telemetry;
 
 import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingAttributesGetter;
+import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingNetworkAttributesGetter;
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -14,7 +16,9 @@ import javax.annotation.Nullable;
 import org.apache.pulsar.common.naming.TopicName;
 
 enum PulsarBatchMessagingAttributesGetter
-    implements MessagingAttributesGetter<PulsarBatchRequest, Void> {
+    implements
+        MessagingAttributesGetter<PulsarBatchRequest, Void>,
+        MessagingNetworkAttributesGetter<PulsarBatchRequest, Void> {
   INSTANCE;
 
   @Override
@@ -98,5 +102,31 @@ enum PulsarBatchMessagingAttributesGetter
         .map(message -> message.getProperty(name))
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
+  }
+
+  @Nullable
+  @Override
+  public Integer getServerPort(PulsarBatchRequest pulsarRequest) {
+    return PulsarNetClientAttributesGetter.INSTANCE.getServerPort(pulsarRequest);
+  }
+
+  @Nullable
+  @Override
+  public String getServerAddress(PulsarBatchRequest pulsarRequest) {
+    return PulsarNetClientAttributesGetter.INSTANCE.getServerAddress(pulsarRequest);
+  }
+
+  @Nullable
+  @Override
+  public InetSocketAddress getNetworkPeerInetSocketAddress(
+      PulsarBatchRequest pulsarRequest, @Nullable Void unused) {
+    return PulsarNetClientAttributesGetter.INSTANCE.getNetworkPeerInetSocketAddress(
+        pulsarRequest, null);
+  }
+
+  @Nullable
+  @Override
+  public Integer getNetworkPeerPort(PulsarBatchRequest pulsarRequest, @Nullable Void unused) {
+    return PulsarNetClientAttributesGetter.INSTANCE.getNetworkPeerPort(pulsarRequest, null);
   }
 }

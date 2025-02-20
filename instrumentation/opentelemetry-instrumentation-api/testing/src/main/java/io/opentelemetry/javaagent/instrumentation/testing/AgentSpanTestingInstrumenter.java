@@ -75,6 +75,7 @@ public final class AgentSpanTestingInstrumenter {
       SpanKey.PRODUCER,
       SpanKey.CONSUMER_RECEIVE,
       SpanKey.CONSUMER_PROCESS,
+      SpanKey.CONSUMER_SETTLE,
     };
   }
 

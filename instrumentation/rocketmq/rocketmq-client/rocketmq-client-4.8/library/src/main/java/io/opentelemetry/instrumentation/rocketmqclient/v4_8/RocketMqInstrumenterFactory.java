@@ -6,12 +6,14 @@
 package io.opentelemetry.instrumentation.rocketmqclient.v4_8;
 
 import static io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor.constant;
+import static io.opentelemetry.instrumentation.api.internal.SemconvStability.emitStableMessagingSemconv;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessageOperation;
 import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingAttributesExtractor;
 import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingAttributesGetter;
+import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingNetworkAttributesExtractor;
 import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingSpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
@@ -33,21 +35,24 @@ class RocketMqInstrumenterFactory {
   private static final AttributeKey<String> MESSAGING_SYSTEM =
       AttributeKey.stringKey("messaging.system");
 
+  @SuppressWarnings("deprecation") // using deprecated semconv
   static Instrumenter<SendMessageContext, Void> createProducerInstrumenter(
       OpenTelemetry openTelemetry,
       List<String> capturedHeaders,
       boolean captureExperimentalSpanAttributes) {
 
     RocketMqProducerAttributeGetter getter = RocketMqProducerAttributeGetter.INSTANCE;
-    MessageOperation operation = MessageOperation.PUBLISH;
+    MessageOperation operation =
+        emitStableMessagingSemconv() ? MessageOperation.CREATE : MessageOperation.PUBLISH;
 
     InstrumenterBuilder<SendMessageContext, Void> instrumenterBuilder =
         Instrumenter.<SendMessageContext, Void>builder(
                 openTelemetry,
                 INSTRUMENTATION_NAME,
-                MessagingSpanNameExtractor.create(getter, operation))
+                MessagingSpanNameExtractor.create(getter, operation, getter))
             .addAttributesExtractor(
-                buildMessagingAttributesExtractor(getter, operation, capturedHeaders));
+                buildMessagingAttributesExtractor(getter, operation, capturedHeaders))
+            .addAttributesExtractor(MessagingNetworkAttributesExtractor.create(getter));
     if (captureExperimentalSpanAttributes) {
       instrumenterBuilder.addAttributesExtractor(
           RocketMqProducerExperimentalAttributeExtractor.INSTANCE);
@@ -88,10 +93,11 @@ class RocketMqInstrumenterFactory {
         Instrumenter.builder(
             openTelemetry,
             INSTRUMENTATION_NAME,
-            MessagingSpanNameExtractor.create(getter, operation));
+            MessagingSpanNameExtractor.create(getter, operation, getter));
 
     builder.addAttributesExtractor(
         buildMessagingAttributesExtractor(getter, operation, capturedHeaders));
+    builder.addAttributesExtractor(MessagingNetworkAttributesExtractor.create(getter));
     if (captureExperimentalSpanAttributes) {
       builder.addAttributesExtractor(RocketMqConsumerExperimentalAttributeExtractor.INSTANCE);
     }

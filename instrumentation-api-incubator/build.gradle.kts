@@ -42,11 +42,11 @@ tasks {
   }
 
   val testStableSemconv by registering(Test::class) {
-    jvmArgs("-Dotel.semconv-stability.opt-in=database")
+    jvmArgs("-Dotel.semconv-stability.opt-in=database,messaging")
   }
 
   val testBothSemconv by registering(Test::class) {
-    jvmArgs("-Dotel.semconv-stability.opt-in=database/dup")
+    jvmArgs("-Dotel.semconv-stability.opt-in=database/dup,messaging/dup")
   }
 
   check {

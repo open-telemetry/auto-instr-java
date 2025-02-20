@@ -13,6 +13,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
+import io.opentelemetry.instrumentation.api.internal.SemconvStability;
 import io.opentelemetry.semconv.incubating.MessagingIncubatingAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,7 +44,7 @@ class MessagingAttributesExtractorTest {
     request.put("system", "myQueue");
     request.put("destinationKind", "topic");
     request.put("destination", destination);
-    request.put("destinationTemplate", destination);
+    request.put("destinationTemplate", destination + "-template");
     if (temporary) {
       request.put("temporaryDestination", "y");
     }
@@ -56,6 +57,7 @@ class MessagingAttributesExtractorTest {
     request.put("envelopeSize", "120");
     request.put("clientId", "43");
     request.put("batchMessageCount", "2");
+    request.put("operationName", "ack");
 
     AttributesExtractor<Map<String, String>, String> underTest =
         MessagingAttributesExtractor.create(TestGetter.INSTANCE, operation);
@@ -79,19 +81,29 @@ class MessagingAttributesExtractorTest {
           entry(MessagingIncubatingAttributes.MESSAGING_DESTINATION_TEMPORARY, true));
     } else {
       expectedEntries.add(
-          entry(MessagingIncubatingAttributes.MESSAGING_DESTINATION_TEMPLATE, expectedDestination));
+          entry(
+              MessagingIncubatingAttributes.MESSAGING_DESTINATION_TEMPLATE,
+              destination + "-template"));
     }
     if (anonymous) {
       expectedEntries.add(
           entry(MessagingIncubatingAttributes.MESSAGING_DESTINATION_ANONYMOUS, true));
     }
+
+    if (SemconvStability.emitOldMessagingSemconv()) {
+      expectedEntries.add(entry(AttributeKey.stringKey("messaging.client_id"), "43"));
+      expectedEntries.add(
+          entry(MessagingIncubatingAttributes.MESSAGING_OPERATION, operation.operationName()));
+    }
+    if (SemconvStability.emitStableMessagingSemconv()) {
+      expectedEntries.add(entry(MessagingIncubatingAttributes.MESSAGING_CLIENT_ID, "43"));
+      expectedEntries.add(
+          entry(MessagingIncubatingAttributes.MESSAGING_OPERATION_TYPE, operation.operationType()));
+      expectedEntries.add(entry(MessagingIncubatingAttributes.MESSAGING_OPERATION_NAME, "ack"));
+    }
+
     expectedEntries.add(
         entry(MessagingIncubatingAttributes.MESSAGING_MESSAGE_CONVERSATION_ID, "42"));
-    expectedEntries.add(entry(MessagingIncubatingAttributes.MESSAGING_MESSAGE_BODY_SIZE, 100L));
-    expectedEntries.add(entry(MessagingIncubatingAttributes.MESSAGING_MESSAGE_ENVELOPE_SIZE, 120L));
-    expectedEntries.add(entry(AttributeKey.stringKey("messaging.client_id"), "43"));
-    expectedEntries.add(
-        entry(MessagingIncubatingAttributes.MESSAGING_OPERATION, operation.operationName()));
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     MapEntry<? extends AttributeKey<?>, ?>[] expectedEntriesArr =
@@ -101,20 +113,25 @@ class MessagingAttributesExtractorTest {
     assertThat(endAttributes.build())
         .containsOnly(
             entry(MessagingIncubatingAttributes.MESSAGING_MESSAGE_ID, "42"),
-            entry(MessagingIncubatingAttributes.MESSAGING_BATCH_MESSAGE_COUNT, 2L));
+            entry(MessagingIncubatingAttributes.MESSAGING_BATCH_MESSAGE_COUNT, 2L),
+            entry(MessagingIncubatingAttributes.MESSAGING_MESSAGE_BODY_SIZE, 100L),
+            entry(MessagingIncubatingAttributes.MESSAGING_MESSAGE_ENVELOPE_SIZE, 120L));
   }
 
   static Stream<Arguments> destinations() {
     return Stream.of(
         Arguments.of(false, false, "destination", MessageOperation.RECEIVE, "destination"),
-        Arguments.of(true, true, null, MessageOperation.PROCESS, "(temporary)"));
+        Arguments.of(true, false, "destination", MessageOperation.PROCESS, "(temporary)"),
+        Arguments.of(false, true, "destination", MessageOperation.PROCESS, "(anonymous)"),
+        Arguments.of(true, true, "destination", MessageOperation.PROCESS, "(temporary)"));
   }
 
   @Test
+  @SuppressWarnings("deprecation") // using deprecated semconv
   void shouldExtractNoAttributesIfNoneAreAvailable() {
     // given
     AttributesExtractor<Map<String, String>, String> underTest =
-        MessagingAttributesExtractor.create(TestGetter.INSTANCE, null);
+        MessagingAttributesExtractor.create(TestGetter.INSTANCE, MessageOperation.CREATE);
 
     Context context = Context.root();
 
@@ -126,8 +143,25 @@ class MessagingAttributesExtractorTest {
     underTest.onEnd(endAttributes, context, Collections.emptyMap(), null, null);
 
     // then
-    assertThat(startAttributes.build().isEmpty()).isTrue();
+    List<MapEntry<AttributeKey<?>, Object>> expectedEntries = new ArrayList<>();
+    if (SemconvStability.emitOldMessagingSemconv()) {
+      expectedEntries.add(
+          entry(
+              MessagingIncubatingAttributes.MESSAGING_OPERATION,
+              MessageOperation.CREATE.operationName()));
+    }
+    if (SemconvStability.emitStableMessagingSemconv()) {
+      expectedEntries.add(
+          entry(
+              MessagingIncubatingAttributes.MESSAGING_OPERATION_TYPE,
+              MessageOperation.CREATE.operationType()));
+    }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    MapEntry<? extends AttributeKey<?>, ?>[] expectedEntriesArr =
+        expectedEntries.toArray(new MapEntry[0]);
+
+    assertThat(startAttributes.build()).containsOnly(expectedEntriesArr);
     assertThat(endAttributes.build().isEmpty()).isTrue();
   }
 
@@ -195,6 +229,12 @@ class MessagingAttributesExtractorTest {
     public Long getBatchMessageCount(Map<String, String> request, @Nullable String response) {
       String payloadSize = request.get("batchMessageCount");
       return payloadSize == null ? null : Long.valueOf(payloadSize);
+    }
+
+    @Nullable
+    @Override
+    public String getOperationName(Map<String, String> request) {
+      return request.get("operationName");
     }
   }
 }

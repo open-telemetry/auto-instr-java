@@ -19,21 +19,61 @@ import javax.annotation.Nullable;
  */
 public interface MessagingAttributesGetter<REQUEST, RESPONSE> {
 
-  @Nullable
   String getSystem(REQUEST request);
+
+  @Nullable
+  default Long getBatchMessageCount(REQUEST request, @Nullable RESPONSE response) {
+    return null;
+  }
+
+  @Nullable
+  default String getConsumerGroupName(REQUEST request) {
+    return null;
+  }
+
+  boolean isAnonymousDestination(REQUEST request);
 
   @Nullable
   String getDestination(REQUEST request);
 
   @Nullable
-  String getDestinationTemplate(REQUEST request);
+  default String getDestinationSubscriptionName(REQUEST request) {
+    return null;
+  }
+
+  @Nullable
+  default String getDestinationTemplate(REQUEST request) {
+    return null;
+  }
 
   boolean isTemporaryDestination(REQUEST request);
 
-  boolean isAnonymousDestination(REQUEST request);
+  @Nullable
+  default String getOperationName(REQUEST request, MessageOperation operation) {
+    return operation.operationType();
+  }
 
   @Nullable
-  String getConversationId(REQUEST request);
+  String getClientId(REQUEST request);
+
+  @Nullable
+  default String getDestinationPartitionId(REQUEST request) {
+    return null;
+  }
+
+  @Nullable
+  default String getConversationId(REQUEST request) {
+    return null;
+  }
+
+  @Nullable
+  String getMessageId(REQUEST request, @Nullable RESPONSE response);
+
+  @Nullable
+  Long getMessageBodySize(REQUEST request);
+
+  @Nullable
+  Long getMessageEnvelopeSize(REQUEST request);
 
   @Nullable
   @Deprecated
@@ -44,26 +84,6 @@ public interface MessagingAttributesGetter<REQUEST, RESPONSE> {
   @Nullable
   @Deprecated
   default Long getMessagePayloadCompressedSize(REQUEST request) {
-    return null;
-  }
-
-  @Nullable
-  Long getMessageBodySize(REQUEST request);
-
-  @Nullable
-  Long getMessageEnvelopeSize(REQUEST request);
-
-  @Nullable
-  String getMessageId(REQUEST request, @Nullable RESPONSE response);
-
-  @Nullable
-  String getClientId(REQUEST request);
-
-  @Nullable
-  Long getBatchMessageCount(REQUEST request, @Nullable RESPONSE response);
-
-  @Nullable
-  default String getDestinationPartitionId(REQUEST request) {
     return null;
   }
 

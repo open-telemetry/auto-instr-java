@@ -8,11 +8,15 @@ package io.opentelemetry.instrumentation.awssdk.v1_11;
 import com.amazonaws.Request;
 import com.amazonaws.Response;
 import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingAttributesGetter;
+import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingNetworkAttributesGetter;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
-enum SqsAttributesGetter implements MessagingAttributesGetter<Request<?>, Response<?>> {
+enum SqsAttributesGetter
+    implements
+        MessagingAttributesGetter<Request<?>, Response<?>>,
+        MessagingNetworkAttributesGetter<Request<?>, Response<?>> {
   INSTANCE;
 
   // copied from MessagingIncubatingAttributes.MessagingSystemIncubatingValues

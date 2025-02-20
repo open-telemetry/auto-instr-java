@@ -56,6 +56,7 @@ public final class RabbitSingletons {
     return deliverInstrumenter;
   }
 
+  @SuppressWarnings("deprecation") // using deprecated semconv
   private static Instrumenter<ChannelAndMethod, Void> createChannelInstrumenter(boolean publish) {
     return Instrumenter.<ChannelAndMethod, Void>builder(
             GlobalOpenTelemetry.get(), instrumentationName, ChannelAndMethod::getMethod)
