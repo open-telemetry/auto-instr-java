@@ -84,9 +84,6 @@ public abstract class DbClientSpanNameExtractor<REQUEST> implements SpanNameExtr
   private static final class SqlClientSpanNameExtractor<REQUEST>
       extends DbClientSpanNameExtractor<REQUEST> {
 
-    // a dedicated sanitizer just for extracting the operation and identifier name
-    private static final SqlStatementSanitizer sanitizer = SqlStatementSanitizer.create(true);
-
     private final SqlClientAttributesGetter<REQUEST> getter;
 
     private SqlClientSpanNameExtractor(SqlClientAttributesGetter<REQUEST> getter) {
@@ -106,13 +103,15 @@ public abstract class DbClientSpanNameExtractor<REQUEST> implements SpanNameExtr
         if (rawQueryTexts.size() > 1) { // for backcompat(?)
           return computeSpanName(namespace, null, null);
         }
-        SqlStatementInfo sanitizedStatement = sanitizer.sanitize(rawQueryTexts.iterator().next());
+        SqlStatementInfo sanitizedStatement =
+            SqlStatementSanitizerUtil.sanitize(rawQueryTexts.iterator().next());
         return computeSpanName(
             namespace, sanitizedStatement.getOperation(), sanitizedStatement.getMainIdentifier());
       }
 
       if (rawQueryTexts.size() == 1) {
-        SqlStatementInfo sanitizedStatement = sanitizer.sanitize(rawQueryTexts.iterator().next());
+        SqlStatementInfo sanitizedStatement =
+            SqlStatementSanitizerUtil.sanitize(rawQueryTexts.iterator().next());
         String operation = sanitizedStatement.getOperation();
         if (isBatch(request)) {
           operation = "BATCH " + operation;

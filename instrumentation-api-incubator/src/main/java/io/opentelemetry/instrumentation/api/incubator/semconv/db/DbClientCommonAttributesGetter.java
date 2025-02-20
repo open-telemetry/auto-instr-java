@@ -24,7 +24,9 @@ public interface DbClientCommonAttributesGetter<REQUEST> {
 
   @Deprecated
   @Nullable
-  String getUser(REQUEST request);
+  default String getUser(REQUEST request) {
+    return null;
+  }
 
   /**
    * @deprecated Use {@link #getDbNamespace(Object)} instead.
@@ -43,5 +45,7 @@ public interface DbClientCommonAttributesGetter<REQUEST> {
 
   @Deprecated
   @Nullable
-  String getConnectionString(REQUEST request);
+  default String getConnectionString(REQUEST request) {
+    return null;
+  }
 }
