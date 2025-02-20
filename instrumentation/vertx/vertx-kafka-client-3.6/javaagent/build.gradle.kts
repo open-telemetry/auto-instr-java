@@ -13,7 +13,7 @@ muzzle {
 
 dependencies {
   bootstrap(project(":instrumentation:kafka:kafka-clients:kafka-clients-0.11:bootstrap"))
-  implementation(project(":instrumentation:kafka:kafka-clients:kafka-clients-common:library"))
+  implementation(project(":instrumentation:kafka:kafka-clients:kafka-clients-common-0.11:library"))
 
   library("io.vertx:vertx-kafka-client:3.6.0")
   // vertx-codegen is needed for Xlint's annotation checking

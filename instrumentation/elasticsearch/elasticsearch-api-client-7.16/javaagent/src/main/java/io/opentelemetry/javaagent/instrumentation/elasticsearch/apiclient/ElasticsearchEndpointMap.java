@@ -5,7 +5,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.elasticsearch.apiclient;
 
-import io.opentelemetry.instrumentation.elasticsearch.rest.internal.ElasticsearchEndpointDefinition;
+import io.opentelemetry.instrumentation.elasticsearch.rest.common.v5_0.internal.ElasticsearchEndpointDefinition;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;

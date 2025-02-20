@@ -17,7 +17,7 @@ dependencies {
 
   bootstrap(project(":instrumentation:kafka:kafka-clients:kafka-clients-0.11:bootstrap"))
   bootstrap(project(":instrumentation:spring:spring-scheduling-3.1:bootstrap"))
-  implementation(project(":instrumentation:kafka:kafka-clients:kafka-clients-common:library"))
+  implementation(project(":instrumentation:kafka:kafka-clients:kafka-clients-common-0.11:library"))
   implementation(project(":instrumentation:spring:spring-kafka-2.7:library"))
 
   library("org.springframework.kafka:spring-kafka:2.7.0")

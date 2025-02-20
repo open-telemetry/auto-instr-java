@@ -19,7 +19,7 @@ dependencies {
 
   bootstrap(project(":instrumentation:kafka:kafka-clients:kafka-clients-0.11:bootstrap"))
 
-  implementation(project(":instrumentation:kafka:kafka-clients:kafka-clients-common:library"))
+  implementation(project(":instrumentation:kafka:kafka-clients:kafka-clients-common-0.11:library"))
   implementation(project(":instrumentation:reactor:reactor-3.1:library"))
 
   // using 1.3 to be able to implement several new KafkaReceiver methods added in 1.3.3 and 1.3.21

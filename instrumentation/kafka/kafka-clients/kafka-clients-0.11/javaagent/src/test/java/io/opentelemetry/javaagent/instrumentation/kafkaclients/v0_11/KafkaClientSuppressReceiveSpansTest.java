@@ -8,8 +8,8 @@ package io.opentelemetry.javaagent.instrumentation.kafkaclients.v0_11;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.instrumentation.kafka.internal.KafkaClientBaseTest;
-import io.opentelemetry.instrumentation.kafka.internal.KafkaClientPropagationBaseTest;
+import io.opentelemetry.instrumentation.kafkaclients.common.v0_11.internal.KafkaClientBaseTest;
+import io.opentelemetry.instrumentation.kafkaclients.common.v0_11.internal.KafkaClientPropagationBaseTest;
 import io.opentelemetry.instrumentation.testing.junit.AgentInstrumentationExtension;
 import io.opentelemetry.instrumentation.testing.junit.InstrumentationExtension;
 import java.nio.charset.StandardCharsets;

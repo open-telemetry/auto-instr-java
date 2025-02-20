@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-  implementation(project(":instrumentation:kafka:kafka-clients:kafka-clients-common:library"))
+  implementation(project(":instrumentation:kafka:kafka-clients:kafka-clients-common-0.11:library"))
   library("org.apache.kafka:kafka-clients:2.6.0")
 
   testImplementation(project(":instrumentation:kafka:kafka-clients:kafka-clients-0.11:testing"))

@@ -7,6 +7,8 @@
 - The `java.net.http.HttpClient` instrumentation package
   `io.opentelemetry.instrumentation.httpclient` was deprecated in favor of the new package name
   `io.opentelemetry.instrumentation.javahttpclient`
+- The class `io.opentelemetry.instrumentation.netty.v4.common.HttpRequestAndChannel` was
+  renamed to `io.opentelemetry.instrumentation.netty.common.v4_0.HttpRequestAndChannel`
 
 ## Version 2.13.1 (2025-02-18)
 

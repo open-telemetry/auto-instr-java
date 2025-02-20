@@ -7,7 +7,7 @@ package io.opentelemetry.javaagent.instrumentation.kafkastreams;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.instrumentation.kafka.internal.KafkaProcessRequest;
+import io.opentelemetry.instrumentation.kafkaclients.common.v0_11.internal.KafkaProcessRequest;
 
 public final class StateHolder {
   public static final ThreadLocal<StateHolder> HOLDER = new ThreadLocal<>();

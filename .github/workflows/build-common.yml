@@ -163,6 +163,13 @@ jobs:
 
       - run: .github/scripts/check-latest-dep-test-overrides.sh
 
+  check-package-names:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - run: .github/scripts/check-package-names.sh
+
   build:
     runs-on: ubuntu-latest
     steps:
