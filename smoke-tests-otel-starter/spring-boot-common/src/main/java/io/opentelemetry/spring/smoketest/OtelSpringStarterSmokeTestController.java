@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class OtelSpringStarterSmokeTestController {
 
   public static final String PING = "/ping";
+  public static final String TEST = "/test";
   public static final String TEST_HISTOGRAM = "histogram-test-otel-spring-starter";
   public static final String METER_SCOPE_NAME = "scope";
   private final LongHistogram histogram;
@@ -32,5 +33,10 @@ public class OtelSpringStarterSmokeTestController {
     histogram.record(10);
     component.withSpanMethod("from-controller");
     return "pong";
+  }
+
+  @GetMapping(TEST)
+  public String testUrlToRedact() {
+    return "ok";
   }
 }

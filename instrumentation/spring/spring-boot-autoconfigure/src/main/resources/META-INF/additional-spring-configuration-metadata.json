@@ -312,6 +312,12 @@
       "defaultValue": false
     },
     {
+      "name": "otel.instrumentation.http.client.experimental.redact-query-parameters",
+      "type": "java.lang.Boolean",
+      "description": "Redact sensitive URL parameters. See https://opentelemetry.io/docs/specs/semconv/http/http-spans.",
+      "defaultValue": true
+    },
+    {
       "name": "otel.instrumentation.http.known-methods",
       "type": "java.util.List<java.lang.String>",
       "description": "Configures the instrumentation to recognize an alternative set of HTTP request methods. All other methods will be treated as <code>_OTHER</code>.",

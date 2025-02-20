@@ -20,6 +20,7 @@ import io.opentelemetry.instrumentation.api.instrumenter.InstrumenterBuilder;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanKindExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.SpanStatusExtractor;
+import io.opentelemetry.instrumentation.api.internal.Experimental;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpClientAttributesExtractor;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpClientAttributesExtractorBuilder;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpClientAttributesGetter;
@@ -177,6 +178,18 @@ public final class DefaultHttpClientInstrumenterBuilder<REQUEST, RESPONSE> {
     return this;
   }
 
+  /**
+   * Configures the instrumentation to redact sensitive URL parameters.
+   *
+   * @param redactQueryParameters {@code true} if the sensitive URL parameters have to be redacted.
+   */
+  @CanIgnoreReturnValue
+  public DefaultHttpClientInstrumenterBuilder<REQUEST, RESPONSE> setRedactQueryParameters(
+      boolean redactQueryParameters) {
+    Experimental.setRedactQueryParameters(httpAttributesExtractorBuilder, redactQueryParameters);
+    return this;
+  }
+
   /** Sets custom {@link SpanNameExtractor} via transform function. */
   @CanIgnoreReturnValue
   public DefaultHttpClientInstrumenterBuilder<REQUEST, RESPONSE> setSpanNameExtractor(
@@ -225,6 +238,7 @@ public final class DefaultHttpClientInstrumenterBuilder<REQUEST, RESPONSE> {
           .addAttributesExtractor(HttpExperimentalAttributesExtractor.create(attributesGetter))
           .addOperationMetrics(HttpClientExperimentalMetrics.get());
     }
+
     builderCustomizer.accept(builder);
 
     if (headerSetter != null) {
@@ -248,6 +262,7 @@ public final class DefaultHttpClientInstrumenterBuilder<REQUEST, RESPONSE> {
     set(
         config::shouldEmitExperimentalHttpClientTelemetry,
         this::setEmitExperimentalHttpClientMetrics);
+    set(config::redactQueryParameters, this::setRedactQueryParameters);
     return this;
   }
 
