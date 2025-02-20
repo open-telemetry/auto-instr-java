@@ -8,7 +8,7 @@ package io.opentelemetry.javaagent.instrumentation.influxdb.v2_4;
 import io.opentelemetry.instrumentation.api.incubator.semconv.db.DbClientAttributesGetter;
 import javax.annotation.Nullable;
 
-final class InfluxDbAttributesGetter implements DbClientAttributesGetter<InfluxDbRequest> {
+final class InfluxDbAttributesGetter implements DbClientAttributesGetter<InfluxDbRequest, Void> {
 
   @Nullable
   @Override

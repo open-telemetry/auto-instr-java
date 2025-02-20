@@ -52,7 +52,7 @@ class DbClientMetricsTest {
 
     Attributes responseAttributes =
         Attributes.builder()
-            .put(DbClientAttributesExtractor.DB_RESPONSE_STATUS_CODE, 200)
+            .put(DbClientAttributesExtractor.DB_RESPONSE_STATUS_CODE, "200")
             .put(ErrorAttributes.ERROR_TYPE, "400")
             .put(NetworkAttributes.NETWORK_PEER_ADDRESS, "1.2.3.4")
             .put(NetworkAttributes.NETWORK_PEER_PORT, 8080)
@@ -104,7 +104,7 @@ class DbClientMetricsTest {
                                             equalTo(ServerAttributes.SERVER_PORT, 1234),
                                             equalTo(
                                                 DbClientAttributesExtractor.DB_RESPONSE_STATUS_CODE,
-                                                200),
+                                                "200"),
                                             equalTo(ErrorAttributes.ERROR_TYPE, "400"),
                                             equalTo(
                                                 NetworkAttributes.NETWORK_PEER_ADDRESS, "1.2.3.4"),

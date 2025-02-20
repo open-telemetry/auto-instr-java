@@ -5,6 +5,7 @@
 
 package io.opentelemetry.instrumentation.mongo.v3_1;
 
+import com.mongodb.MongoException;
 import com.mongodb.ServerAddress;
 import com.mongodb.connection.ConnectionDescription;
 import com.mongodb.event.CommandStartedEvent;
@@ -23,7 +24,7 @@ import org.bson.codecs.EncoderContext;
 import org.bson.json.JsonWriter;
 import org.bson.json.JsonWriterSettings;
 
-class MongoDbAttributesGetter implements DbClientAttributesGetter<CommandStartedEvent> {
+class MongoDbAttributesGetter implements DbClientAttributesGetter<CommandStartedEvent, Void> {
 
   // copied from DbIncubatingAttributes.DbSystemIncubatingValues
   private static final String MONGODB = "mongodb";
@@ -95,6 +96,15 @@ class MongoDbAttributesGetter implements DbClientAttributesGetter<CommandStarted
   @Nullable
   public String getDbOperationName(CommandStartedEvent event) {
     return event.getCommandName();
+  }
+
+  @Nullable
+  @Override
+  public String getResponseStatusFromException(Throwable throwable) {
+    if (throwable instanceof MongoException) {
+      return Integer.toString(((MongoException) throwable).getCode());
+    }
+    return null;
   }
 
   String sanitizeStatement(BsonDocument command) {

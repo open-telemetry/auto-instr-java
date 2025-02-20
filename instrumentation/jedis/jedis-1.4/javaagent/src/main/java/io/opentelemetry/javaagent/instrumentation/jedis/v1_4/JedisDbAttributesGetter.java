@@ -11,7 +11,7 @@ import io.opentelemetry.javaagent.bootstrap.internal.AgentCommonConfig;
 import io.opentelemetry.semconv.incubating.DbIncubatingAttributes;
 import javax.annotation.Nullable;
 
-final class JedisDbAttributesGetter implements DbClientAttributesGetter<JedisRequest> {
+final class JedisDbAttributesGetter implements DbClientAttributesGetter<JedisRequest, Void> {
 
   private static final RedisCommandSanitizer sanitizer =
       RedisCommandSanitizer.create(AgentCommonConfig.get().isStatementSanitizationEnabled());

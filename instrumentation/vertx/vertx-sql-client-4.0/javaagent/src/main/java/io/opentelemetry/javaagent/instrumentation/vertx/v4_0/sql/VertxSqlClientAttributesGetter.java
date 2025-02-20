@@ -12,7 +12,7 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 
 public enum VertxSqlClientAttributesGetter
-    implements SqlClientAttributesGetter<VertxSqlClientRequest> {
+    implements SqlClientAttributesGetter<VertxSqlClientRequest, Void> {
   INSTANCE;
 
   @Override
@@ -43,5 +43,16 @@ public enum VertxSqlClientAttributesGetter
   @Override
   public Collection<String> getRawQueryTexts(VertxSqlClientRequest request) {
     return singleton(request.getQueryText());
+  }
+
+  @Nullable
+  @Override
+  public String getResponseStatusFromException(Throwable throwable) {
+    // todo
+    // 4.4.2 has this
+    //    if (throwable instanceof io.vertx.sqlclient.DatabaseException) {
+    //
+    //    }
+    return null;
   }
 }

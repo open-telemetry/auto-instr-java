@@ -8,6 +8,7 @@ package io.opentelemetry.instrumentation.r2dbc.v1_0.internal;
 import static java.util.Collections.singleton;
 
 import io.opentelemetry.instrumentation.api.incubator.semconv.db.SqlClientAttributesGetter;
+import io.r2dbc.spi.R2dbcException;
 import java.util.Collection;
 import javax.annotation.Nullable;
 
@@ -15,7 +16,7 @@ import javax.annotation.Nullable;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
-public enum R2dbcSqlAttributesGetter implements SqlClientAttributesGetter<DbExecution> {
+public enum R2dbcSqlAttributesGetter implements SqlClientAttributesGetter<DbExecution, Void> {
   INSTANCE;
 
   @Override
@@ -46,5 +47,14 @@ public enum R2dbcSqlAttributesGetter implements SqlClientAttributesGetter<DbExec
   @Override
   public Collection<String> getRawQueryTexts(DbExecution request) {
     return singleton(request.getRawQueryText());
+  }
+
+  @Nullable
+  @Override
+  public String getResponseStatusFromException(Throwable throwable) {
+    if (throwable instanceof R2dbcException) {
+      return ((R2dbcException) throwable).getSqlState();
+    }
+    return null;
   }
 }

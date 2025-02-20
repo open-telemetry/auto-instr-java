@@ -26,7 +26,7 @@ import java.util.Collection;
  */
 public final class SqlClientAttributesExtractor<REQUEST, RESPONSE>
     extends DbClientCommonAttributesExtractor<
-        REQUEST, RESPONSE, SqlClientAttributesGetter<REQUEST>> {
+        REQUEST, RESPONSE, SqlClientAttributesGetter<REQUEST, RESPONSE>> {
 
   // copied from DbIncubatingAttributes
   private static final AttributeKey<String> DB_OPERATION = AttributeKey.stringKey("db.operation");
@@ -41,7 +41,7 @@ public final class SqlClientAttributesExtractor<REQUEST, RESPONSE>
 
   /** Creates the SQL client attributes extractor with default configuration. */
   public static <REQUEST, RESPONSE> AttributesExtractor<REQUEST, RESPONSE> create(
-      SqlClientAttributesGetter<REQUEST> getter) {
+      SqlClientAttributesGetter<REQUEST, RESPONSE> getter) {
     return SqlClientAttributesExtractor.<REQUEST, RESPONSE>builder(getter).build();
   }
 
@@ -50,7 +50,7 @@ public final class SqlClientAttributesExtractor<REQUEST, RESPONSE>
    * client attributes extractor.
    */
   public static <REQUEST, RESPONSE> SqlClientAttributesExtractorBuilder<REQUEST, RESPONSE> builder(
-      SqlClientAttributesGetter<REQUEST> getter) {
+      SqlClientAttributesGetter<REQUEST, RESPONSE> getter) {
     return new SqlClientAttributesExtractorBuilder<>(getter);
   }
 
@@ -62,7 +62,7 @@ public final class SqlClientAttributesExtractor<REQUEST, RESPONSE>
   private final boolean statementSanitizationEnabled;
 
   SqlClientAttributesExtractor(
-      SqlClientAttributesGetter<REQUEST> getter,
+      SqlClientAttributesGetter<REQUEST, RESPONSE> getter,
       AttributeKey<String> oldSemconvTableAttribute,
       boolean statementSanitizationEnabled) {
     super(getter);

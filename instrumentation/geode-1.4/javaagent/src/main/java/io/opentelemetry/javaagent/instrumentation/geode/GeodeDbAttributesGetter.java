@@ -11,7 +11,7 @@ import io.opentelemetry.javaagent.bootstrap.internal.AgentCommonConfig;
 import io.opentelemetry.semconv.incubating.DbIncubatingAttributes;
 import javax.annotation.Nullable;
 
-final class GeodeDbAttributesGetter implements DbClientAttributesGetter<GeodeRequest> {
+final class GeodeDbAttributesGetter implements DbClientAttributesGetter<GeodeRequest, Void> {
 
   private static final SqlStatementSanitizer sanitizer =
       SqlStatementSanitizer.create(AgentCommonConfig.get().isStatementSanitizationEnabled());

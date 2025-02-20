@@ -8,9 +8,10 @@ package io.opentelemetry.javaagent.instrumentation.elasticsearch.transport;
 import io.opentelemetry.instrumentation.api.incubator.semconv.db.DbClientAttributesGetter;
 import io.opentelemetry.semconv.incubating.DbIncubatingAttributes;
 import javax.annotation.Nullable;
+import org.elasticsearch.action.ActionResponse;
 
 final class ElasticsearchTransportAttributesGetter
-    implements DbClientAttributesGetter<ElasticTransportRequest> {
+    implements DbClientAttributesGetter<ElasticTransportRequest, ActionResponse> {
 
   @SuppressWarnings("deprecation") // using deprecated DbSystemIncubatingValues
   @Override

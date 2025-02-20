@@ -22,8 +22,8 @@ import javax.annotation.Nullable;
  * from the attribute methods, but implement as many as possible for best compliance with the
  * OpenTelemetry specification.
  */
-public interface SqlClientAttributesGetter<REQUEST>
-    extends DbClientCommonAttributesGetter<REQUEST> {
+public interface SqlClientAttributesGetter<REQUEST, RESPONSE>
+    extends DbClientCommonAttributesGetter<REQUEST, RESPONSE> {
 
   /**
    * Get the raw SQL statement. The value returned by this method is later sanitized by the {@link

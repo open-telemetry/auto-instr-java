@@ -17,11 +17,11 @@ public final class SqlClientAttributesExtractorBuilder<REQUEST, RESPONSE> {
   // copied from DbIncubatingAttributes
   private static final AttributeKey<String> DB_SQL_TABLE = AttributeKey.stringKey("db.sql.table");
 
-  final SqlClientAttributesGetter<REQUEST> getter;
+  final SqlClientAttributesGetter<REQUEST, RESPONSE> getter;
   AttributeKey<String> oldSemconvTableAttribute = DB_SQL_TABLE;
   boolean statementSanitizationEnabled = true;
 
-  SqlClientAttributesExtractorBuilder(SqlClientAttributesGetter<REQUEST> getter) {
+  SqlClientAttributesExtractorBuilder(SqlClientAttributesGetter<REQUEST, RESPONSE> getter) {
     this.getter = getter;
   }
 
