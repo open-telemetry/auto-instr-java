@@ -262,7 +262,10 @@ class SpymemcachedTest {
                             equalTo(
                                 maybeStable(DB_SYSTEM),
                                 DbIncubatingAttributes.DbSystemIncubatingValues.MEMCACHED),
-                            equalTo(maybeStable(DB_OPERATION), "get"))));
+                            equalTo(maybeStable(DB_OPERATION), "get"),
+                            equalTo(
+                                ERROR_TYPE,
+                                "net.spy.memcached.internal.CheckedOperationTimeoutException"))));
   }
 
   @Test
