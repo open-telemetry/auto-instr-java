@@ -43,6 +43,7 @@ public class DemoAutoConfigurationCustomizerProvider
         .setIdGenerator(new DemoIdGenerator())
         .setSpanLimits(SpanLimits.builder().setMaxNumberOfAttributes(1024).build())
         .addSpanProcessor(new DemoSpanProcessor())
+        .addSpanProcessor(new DemoBaggageSpanProcessor())
         .addSpanProcessor(SimpleSpanProcessor.create(new DemoSpanExporter()));
   }
 
