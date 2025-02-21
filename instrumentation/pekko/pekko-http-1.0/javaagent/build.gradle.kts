@@ -30,6 +30,7 @@ muzzle {
 dependencies {
   library("org.apache.pekko:pekko-http_2.12:1.0.0")
   library("org.apache.pekko:pekko-stream_2.12:1.0.1")
+  library("com.softwaremill.sttp.tapir:tapir-pekko-http-server_2.12:1.7.0")
 
   testImplementation("com.softwaremill.sttp.tapir:tapir-pekko-http-server_2.12:1.7.0")
 
@@ -38,6 +39,7 @@ dependencies {
 
   latestDepTestLibrary("org.apache.pekko:pekko-http_2.13:+")
   latestDepTestLibrary("org.apache.pekko:pekko-stream_2.13:+")
+  latestDepTestLibrary("com.softwaremill.sttp.tapir:tapir-pekko-http-server_2.12:+")
 }
 
 tasks {
