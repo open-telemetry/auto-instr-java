@@ -6,7 +6,6 @@
 package io.opentelemetry.javaagent.instrumentation.internal.classloader;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.extendsClass;
-import static java.util.logging.Level.WARNING;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isProtected;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
@@ -17,17 +16,14 @@ import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
-import io.opentelemetry.javaagent.bootstrap.BootstrapPackagePrefixesHolder;
 import io.opentelemetry.javaagent.bootstrap.CallDepth;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.tooling.Constants;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.util.List;
-import java.util.logging.Logger;
+import io.opentelemetry.javaagent.tooling.Utils;
+import io.opentelemetry.javaagent.tooling.bytebuddy.ExceptionHandlers;
+import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
+import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -53,7 +49,7 @@ public class BootDelegationInstrumentation implements TypeInstrumentation {
 
   @Override
   public void transform(TypeTransformer transformer) {
-    transformer.applyAdviceToMethod(
+    ElementMatcher.Junction<MethodDescription> methodMatcher =
         isMethod()
             .and(named("loadClass"))
             .and(
@@ -64,37 +60,14 @@ public class BootDelegationInstrumentation implements TypeInstrumentation {
                             .and(takesArgument(0, String.class))
                             .and(takesArgument(1, boolean.class))))
             .and(isPublic().or(isProtected()))
-            .and(not(isStatic())),
-        BootDelegationInstrumentation.class.getName() + "$LoadClassAdvice");
-  }
-
-  public static class Holder {
-
-    public static final List<String> bootstrapPackagesPrefixes = findBootstrapPackagePrefixes();
-
-    /**
-     * We have to make sure that {@link BootstrapPackagePrefixesHolder} is loaded from bootstrap
-     * class loader. After that we can use in {@link LoadClassAdvice}.
-     */
-    private static List<String> findBootstrapPackagePrefixes() {
-      try {
-        Class<?> holderClass =
-            Class.forName(
-                "io.opentelemetry.javaagent.bootstrap.BootstrapPackagePrefixesHolder", true, null);
-        MethodHandle methodHandle =
-            MethodHandles.publicLookup()
-                .findStatic(
-                    holderClass, "getBoostrapPackagePrefixes", MethodType.methodType(List.class));
-        //noinspection unchecked
-        return (List<String>) methodHandle.invokeExact();
-      } catch (Throwable e) {
-        Logger.getLogger(Holder.class.getName())
-            .log(WARNING, "Unable to load bootstrap package prefixes from the bootstrap CL", e);
-        return Constants.BOOTSTRAP_PACKAGE_PREFIXES;
-      }
-    }
-
-    private Holder() {}
+            .and(not(isStatic()));
+    // Inline instrumentation to prevent problems with invokedynamic-recursion
+    transformer.applyTransformer(
+        new AgentBuilder.Transformer.ForAdvice()
+            .include(Utils.getBootstrapProxy(), Utils.getAgentClassLoader())
+            .withExceptionHandler(ExceptionHandlers.defaultExceptionHandler())
+            .advice(
+                methodMatcher, BootDelegationInstrumentation.class.getName() + "$LoadClassAdvice"));
   }
 
   @SuppressWarnings("unused")
@@ -113,7 +86,7 @@ public class BootDelegationInstrumentation implements TypeInstrumentation {
       }
 
       try {
-        for (String prefix : Holder.bootstrapPackagesPrefixes) {
+        for (String prefix : BootstrapPackagesHelper.bootstrapPackagesPrefixes) {
           if (name.startsWith(prefix)) {
             try {
               return Class.forName(name, false, null);
@@ -134,13 +107,12 @@ public class BootDelegationInstrumentation implements TypeInstrumentation {
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-    @Advice.AssignReturned.ToReturned
-    public static Class<?> onExit(
-        @Advice.Return Class<?> result, @Advice.Enter Class<?> resultFromBootstrapLoader) {
+    public static void onExit(
+        @Advice.Return(readOnly = false) Class<?> result,
+        @Advice.Enter Class<?> resultFromBootstrapLoader) {
       if (resultFromBootstrapLoader != null) {
-        return resultFromBootstrapLoader;
+        result = resultFromBootstrapLoader;
       }
-      return result;
     }
   }
 }

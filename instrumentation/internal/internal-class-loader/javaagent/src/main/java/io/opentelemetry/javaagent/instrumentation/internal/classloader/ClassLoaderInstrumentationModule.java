@@ -10,11 +10,14 @@ import static java.util.Arrays.asList;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.internal.ExperimentalInstrumentationModule;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import java.util.Arrays;
 import java.util.List;
 
 @AutoService(InstrumentationModule.class)
-public class ClassLoaderInstrumentationModule extends InstrumentationModule {
+public class ClassLoaderInstrumentationModule extends InstrumentationModule
+    implements ExperimentalInstrumentationModule {
   public ClassLoaderInstrumentationModule() {
     super("internal-class-loader");
   }
@@ -26,10 +29,15 @@ public class ClassLoaderInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
-  public boolean isHelperClass(String className) {
-    // TODO: this can be removed when we drop inlined-advice support
-    // The advices can directly access this class in the AgentClassLoader with invokedynamic Advice
-    return className.equals("io.opentelemetry.javaagent.tooling.Constants");
+  public List<String> getAdditionalHelperClassNames() {
+    return Arrays.asList(
+        "io.opentelemetry.javaagent.instrumentation.internal.classloader.BootstrapPackagesHelper",
+        "io.opentelemetry.javaagent.tooling.Constants");
+  }
+
+  @Override
+  public List<String> injectedClassNames() {
+    return getAdditionalHelperClassNames();
   }
 
   @Override

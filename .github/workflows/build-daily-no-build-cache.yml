@@ -24,13 +24,6 @@ jobs:
     secrets:
       FLAKY_TEST_REPORTER_ACCESS_KEY: ${{ secrets.FLAKY_TEST_REPORTER_ACCESS_KEY }}
 
-  test-indy:
-    uses: ./.github/workflows/reusable-test-indy.yml
-    with:
-      no-build-cache: true
-    secrets:
-      FLAKY_TEST_REPORTER_ACCESS_KEY: ${{ secrets.FLAKY_TEST_REPORTER_ACCESS_KEY }}
-
   # muzzle is not included here because it doesn't use gradle cache anyway and so is already covered
   # by the normal daily build
 
