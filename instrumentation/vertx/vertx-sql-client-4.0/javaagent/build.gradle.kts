@@ -13,6 +13,7 @@ muzzle {
 
 dependencies {
   library("io.vertx:vertx-sql-client:4.0.0")
+  compileOnly("io.vertx:vertx-pg-client:4.0.0")
   compileOnly("io.vertx:vertx-codegen:4.0.0")
 
   testInstrumentation(project(":instrumentation:netty:netty-4.1:javaagent"))

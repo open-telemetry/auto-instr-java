@@ -6,6 +6,7 @@
 package io.opentelemetry.instrumentation.api.incubator.semconv.db;
 
 import static io.opentelemetry.instrumentation.api.internal.AttributesExtractorUtil.internalSet;
+import static io.opentelemetry.semconv.ErrorAttributes.ERROR_TYPE;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -29,7 +30,6 @@ abstract class DbClientCommonAttributesExtractor<
   private static final AttributeKey<String> DB_USER = AttributeKey.stringKey("db.user");
   private static final AttributeKey<String> DB_CONNECTION_STRING =
       AttributeKey.stringKey("db.connection_string");
-  private static final AttributeKey<String> ERROR_TYPE = AttributeKey.stringKey("error.type");
   private static final AttributeKey<String> DB_RESPONSE_STATUS_CODE =
       AttributeKey.stringKey("db.response.status_code");
 

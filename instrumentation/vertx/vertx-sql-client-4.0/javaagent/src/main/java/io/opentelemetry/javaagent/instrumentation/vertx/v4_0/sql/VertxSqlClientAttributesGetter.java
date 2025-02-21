@@ -10,6 +10,7 @@ import static java.util.Collections.singleton;
 import io.opentelemetry.instrumentation.api.incubator.semconv.db.SqlClientAttributesGetter;
 import java.util.Collection;
 import javax.annotation.Nullable;
+import io.vertx.pgclient.PgException;
 
 public enum VertxSqlClientAttributesGetter
     implements SqlClientAttributesGetter<VertxSqlClientRequest, Void> {
@@ -48,11 +49,9 @@ public enum VertxSqlClientAttributesGetter
   @Nullable
   @Override
   public String getResponseStatusFromException(Throwable throwable) {
-    // todo
-    // 4.4.2 has this
-    //    if (throwable instanceof io.vertx.sqlclient.DatabaseException) {
-    //
-    //    }
+    if (throwable instanceof PgException) {
+      return ((PgException) throwable).getCode();
+    }
     return null;
   }
 }
