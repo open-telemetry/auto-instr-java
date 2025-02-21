@@ -8,9 +8,9 @@ package io.opentelemetry.javaagent.instrumentation.vertx.v4_0.sql;
 import static java.util.Collections.singleton;
 
 import io.opentelemetry.instrumentation.api.incubator.semconv.db.SqlClientAttributesGetter;
+import io.vertx.pgclient.PgException;
 import java.util.Collection;
 import javax.annotation.Nullable;
-import io.vertx.pgclient.PgException;
 
 public enum VertxSqlClientAttributesGetter
     implements SqlClientAttributesGetter<VertxSqlClientRequest, Void> {
