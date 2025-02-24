@@ -100,7 +100,7 @@ class PekkoHttpServerRouteTest {
     val routes2 = concat(route3, route4)
     val routes = concat(routes1, routes2)
 
-    test(routes, "/test/4", "GET")
+    test(routes, "/test/4", "GET /test/4")
   }
 
   def test(route: Route, path: String, spanName: String): Unit = {
