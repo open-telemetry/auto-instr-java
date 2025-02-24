@@ -5,6 +5,7 @@
 
 package io.opentelemetry.instrumentation.awssdk.v2_2.internal;
 
+import static io.opentelemetry.instrumentation.awssdk.v2_2.internal.AwsSdkRequestType.BEDROCK_RUNTIME;
 import static io.opentelemetry.instrumentation.awssdk.v2_2.internal.AwsSdkRequestType.DYNAMODB;
 import static io.opentelemetry.instrumentation.awssdk.v2_2.internal.AwsSdkRequestType.KINESIS;
 import static io.opentelemetry.instrumentation.awssdk.v2_2.internal.AwsSdkRequestType.S3;
@@ -119,7 +120,9 @@ enum AwsSdkRequest {
           "ProvisionedThroughput.ReadCapacityUnits"),
       request(
           "aws.dynamodb.provisioned_throughput.write_capacity_units",
-          "ProvisionedThroughput.WriteCapacityUnits"));
+          "ProvisionedThroughput.WriteCapacityUnits")),
+  ConverseRequest(BEDROCK_RUNTIME, "ConverseRequest", request("gen_ai.request.model", "modelId")),
+  ;
 
   private final AwsSdkRequestType type;
   private final String requestClass;

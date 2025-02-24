@@ -1,0 +1,36 @@
+---
+id: d50f134a-048f-41e2-ad78-f702880b78d6
+name: model_amazontitan-text-lite-v1_converse
+request:
+  url: /model/amazon.titan-text-lite-v1/converse
+  method: POST
+  bodyPatterns:
+  - equalToJson: |-
+      {
+        "messages" : [ {
+          "role" : "user",
+          "content" : [ {
+            "text" : "Say this is a test"
+          } ]
+        } ],
+        "inferenceConfig" : {
+          "maxTokens" : 10,
+          "temperature" : 0.8,
+          "topP" : 1,
+          "stopSequences" : [ "|" ]
+        }
+      }
+    ignoreArrayOrder: false
+    ignoreExtraElements: false
+response:
+  status: 200
+  body: "{\"metrics\":{\"latencyMs\":659},\"output\":{\"message\":{\"content\":[{\"\
+    text\":\"This is an LLM (\"}],\"role\":\"assistant\"}},\"stopReason\":\"max_tokens\"\
+    ,\"usage\":{\"inputTokens\":8,\"outputTokens\":10,\"totalTokens\":18}}"
+  headers:
+    Date: "Fri, 14 Feb 2025 06:31:20 GMT"
+    Content-Type: application/json
+    x-amzn-RequestId: ea2aad1f-b9a2-4c38-ac72-fb0215291d6a
+uuid: d50f134a-048f-41e2-ad78-f702880b78d6
+persistent: true
+insertionIndex: 2

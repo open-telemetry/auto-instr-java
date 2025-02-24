@@ -17,6 +17,7 @@ enum AwsSdkRequestType {
   SQS(request("aws.queue.url", "QueueUrl"), request("aws.queue.name", "QueueName")),
   KINESIS(request("aws.stream.name", "StreamName")),
   DYNAMODB(request("aws.table.name", "TableName")),
+  BEDROCK_RUNTIME(),
   SNS(
       /*
        * Only one of TopicArn and TargetArn are permitted on an SNS request.

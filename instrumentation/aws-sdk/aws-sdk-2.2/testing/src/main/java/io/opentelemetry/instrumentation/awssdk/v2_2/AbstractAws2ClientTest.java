@@ -59,7 +59,6 @@ import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.async.AsyncResponseTransformer;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.exception.SdkException;
-import software.amazon.awssdk.core.retry.RetryPolicy;
 import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ec2.Ec2AsyncClient;
@@ -92,6 +91,7 @@ import software.amazon.awssdk.services.sqs.SqsClientBuilder;
 import software.amazon.awssdk.services.sqs.model.CreateQueueRequest;
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 
+@SuppressWarnings("deprecation") // We need to use deprecated APIs for testing older versions.
 public abstract class AbstractAws2ClientTest extends AbstractAws2ClientCoreTest {
   private static final String QUEUE_URL = "http://xxx/somequeue";
 
@@ -638,7 +638,10 @@ public abstract class AbstractAws2ClientTest extends AbstractAws2ClientCoreTest 
         S3Client.builder()
             .overrideConfiguration(
                 createOverrideConfigurationBuilder()
-                    .retryPolicy(RetryPolicy.builder().numRetries(1).build())
+                    .retryPolicy(
+                        software.amazon.awssdk.core.retry.RetryPolicy.builder()
+                            .numRetries(1)
+                            .build())
                     .build())
             .endpointOverride(clientUri)
             .region(Region.AP_NORTHEAST_1)
