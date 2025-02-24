@@ -10,8 +10,8 @@ import static io.opentelemetry.instrumentation.api.annotation.support.async.Asyn
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.annotation.support.async.AsyncOperationEndHandler;
 import io.opentelemetry.instrumentation.api.annotation.support.async.AsyncOperationEndStrategy;
-import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
@@ -55,7 +55,7 @@ public final class RxJava2AsyncOperationEndStrategy implements AsyncOperationEnd
 
   @Override
   public <REQUEST, RESPONSE> Object end(
-      Instrumenter<REQUEST, RESPONSE> instrumenter,
+      AsyncOperationEndHandler<REQUEST, RESPONSE> handler,
       Context context,
       REQUEST request,
       Object asyncValue,
@@ -65,7 +65,7 @@ public final class RxJava2AsyncOperationEndStrategy implements AsyncOperationEnd
         new EndOnFirstNotificationConsumer<Object>(context) {
           @Override
           protected void end(Object response, Throwable error) {
-            instrumenter.end(context, request, tryToGetResponse(responseType, response), error);
+            handler.handle(context, request, tryToGetResponse(responseType, response), error);
           }
         };
 

@@ -468,6 +468,7 @@ configurations.configureEach {
       substitute(module("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")).using(project(":instrumentation-api"))
       substitute(module("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator")).using(project(":instrumentation-api-incubator"))
       substitute(module("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations")).using(project(":instrumentation-annotations"))
+      substitute(module("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-incubator")).using(project(":instrumentation-annotations-incubator"))
       substitute(module("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support")).using(
         project(":instrumentation-annotations-support")
       )
