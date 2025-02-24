@@ -5,6 +5,7 @@
 
 package io.opentelemetry.instrumentation.spring.integration.v4_1;
 
+import static io.opentelemetry.instrumentation.api.internal.SemconvStability.emitStableMessagingSemconv;
 import static java.util.Collections.emptyList;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
@@ -79,6 +80,7 @@ public final class SpringIntegrationTelemetryBuilder {
    * Returns a new {@link SpringIntegrationTelemetry} with the settings of this {@link
    * SpringIntegrationTelemetryBuilder}.
    */
+  @SuppressWarnings("deprecation") // using deprecated semconv
   public SpringIntegrationTelemetry build() {
     Instrumenter<MessageWithChannel, Void> consumerInstrumenter =
         Instrumenter.<MessageWithChannel, Void>builder(
@@ -102,7 +104,9 @@ public final class SpringIntegrationTelemetryBuilder {
             .addAttributesExtractor(
                 buildMessagingAttributesExtractor(
                     SpringMessagingAttributesGetter.INSTANCE,
-                    MessageOperation.PUBLISH,
+                    emitStableMessagingSemconv()
+                        ? MessageOperation.CREATE
+                        : MessageOperation.PUBLISH,
                     capturedHeaders))
             .buildInstrumenter(SpanKindExtractor.alwaysProducer());
     return new SpringIntegrationTelemetry(

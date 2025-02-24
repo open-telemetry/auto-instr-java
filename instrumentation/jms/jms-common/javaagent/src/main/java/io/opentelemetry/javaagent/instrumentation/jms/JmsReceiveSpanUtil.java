@@ -5,6 +5,8 @@
 
 package io.opentelemetry.javaagent.instrumentation.jms;
 
+import static io.opentelemetry.instrumentation.api.internal.SemconvStability.emitStableMessagingSemconv;
+
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -26,7 +28,8 @@ public final class JmsReceiveSpanUtil {
       Throwable throwable) {
     Context parentContext = Context.current();
     // if receive instrumentation is not enabled we'll use the producer as parent
-    if (!receiveInstrumentationEnabled) {
+    // according to the stable convertions the production should only be linked not as parent
+    if (!receiveInstrumentationEnabled && !emitStableMessagingSemconv()) {
       parentContext =
           propagators
               .getTextMapPropagator()

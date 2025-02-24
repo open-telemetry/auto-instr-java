@@ -11,6 +11,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
+import io.opentelemetry.instrumentation.api.internal.SemconvStability;
 import io.opentelemetry.instrumentation.api.internal.SpanKey;
 import io.opentelemetry.instrumentation.api.internal.SpanKeyProvider;
 import java.util.List;
@@ -27,35 +28,54 @@ import javax.annotation.Nullable;
 public final class MessagingAttributesExtractor<REQUEST, RESPONSE>
     implements AttributesExtractor<REQUEST, RESPONSE>, SpanKeyProvider {
 
-  // copied from MessagingIncubatingAttributes
+  // copied from io.opentelemetry.semconv.incubating.MessagingIncubatingAttributes (stable
+  // attributes)
+  private static final AttributeKey<String> MESSAGING_OPERATION_NAME =
+      AttributeKey.stringKey("messaging.operation.name");
+  private static final AttributeKey<String> MESSAGING_SYSTEM =
+      AttributeKey.stringKey("messaging.system");
   private static final AttributeKey<Long> MESSAGING_BATCH_MESSAGE_COUNT =
       AttributeKey.longKey("messaging.batch.message_count");
-  private static final AttributeKey<String> MESSAGING_CLIENT_ID =
-      AttributeKey.stringKey("messaging.client_id");
+  // Messaging specific
+  private static final AttributeKey<String> MESSAGING_CONSUMER_GROUP_NAME =
+      AttributeKey.stringKey("messaging.consumer.group.name");
   private static final AttributeKey<Boolean> MESSAGING_DESTINATION_ANONYMOUS =
       AttributeKey.booleanKey("messaging.destination.anonymous");
   private static final AttributeKey<String> MESSAGING_DESTINATION_NAME =
       AttributeKey.stringKey("messaging.destination.name");
-  private static final AttributeKey<String> MESSAGING_DESTINATION_PARTITION_ID =
-      AttributeKey.stringKey("messaging.destination.partition.id");
+  // Messaging specific
+  private static final AttributeKey<String> MESSAGING_DESTINATION_SUBSCRIPTION_NAME =
+      AttributeKey.stringKey("messaging.destination.subscription.name");
   private static final AttributeKey<String> MESSAGING_DESTINATION_TEMPLATE =
       AttributeKey.stringKey("messaging.destination.template");
   private static final AttributeKey<Boolean> MESSAGING_DESTINATION_TEMPORARY =
       AttributeKey.booleanKey("messaging.destination.temporary");
-  private static final AttributeKey<Long> MESSAGING_MESSAGE_BODY_SIZE =
-      AttributeKey.longKey("messaging.message.body.size");
+  private static final AttributeKey<String> MESSAGING_OPERATION_TYPE =
+      AttributeKey.stringKey("messaging.operation.type");
+  private static final AttributeKey<String> MESSAGING_CLIENT_ID_STABLE =
+      AttributeKey.stringKey("messaging.client.id");
+  private static final AttributeKey<String> MESSAGING_DESTINATION_PARTITION_ID =
+      AttributeKey.stringKey("messaging.destination.partition.id");
   private static final AttributeKey<String> MESSAGING_MESSAGE_CONVERSATION_ID =
       AttributeKey.stringKey("messaging.message.conversation_id");
-  private static final AttributeKey<Long> MESSAGING_MESSAGE_ENVELOPE_SIZE =
-      AttributeKey.longKey("messaging.message.envelope.size");
   private static final AttributeKey<String> MESSAGING_MESSAGE_ID =
       AttributeKey.stringKey("messaging.message.id");
+  private static final AttributeKey<Long> MESSAGING_MESSAGE_BODY_SIZE =
+      AttributeKey.longKey("messaging.message.body.size");
+  private static final AttributeKey<Long> MESSAGING_MESSAGE_ENVELOPE_SIZE =
+      AttributeKey.longKey("messaging.message.envelope.size");
+
+  // copied from MessagingIncubatingAttributes (old attributes)
+  @Deprecated
+  private static final AttributeKey<String> MESSAGING_CLIENT_ID =
+      AttributeKey.stringKey("messaging.client_id");
+
+  @Deprecated
   private static final AttributeKey<String> MESSAGING_OPERATION =
       AttributeKey.stringKey("messaging.operation");
-  private static final AttributeKey<String> MESSAGING_SYSTEM =
-      AttributeKey.stringKey("messaging.system");
 
   static final String TEMP_DESTINATION_NAME = "(temporary)";
+  static final String ANONYMOUS_DESTINATION_NAME = "(anonymous)";
 
   /**
    * Creates the messaging attributes extractor for the given {@link MessageOperation operation}
@@ -89,31 +109,57 @@ public final class MessagingAttributesExtractor<REQUEST, RESPONSE>
   }
 
   @Override
+  @SuppressWarnings("deprecation") // using deprecated semconv
   public void onStart(AttributesBuilder attributes, Context parentContext, REQUEST request) {
     internalSet(attributes, MESSAGING_SYSTEM, getter.getSystem(request));
+
+    // Old messaging attributes
+    if (SemconvStability.emitOldMessagingSemconv()) {
+      internalSet(attributes, MESSAGING_CLIENT_ID, getter.getClientId(request));
+      if (operation != null) { // in old implementation operation could be null
+        internalSet(attributes, MESSAGING_OPERATION, operation.operationName());
+      }
+    }
+
+    // New, stable attributes
+    if (SemconvStability.emitStableMessagingSemconv()) {
+      internalSet(attributes, MESSAGING_CLIENT_ID_STABLE, getter.getClientId(request));
+      internalSet(attributes, MESSAGING_OPERATION_TYPE, operation.operationType());
+      internalSet(
+          attributes, MESSAGING_OPERATION_NAME, getter.getOperationName(request, operation));
+      internalSet(attributes, MESSAGING_CONSUMER_GROUP_NAME, getter.getConsumerGroupName(request));
+      internalSet(
+          attributes,
+          MESSAGING_DESTINATION_SUBSCRIPTION_NAME,
+          getter.getDestinationSubscriptionName(request));
+    }
+
+    // Unchanged attributes from 1.25.0 to stable
     boolean isTemporaryDestination = getter.isTemporaryDestination(request);
+    boolean isAnonymousDestination = getter.isAnonymousDestination(request);
+
+    String destination =
+        isTemporaryDestination
+            ? TEMP_DESTINATION_NAME
+            : (isAnonymousDestination
+                ? ANONYMOUS_DESTINATION_NAME
+                : getter.getDestination(request));
+    internalSet(attributes, MESSAGING_DESTINATION_NAME, destination);
+
     if (isTemporaryDestination) {
       internalSet(attributes, MESSAGING_DESTINATION_TEMPORARY, true);
-      internalSet(attributes, MESSAGING_DESTINATION_NAME, TEMP_DESTINATION_NAME);
     } else {
-      internalSet(attributes, MESSAGING_DESTINATION_NAME, getter.getDestination(request));
       internalSet(
           attributes, MESSAGING_DESTINATION_TEMPLATE, getter.getDestinationTemplate(request));
     }
-    internalSet(
-        attributes, MESSAGING_DESTINATION_PARTITION_ID, getter.getDestinationPartitionId(request));
-    boolean isAnonymousDestination = getter.isAnonymousDestination(request);
     if (isAnonymousDestination) {
       internalSet(attributes, MESSAGING_DESTINATION_ANONYMOUS, true);
     }
-    internalSet(attributes, MESSAGING_MESSAGE_CONVERSATION_ID, getter.getConversationId(request));
-    internalSet(attributes, MESSAGING_MESSAGE_BODY_SIZE, getter.getMessageBodySize(request));
+
     internalSet(
-        attributes, MESSAGING_MESSAGE_ENVELOPE_SIZE, getter.getMessageEnvelopeSize(request));
-    internalSet(attributes, MESSAGING_CLIENT_ID, getter.getClientId(request));
-    if (operation != null) {
-      internalSet(attributes, MESSAGING_OPERATION, operation.operationName());
-    }
+        attributes, MESSAGING_DESTINATION_PARTITION_ID, getter.getDestinationPartitionId(request));
+
+    internalSet(attributes, MESSAGING_MESSAGE_CONVERSATION_ID, getter.getConversationId(request));
   }
 
   @Override
@@ -126,6 +172,10 @@ public final class MessagingAttributesExtractor<REQUEST, RESPONSE>
     internalSet(attributes, MESSAGING_MESSAGE_ID, getter.getMessageId(request, response));
     internalSet(
         attributes, MESSAGING_BATCH_MESSAGE_COUNT, getter.getBatchMessageCount(request, response));
+
+    internalSet(attributes, MESSAGING_MESSAGE_BODY_SIZE, getter.getMessageBodySize(request));
+    internalSet(
+        attributes, MESSAGING_MESSAGE_ENVELOPE_SIZE, getter.getMessageEnvelopeSize(request));
 
     for (String name : capturedHeaders) {
       List<String> values = getter.getMessageHeader(request, name);
@@ -140,18 +190,25 @@ public final class MessagingAttributesExtractor<REQUEST, RESPONSE>
    * any time.
    */
   @Override
+  @SuppressWarnings("deprecation") // using deprecated semconv
   public SpanKey internalGetSpanKey() {
     if (operation == null) {
       return null;
     }
 
     switch (operation) {
+      case CREATE:
+        return SpanKey.PRODUCER;
+      case SEND:
+        return SpanKey.PRODUCER;
       case PUBLISH:
         return SpanKey.PRODUCER;
       case RECEIVE:
         return SpanKey.CONSUMER_RECEIVE;
       case PROCESS:
         return SpanKey.CONSUMER_PROCESS;
+      case SETTLE:
+        return SpanKey.CONSUMER_SETTLE;
     }
     throw new IllegalStateException("Can't possibly happen");
   }

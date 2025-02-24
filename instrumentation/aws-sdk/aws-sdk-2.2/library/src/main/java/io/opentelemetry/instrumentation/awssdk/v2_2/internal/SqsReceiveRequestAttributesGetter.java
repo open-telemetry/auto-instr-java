@@ -6,6 +6,7 @@
 package io.opentelemetry.instrumentation.awssdk.v2_2.internal;
 
 import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingAttributesGetter;
+import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingNetworkAttributesGetter;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -13,7 +14,9 @@ import javax.annotation.Nullable;
 import software.amazon.awssdk.core.SdkRequest;
 
 enum SqsReceiveRequestAttributesGetter
-    implements MessagingAttributesGetter<SqsReceiveRequest, Response> {
+    implements
+        MessagingAttributesGetter<SqsReceiveRequest, Response>,
+        MessagingNetworkAttributesGetter<SqsReceiveRequest, Response> {
   INSTANCE;
 
   // copied from MessagingIncubatingAttributes.MessagingSystemIncubatingValues

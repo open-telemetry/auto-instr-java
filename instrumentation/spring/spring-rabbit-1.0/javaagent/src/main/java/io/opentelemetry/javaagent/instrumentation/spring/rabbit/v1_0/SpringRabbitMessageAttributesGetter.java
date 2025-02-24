@@ -6,12 +6,15 @@
 package io.opentelemetry.javaagent.instrumentation.spring.rabbit.v1_0;
 
 import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingAttributesGetter;
+import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingNetworkAttributesGetter;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.springframework.amqp.core.Message;
 
-enum SpringRabbitMessageAttributesGetter implements MessagingAttributesGetter<Message, Void> {
+enum SpringRabbitMessageAttributesGetter
+    implements
+        MessagingAttributesGetter<Message, Void>, MessagingNetworkAttributesGetter<Message, Void> {
   INSTANCE;
 
   @Override

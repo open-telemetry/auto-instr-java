@@ -8,12 +8,16 @@ package io.opentelemetry.javaagent.instrumentation.jms;
 import static java.util.logging.Level.FINE;
 
 import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingAttributesGetter;
+import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingNetworkAttributesGetter;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
-enum JmsMessageAttributesGetter implements MessagingAttributesGetter<MessageWithDestination, Void> {
+enum JmsMessageAttributesGetter
+    implements
+        MessagingAttributesGetter<MessageWithDestination, Void>,
+        MessagingNetworkAttributesGetter<MessageWithDestination, Void> {
   INSTANCE;
 
   private static final Logger logger = Logger.getLogger(JmsMessageAttributesGetter.class.getName());

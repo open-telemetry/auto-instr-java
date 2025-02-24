@@ -5,11 +5,12 @@
 
 package io.opentelemetry.javaagent.instrumentation.pulsar.v2_8.telemetry;
 
-import io.opentelemetry.instrumentation.api.semconv.network.ServerAttributesGetter;
+import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingNetworkAttributesGetter;
 import javax.annotation.Nullable;
 
-public final class PulsarNetClientAttributesGetter
-    implements ServerAttributesGetter<BasePulsarRequest> {
+public enum PulsarNetClientAttributesGetter
+    implements MessagingNetworkAttributesGetter<BasePulsarRequest, Void> {
+  INSTANCE;
 
   @Nullable
   @Override

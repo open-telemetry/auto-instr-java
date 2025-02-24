@@ -8,6 +8,7 @@ package io.opentelemetry.javaagent.instrumentation.spring.rabbit.v1_0;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessageOperation;
 import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingAttributesExtractor;
+import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingNetworkAttributesExtractor;
 import io.opentelemetry.instrumentation.api.incubator.semconv.messaging.MessagingSpanNameExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.javaagent.bootstrap.internal.ExperimentalConfig;
@@ -27,11 +28,12 @@ public final class SpringRabbitSingletons {
         Instrumenter.<Message, Void>builder(
                 GlobalOpenTelemetry.get(),
                 INSTRUMENTATION_NAME,
-                MessagingSpanNameExtractor.create(getter, operation))
+                MessagingSpanNameExtractor.create(getter, operation, getter))
             .addAttributesExtractor(
                 MessagingAttributesExtractor.builder(getter, operation)
                     .setCapturedHeaders(ExperimentalConfig.get().getMessagingHeaders())
                     .build())
+            .addAttributesExtractor(MessagingNetworkAttributesExtractor.create(getter))
             .buildConsumerInstrumenter(MessageHeaderGetter.INSTANCE);
   }
 
