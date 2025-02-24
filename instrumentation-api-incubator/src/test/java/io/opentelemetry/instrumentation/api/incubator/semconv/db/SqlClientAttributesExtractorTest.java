@@ -26,7 +26,8 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("deprecation") // using deprecated semconv
 class SqlClientAttributesExtractorTest {
 
-  static class TestAttributesGetter implements SqlClientAttributesGetter<Map<String, Object>> {
+  static class TestAttributesGetter
+      implements SqlClientAttributesGetter<Map<String, Object>, Void> {
 
     @Override
     public Collection<String> getRawQueryTexts(Map<String, Object> map) {
@@ -71,7 +72,7 @@ class SqlClientAttributesExtractorTest {
   }
 
   static class TestMultiAttributesGetter extends TestAttributesGetter
-      implements SqlClientAttributesGetter<Map<String, Object>> {
+      implements SqlClientAttributesGetter<Map<String, Object>, Void> {
 
     @SuppressWarnings("unchecked")
     @Override

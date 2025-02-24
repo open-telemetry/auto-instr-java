@@ -9,6 +9,7 @@ import static io.opentelemetry.instrumentation.api.internal.SemconvStability.emi
 import static io.opentelemetry.instrumentation.testing.junit.db.SemconvStabilityUtil.maybeStable;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.satisfies;
+import static io.opentelemetry.semconv.ErrorAttributes.ERROR_TYPE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_MESSAGE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_TYPE;
@@ -16,6 +17,7 @@ import static io.opentelemetry.semconv.ServerAttributes.SERVER_ADDRESS;
 import static io.opentelemetry.semconv.ServerAttributes.SERVER_PORT;
 import static io.opentelemetry.semconv.incubating.DbIncubatingAttributes.DB_NAME;
 import static io.opentelemetry.semconv.incubating.DbIncubatingAttributes.DB_OPERATION;
+import static io.opentelemetry.semconv.incubating.DbIncubatingAttributes.DB_RESPONSE_STATUS_CODE;
 import static io.opentelemetry.semconv.incubating.DbIncubatingAttributes.DB_SQL_TABLE;
 import static io.opentelemetry.semconv.incubating.DbIncubatingAttributes.DB_STATEMENT;
 import static io.opentelemetry.semconv.incubating.DbIncubatingAttributes.DB_USER;
@@ -199,6 +201,8 @@ class VertxSqlClientTest {
                             equalTo(maybeStable(DB_NAME), DB),
                             equalTo(DB_USER, emitStableDatabaseSemconv() ? null : USER_DB),
                             equalTo(maybeStable(DB_STATEMENT), "invalid"),
+                            equalTo(DB_RESPONSE_STATUS_CODE, "42601"),
+                            equalTo(ERROR_TYPE, "io.vertx.pgclient.PgException"),
                             equalTo(SERVER_ADDRESS, host),
                             equalTo(SERVER_PORT, port)),
                 span ->

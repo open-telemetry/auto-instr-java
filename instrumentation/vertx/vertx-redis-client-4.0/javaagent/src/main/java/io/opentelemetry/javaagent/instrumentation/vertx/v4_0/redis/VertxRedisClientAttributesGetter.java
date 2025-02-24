@@ -13,7 +13,7 @@ import io.opentelemetry.semconv.incubating.DbIncubatingAttributes;
 import javax.annotation.Nullable;
 
 public enum VertxRedisClientAttributesGetter
-    implements DbClientAttributesGetter<VertxRedisClientRequest> {
+    implements DbClientAttributesGetter<VertxRedisClientRequest, Void> {
   INSTANCE;
 
   private static final RedisCommandSanitizer sanitizer =

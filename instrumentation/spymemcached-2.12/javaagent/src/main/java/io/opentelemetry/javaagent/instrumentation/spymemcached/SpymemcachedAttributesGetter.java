@@ -8,7 +8,8 @@ package io.opentelemetry.javaagent.instrumentation.spymemcached;
 import io.opentelemetry.instrumentation.api.incubator.semconv.db.DbClientAttributesGetter;
 import javax.annotation.Nullable;
 
-public class SpymemcachedAttributesGetter implements DbClientAttributesGetter<SpymemcachedRequest> {
+public class SpymemcachedAttributesGetter
+    implements DbClientAttributesGetter<SpymemcachedRequest, Object> {
 
   @Override
   public String getDbSystem(SpymemcachedRequest spymemcachedRequest) {

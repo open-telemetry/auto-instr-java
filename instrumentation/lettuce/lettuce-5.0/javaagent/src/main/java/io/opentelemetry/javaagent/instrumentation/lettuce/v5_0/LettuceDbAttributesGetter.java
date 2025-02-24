@@ -15,7 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
-final class LettuceDbAttributesGetter implements DbClientAttributesGetter<RedisCommand<?, ?, ?>> {
+final class LettuceDbAttributesGetter
+    implements DbClientAttributesGetter<RedisCommand<?, ?, ?>, Void> {
 
   private static final RedisCommandSanitizer sanitizer =
       RedisCommandSanitizer.create(AgentCommonConfig.get().isStatementSanitizationEnabled());

@@ -32,11 +32,7 @@ final class DbClientMetricsAdvice {
                 SqlClientAttributesExtractor.DB_COLLECTION_NAME,
                 DbClientCommonAttributesExtractor.DB_NAMESPACE,
                 DbClientAttributesExtractor.DB_OPERATION_NAME,
-                // will be implemented in
-                // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/12804
                 DbClientAttributesExtractor.DB_RESPONSE_STATUS_CODE,
-                // will be implemented in
-                // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/12804
                 ErrorAttributes.ERROR_TYPE,
                 NetworkAttributes.NETWORK_PEER_ADDRESS,
                 NetworkAttributes.NETWORK_PEER_PORT,

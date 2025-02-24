@@ -8,11 +8,13 @@ package io.opentelemetry.instrumentation.cassandra.v4_4;
 import static java.util.Collections.singleton;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.ExecutionInfo;
 import io.opentelemetry.instrumentation.api.incubator.semconv.db.SqlClientAttributesGetter;
 import java.util.Collection;
 import javax.annotation.Nullable;
 
-final class CassandraSqlAttributesGetter implements SqlClientAttributesGetter<CassandraRequest> {
+final class CassandraSqlAttributesGetter
+    implements SqlClientAttributesGetter<CassandraRequest, ExecutionInfo> {
   // copied from DbIncubatingAttributes.DbSystemIncubatingValues
   private static final String CASSANDRA = "cassandra";
 

@@ -10,6 +10,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.instrumentation.testing.junit.db.SemconvStabilityUtil.maybeStable;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.satisfies;
+import static io.opentelemetry.semconv.ErrorAttributes.ERROR_TYPE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_MESSAGE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_TYPE;
@@ -261,7 +262,10 @@ class SpymemcachedTest {
                             equalTo(
                                 maybeStable(DB_SYSTEM),
                                 DbIncubatingAttributes.DbSystemIncubatingValues.MEMCACHED),
-                            equalTo(maybeStable(DB_OPERATION), "get"))));
+                            equalTo(maybeStable(DB_OPERATION), "get"),
+                            equalTo(
+                                ERROR_TYPE,
+                                "net.spy.memcached.internal.CheckedOperationTimeoutException"))));
   }
 
   @Test
@@ -882,7 +886,8 @@ class SpymemcachedTest {
                             equalTo(
                                 maybeStable(DB_SYSTEM),
                                 DbIncubatingAttributes.DbSystemIncubatingValues.MEMCACHED),
-                            equalTo(maybeStable(DB_OPERATION), "decr"))));
+                            equalTo(maybeStable(DB_OPERATION), "decr"),
+                            equalTo(ERROR_TYPE, "java.lang.IllegalArgumentException"))));
   }
 
   @Test
@@ -968,7 +973,8 @@ class SpymemcachedTest {
                             equalTo(
                                 maybeStable(DB_SYSTEM),
                                 DbIncubatingAttributes.DbSystemIncubatingValues.MEMCACHED),
-                            equalTo(maybeStable(DB_OPERATION), "incr"))));
+                            equalTo(maybeStable(DB_OPERATION), "incr"),
+                            equalTo(ERROR_TYPE, "java.lang.IllegalArgumentException"))));
   }
 
   private static String key(String k) {

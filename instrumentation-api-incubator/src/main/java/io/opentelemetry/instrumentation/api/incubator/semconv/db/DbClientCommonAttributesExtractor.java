@@ -6,6 +6,7 @@
 package io.opentelemetry.instrumentation.api.incubator.semconv.db;
 
 import static io.opentelemetry.instrumentation.api.internal.AttributesExtractorUtil.internalSet;
+import static io.opentelemetry.semconv.ErrorAttributes.ERROR_TYPE;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -17,7 +18,7 @@ import io.opentelemetry.instrumentation.api.internal.SpanKeyProvider;
 import javax.annotation.Nullable;
 
 abstract class DbClientCommonAttributesExtractor<
-        REQUEST, RESPONSE, GETTER extends DbClientCommonAttributesGetter<REQUEST>>
+        REQUEST, RESPONSE, GETTER extends DbClientCommonAttributesGetter<REQUEST, RESPONSE>>
     implements AttributesExtractor<REQUEST, RESPONSE>, SpanKeyProvider {
 
   // copied from DbIncubatingAttributes
@@ -29,6 +30,8 @@ abstract class DbClientCommonAttributesExtractor<
   private static final AttributeKey<String> DB_USER = AttributeKey.stringKey("db.user");
   private static final AttributeKey<String> DB_CONNECTION_STRING =
       AttributeKey.stringKey("db.connection_string");
+  private static final AttributeKey<String> DB_RESPONSE_STATUS_CODE =
+      AttributeKey.stringKey("db.response.status_code");
 
   final GETTER getter;
 
@@ -60,7 +63,16 @@ abstract class DbClientCommonAttributesExtractor<
       Context context,
       REQUEST request,
       @Nullable RESPONSE response,
-      @Nullable Throwable error) {}
+      @Nullable Throwable error) {
+    if (error != null) {
+      internalSet(attributes, ERROR_TYPE, error.getClass().getName());
+      internalSet(
+          attributes, DB_RESPONSE_STATUS_CODE, getter.getResponseStatusFromException(error));
+    }
+    if (response != null) {
+      internalSet(attributes, DB_RESPONSE_STATUS_CODE, getter.getResponseStatus(response));
+    }
+  }
 
   /**
    * This method is internal and is hence not for public use. Its API is unstable and can change at
