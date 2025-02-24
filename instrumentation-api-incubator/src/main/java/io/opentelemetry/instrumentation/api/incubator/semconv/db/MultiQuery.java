@@ -10,7 +10,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 class MultiQuery {
-  private static final SqlStatementSanitizer sanitizer = SqlStatementSanitizer.create(true);
 
   private final String mainIdentifier;
   private final String operation;
@@ -28,7 +27,7 @@ class MultiQuery {
     UniqueValue uniqueOperation = new UniqueValue();
     Set<String> uniqueStatements = new LinkedHashSet<>();
     for (String rawQueryText : rawQueryTexts) {
-      SqlStatementInfo sanitizedStatement = sanitizer.sanitize(rawQueryText);
+      SqlStatementInfo sanitizedStatement = SqlStatementSanitizerUtil.sanitize(rawQueryText);
       String mainIdentifier = sanitizedStatement.getMainIdentifier();
       uniqueMainIdentifier.set(mainIdentifier);
       String operation = sanitizedStatement.getOperation();

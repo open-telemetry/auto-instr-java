@@ -55,8 +55,6 @@ public final class SqlClientAttributesExtractor<REQUEST, RESPONSE>
   }
 
   private static final String SQL_CALL = "CALL";
-  // sanitizer is also used to extract operation and table name, so we have it always enabled here
-  private static final SqlStatementSanitizer sanitizer = SqlStatementSanitizer.create(true);
 
   private final AttributeKey<String> oldSemconvTableAttribute;
   private final boolean statementSanitizationEnabled;
@@ -83,7 +81,7 @@ public final class SqlClientAttributesExtractor<REQUEST, RESPONSE>
     if (SemconvStability.emitOldDatabaseSemconv()) {
       if (rawQueryTexts.size() == 1) { // for backcompat(?)
         String rawQueryText = rawQueryTexts.iterator().next();
-        SqlStatementInfo sanitizedStatement = sanitizer.sanitize(rawQueryText);
+        SqlStatementInfo sanitizedStatement = SqlStatementSanitizerUtil.sanitize(rawQueryText);
         String operation = sanitizedStatement.getOperation();
         internalSet(
             attributes,
@@ -104,7 +102,7 @@ public final class SqlClientAttributesExtractor<REQUEST, RESPONSE>
       }
       if (rawQueryTexts.size() == 1) {
         String rawQueryText = rawQueryTexts.iterator().next();
-        SqlStatementInfo sanitizedStatement = sanitizer.sanitize(rawQueryText);
+        SqlStatementInfo sanitizedStatement = SqlStatementSanitizerUtil.sanitize(rawQueryText);
         String operation = sanitizedStatement.getOperation();
         internalSet(
             attributes,

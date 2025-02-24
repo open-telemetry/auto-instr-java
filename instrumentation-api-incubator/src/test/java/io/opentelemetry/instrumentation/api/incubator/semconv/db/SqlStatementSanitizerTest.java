@@ -137,6 +137,27 @@ public class SqlStatementSanitizerTest {
     assertThat(sanitized).isEqualTo("select col from table where col in (?)");
   }
 
+  @Test
+  public void largeStatementCached() {
+    // test that short statement is cached
+    String shortStatement = "SELECT * FROM TABLE WHERE FIELD = 1234";
+    String sanitizedShort =
+        SqlStatementSanitizer.create(true).sanitize(shortStatement).getFullStatement();
+    assertThat(sanitizedShort).doesNotContain("1234");
+    assertThat(SqlStatementSanitizer.isCached(shortStatement)).isTrue();
+
+    // test that large statement is not cached
+    StringBuffer s = new StringBuffer();
+    for (int i = 0; i < 10000; i++) {
+      s.append("SELECT * FROM TABLE WHERE FIELD = 1234 AND ");
+    }
+    String largeStatement = s.toString();
+    String sanitizedLarge =
+        SqlStatementSanitizer.create(true).sanitize(largeStatement).getFullStatement();
+    assertThat(sanitizedLarge).doesNotContain("1234");
+    assertThat(SqlStatementSanitizer.isCached(largeStatement)).isFalse();
+  }
+
   static class SqlArgs implements ArgumentsProvider {
 
     @Override

@@ -21,6 +21,7 @@ public final class SqlStatementSanitizer {
 
   private static final Cache<CacheKey, SqlStatementInfo> sqlToStatementInfoCache =
       Cache.bounded(1000);
+  private static final int LARGE_STATEMENT_THRESHOLD = 10 * 1024;
 
   public static SqlStatementSanitizer create(boolean statementSanitizationEnabled) {
     return new SqlStatementSanitizer(statementSanitizationEnabled);
@@ -40,12 +41,24 @@ public final class SqlStatementSanitizer {
     if (!statementSanitizationEnabled || statement == null) {
       return SqlStatementInfo.create(statement, null, null);
     }
+    // sanitization result will not be cached for statements larger than the threshold to avoid
+    // cache growing too large
+    // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/13180
+    if (statement.length() > LARGE_STATEMENT_THRESHOLD) {
+      return sanitizeImpl(statement, dialect);
+    }
     return sqlToStatementInfoCache.computeIfAbsent(
-        CacheKey.create(statement, dialect),
-        k -> {
-          supportability.incrementCounter(SQL_STATEMENT_SANITIZER_CACHE_MISS);
-          return AutoSqlSanitizer.sanitize(statement, dialect);
-        });
+        CacheKey.create(statement, dialect), k -> sanitizeImpl(statement, dialect));
+  }
+
+  private static SqlStatementInfo sanitizeImpl(@Nullable String statement, SqlDialect dialect) {
+    supportability.incrementCounter(SQL_STATEMENT_SANITIZER_CACHE_MISS);
+    return AutoSqlSanitizer.sanitize(statement, dialect);
+  }
+
+  // visible for tests
+  static boolean isCached(String statement) {
+    return sqlToStatementInfoCache.get(CacheKey.create(statement, SqlDialect.DEFAULT)) != null;
   }
 
   @AutoValue

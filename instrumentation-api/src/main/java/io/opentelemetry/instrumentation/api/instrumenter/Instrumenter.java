@@ -14,6 +14,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.instrumentation.api.internal.HttpRouteState;
 import io.opentelemetry.instrumentation.api.internal.InstrumenterAccess;
+import io.opentelemetry.instrumentation.api.internal.InstrumenterContext;
 import io.opentelemetry.instrumentation.api.internal.InstrumenterUtil;
 import io.opentelemetry.instrumentation.api.internal.SupportabilityMetrics;
 import java.time.Instant;
@@ -164,6 +165,10 @@ public class Instrumenter<REQUEST, RESPONSE> {
   }
 
   private Context doStart(Context parentContext, REQUEST request, @Nullable Instant startTime) {
+    return InstrumenterContext.withContext(() -> doStartImpl(parentContext, request, startTime));
+  }
+
+  private Context doStartImpl(Context parentContext, REQUEST request, @Nullable Instant startTime) {
     SpanKind spanKind = spanKindExtractor.extract(request);
     SpanBuilder spanBuilder =
         tracer.spanBuilder(spanNameExtractor.extract(request)).setSpanKind(spanKind);
