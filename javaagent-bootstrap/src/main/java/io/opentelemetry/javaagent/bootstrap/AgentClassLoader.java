@@ -303,8 +303,16 @@ public class AgentClassLoader extends URLClassLoader {
   private URL getJarEntryUrl(JarEntry jarEntry) {
     if (jarEntry != null) {
       try {
-        return new URL(jarBase, jarEntry.getName());
-      } catch (MalformedURLException e) {
+        String entryName = jarEntry.getName();
+        // normalize the path and check for directory traversal
+        // in order to resolve CodeQL zip slip warning
+        File entryFile = new File(jarBase.getPath(), entryName).getCanonicalFile();
+        File baseDir = new File(jarBase.getPath()).getCanonicalFile();
+        if (!entryFile.toPath().startsWith(baseDir.toPath())) {
+          throw new IllegalStateException("Bad zip entry: " + entryName);
+        }
+        return new URL(jarBase, entryName);
+      } catch (IOException e) {
         throw new IllegalStateException(
             "Failed to construct url for jar entry " + jarEntry.getName(), e);
       }
