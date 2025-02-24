@@ -45,7 +45,7 @@ public final class JavaHttpClientTelemetryBuilder {
    */
   @CanIgnoreReturnValue
   public JavaHttpClientTelemetryBuilder addAttributesExtractor(
-      AttributesExtractor<? super HttpRequest, ? super HttpResponse<?>> attributesExtractor) {
+      AttributesExtractor<HttpRequest, HttpResponse<?>> attributesExtractor) {
     builder.addAttributesExtractor(attributesExtractor);
     return this;
   }
@@ -96,9 +96,7 @@ public final class JavaHttpClientTelemetryBuilder {
   /** Sets custom {@link SpanNameExtractor} via transform function. */
   @CanIgnoreReturnValue
   public JavaHttpClientTelemetryBuilder setSpanNameExtractor(
-      Function<
-              SpanNameExtractor<? super HttpRequest>,
-              ? extends SpanNameExtractor<? super HttpRequest>>
+      Function<SpanNameExtractor<HttpRequest>, SpanNameExtractor<HttpRequest>>
           spanNameExtractorTransformer) {
     builder.setSpanNameExtractor(spanNameExtractorTransformer);
     return this;
