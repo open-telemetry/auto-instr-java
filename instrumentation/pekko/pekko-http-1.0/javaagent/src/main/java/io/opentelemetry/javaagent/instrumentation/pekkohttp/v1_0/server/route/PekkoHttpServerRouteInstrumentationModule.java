@@ -32,6 +32,7 @@ public class PekkoHttpServerRouteInstrumentationModule extends InstrumentationMo
   @Override
   public List<TypeInstrumentation> typeInstrumentations() {
     return asList(
+        new TapirPathInstrumentation(),
         new PathMatcherInstrumentation(),
         new PathMatcherStaticInstrumentation(),
         new RouteConcatenationInstrumentation(),
