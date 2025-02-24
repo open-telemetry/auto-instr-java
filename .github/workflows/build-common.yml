@@ -233,6 +233,7 @@ jobs:
           - 17
           - 21
           - 23
+          - 24-ea
         vm:
           - hotspot
           - openj9
