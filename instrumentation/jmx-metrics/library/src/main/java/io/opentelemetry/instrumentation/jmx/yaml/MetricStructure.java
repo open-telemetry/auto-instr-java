@@ -136,7 +136,18 @@ abstract class MetricStructure {
     return list;
   }
 
-  private static MetricAttribute buildMetricAttribute(String key, String target) {
+  // package protected for testing
+  static MetricAttribute buildMetricAttribute(String key, String target) {
+
+    // an optional modifier may wrap the target
+    // - lowercase(param(STRING))
+    boolean lowercase = false;
+    if (target.startsWith("lowercase(")) {
+      lowercase = true;
+      target = target.substring(10, target.lastIndexOf(')'));
+    }
+
+    //
     // The recognized forms of target are:
     //  - param(STRING)
     //  - beanattr(STRING)
@@ -145,23 +156,31 @@ abstract class MetricStructure {
     // or the direct value to use
     int k = target.indexOf(')');
 
+    MetricAttributeExtractor extractor = null;
+
     // Check for one of the cases as above
     if (target.startsWith("param(")) {
       if (k > 0) {
         String jmxAttribute = target.substring(6, k).trim();
-        return new MetricAttribute(
-            key, MetricAttributeExtractor.fromObjectNameParameter(jmxAttribute));
+        extractor = MetricAttributeExtractor.fromObjectNameParameter(jmxAttribute);
       }
     } else if (target.startsWith("beanattr(")) {
       if (k > 0) {
         String jmxAttribute = target.substring(9, k).trim();
-        return new MetricAttribute(key, MetricAttributeExtractor.fromBeanAttribute(jmxAttribute));
+        extractor = MetricAttributeExtractor.fromBeanAttribute(jmxAttribute);
       }
     } else if (target.startsWith("const(")) {
       if (k > 0) {
         String constantValue = target.substring(6, k).trim();
-        return new MetricAttribute(key, MetricAttributeExtractor.fromConstant(constantValue));
+        extractor = MetricAttributeExtractor.fromConstant(constantValue);
       }
+    }
+    if (extractor != null) {
+      if (lowercase) {
+        extractor = MetricAttributeExtractor.toLowerCase(extractor);
+      }
+
+      return new MetricAttribute(key, extractor);
     }
 
     String msg = "Invalid metric attribute specification for '" + key + "': " + target;

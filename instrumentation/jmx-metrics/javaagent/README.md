@@ -282,6 +282,31 @@ In the particular case where only two values are defined, we can simplify furthe
             off: '*'
 ```
 
+### Metric attributes modifiers
+
+JMX attributes values may require modification or normalization in order to fit semantic conventions.
+
+For example, with JVM memory, the `java.lang:name=*,type=MemoryPool` MBeans have `type` attribute with either `HEAP` or `NON_HEAP` value.
+However, in the semantic conventions the metric attribute `jvm.memory.type` should be lower-cased to fit the `jvm.memory.used` definition, in this case we can
+apply the `lowercase` metric attribute transformation as follows:
+
+
+```yaml
+---
+rules:
+  - bean: java.lang:name=*,type=MemoryPool
+    mapping:
+      Usage.used:
+        type: updowncounter
+        metric: jvm.memory.used
+        unit: By
+        metricAttribute:
+          jvm.memory.pool.name	: param(name)
+          jvm.memory.type: lowercase(beanattr(type))
+```
+
+For now, only the `lowercase` transformation is supported, other additions might be added in the future if needed.
+
 ### General Syntax
 
 Here is the general description of the accepted configuration file syntax. The whole contents of the file is case-sensitive, with exception for `type` as described in the table below.
@@ -293,6 +318,7 @@ rules:                                # start of list of configuration rules
     metricAttribute:                  # optional metric attributes, they apply to all metrics below
       <ATTRIBUTE1>: param(<PARAM>)    # <PARAM> is used as the key to extract value from actual ObjectName
       <ATTRIBUTE2>: beanattr(<ATTR>)  # <ATTR> is used as the MBean attribute name to extract the value
+      <ATTRIBUTE3>: const(<CONST>)    # <CONST> is used as a constant
     prefix: <METRIC_NAME_PREFIX>      # optional, useful for avoiding specifying metric names below
     unit: <UNIT>                      # optional, redefines the default unit for the whole rule
     type: <TYPE>                      # optional, redefines the default type for the whole rule

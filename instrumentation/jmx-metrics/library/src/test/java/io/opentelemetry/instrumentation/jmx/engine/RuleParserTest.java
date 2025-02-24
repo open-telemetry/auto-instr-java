@@ -379,7 +379,6 @@ class RuleParserTest {
   @Test
   void testStateMetricConf() throws Exception {
     JmxConfig config = parseConf(CONF9);
-    assertThat(config).isNotNull();
 
     List<JmxRule> rules = config.getRules();
     assertThat(rules).hasSize(1);
@@ -450,6 +449,39 @@ class RuleParserTest {
                       expectedValue, stateAttribute.getAttributeName(), stateAttributeValue)
                   .isEqualTo(expectedValue);
             });
+  }
+
+  private static final String CONF10 =
+      "---                                   # keep stupid spotlessJava at bay\n"
+          + "rules:\n"
+          + "  - bean: my-test:type=10_Hello\n"
+          + "    mapping:\n"
+          + "      jmxAttribute:\n"
+          + "        type: counter\n"
+          + "        metric: my_metric\n"
+          + "        metricAttribute:\n"
+          + "          to_lower_const: lowercase(const(Hello))\n"
+          + "          to_lower_attribute: lowercase(beanattr(beanAttribute))\n"
+          + "          to_lower_param: lowercase(param(type))\n";
+
+  @Test
+  void attributeValueLowercase() {
+
+    JmxConfig config = parseConf(CONF10);
+
+    List<JmxRule> rules = config.getRules();
+    assertThat(rules).hasSize(1);
+    JmxRule jmxRule = rules.get(0);
+
+    assertThat(jmxRule.getBean()).isEqualTo("my-test:type=10_Hello");
+    Metric metric = jmxRule.getMapping().get("jmxAttribute");
+    assertThat(metric.getMetricType()).isEqualTo(MetricInfo.Type.COUNTER);
+    assertThat(metric.getMetric()).isEqualTo("my_metric");
+    assertThat(metric.getMetricAttribute())
+        .hasSize(3)
+        .containsEntry("to_lower_const", "lowercase(const(Hello))")
+        .containsEntry("to_lower_attribute", "lowercase(beanattr(beanAttribute))")
+        .containsEntry("to_lower_param", "lowercase(param(type))");
   }
 
   @Test
