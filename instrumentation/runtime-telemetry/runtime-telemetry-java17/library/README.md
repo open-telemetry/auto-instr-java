@@ -37,7 +37,7 @@ default, and the telemetry each produces:
 
 | JfrFeature                | Default Enabled | Metrics                                                                                                           |
 |---------------------------|-----------------|-------------------------------------------------------------------------------------------------------------------|
-| BUFFER_METRICS            | `false`         | `jvm.buffer.count`, `jvm.buffer.memory.limit`, `jvm.buffer.memory.usage`                                          |
+| BUFFER_METRICS            | `false`         | `jvm.buffer.count`, `jvm.buffer.memory.limit`, `jvm.buffer.memory.used`                                           |
 | CLASS_LOAD_METRICS        | `false`         | `jvm.class.count`, `jvm.class.loaded`, `jvm.class.unloaded`                                                       |
 | CONTEXT_SWITCH_METRICS    | `true`          | `jvm.cpu.context_switch`                                                                                          |
 | CPU_COUNT_METRICS         | `true`          | `jvm.cpu.limit`                                                                                                   |

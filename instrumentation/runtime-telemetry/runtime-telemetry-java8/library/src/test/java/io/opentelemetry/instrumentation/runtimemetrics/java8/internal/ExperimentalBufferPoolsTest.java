@@ -56,7 +56,7 @@ class ExperimentalBufferPoolsTest {
 
     testing.waitAndAssertMetrics(
         "io.opentelemetry.runtime-telemetry-java8",
-        "jvm.buffer.memory.usage",
+        "jvm.buffer.memory.used",
         metrics ->
             metrics.anySatisfy(
                 metricData ->

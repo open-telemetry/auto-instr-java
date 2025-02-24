@@ -45,7 +45,7 @@ public final class ExperimentalBufferPools {
     Meter meter = JmxRuntimeMetricsUtil.getMeter(openTelemetry);
     observables.add(
         meter
-            .upDownCounterBuilder("jvm.buffer.memory.usage")
+            .upDownCounterBuilder("jvm.buffer.memory.used")
             .setDescription("Measure of memory used by buffers.")
             .setUnit("By")
             .buildWithCallback(callback(bufferBeans, BufferPoolMXBean::getMemoryUsed)));

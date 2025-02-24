@@ -72,7 +72,7 @@ class BufferMetricTest {
                                     }))),
         metric ->
             metric
-                .hasName("jvm.buffer.memory.usage")
+                .hasName("jvm.buffer.memory.used")
                 .hasDescription("Measure of memory used by buffers.")
                 .hasUnit(BYTES)
                 .hasLongSumSatisfying(

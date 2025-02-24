@@ -224,7 +224,7 @@ class AbstractOtelSpringStarterSmokeTest extends AbstractSpringStarterSmokeTest 
     boolean noNative = System.getProperty("org.graalvm.nativeimage.imagecode") == null;
     if (noNative) {
       // GraalVM native image does not support buffer pools - have to investigate why
-      jmxMetrics.add("jvm.buffer.memory.usage");
+      jmxMetrics.add("jvm.buffer.memory.used");
     }
     jmxMetrics.forEach(
         metricName ->
