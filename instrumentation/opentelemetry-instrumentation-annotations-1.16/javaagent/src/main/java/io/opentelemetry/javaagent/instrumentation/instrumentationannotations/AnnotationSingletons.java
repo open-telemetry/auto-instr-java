@@ -10,11 +10,15 @@ import static java.util.logging.Level.FINE;
 import application.io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.annotation.support.MethodSpanAttributesExtractor;
 import io.opentelemetry.instrumentation.api.annotation.support.SpanAttributesExtractor;
 import io.opentelemetry.instrumentation.api.incubator.semconv.code.CodeAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.instrumentation.api.semconv.util.SpanNames;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
@@ -28,6 +32,21 @@ public final class AnnotationSingletons {
   private static final Instrumenter<MethodRequest, Object> INSTRUMENTER_WITH_ATTRIBUTES =
       createInstrumenterWithAttributes();
   private static final SpanAttributesExtractor ATTRIBUTES = createAttributesExtractor();
+
+  // The reason for using reflection here is that it needs to be compatible with the old version of
+  // @WithSpan annotation that does not include the inheritContext option to avoid failing the
+  // muzzle check.
+  private static MethodHandle inheritContextMethodHandle = null;
+
+  static {
+    try {
+      inheritContextMethodHandle =
+          MethodHandles.publicLookup()
+              .findVirtual(WithSpan.class, "inheritContext", MethodType.methodType(boolean.class));
+    } catch (NoSuchMethodException | IllegalAccessException ignore) {
+      // ignore
+    }
+  }
 
   public static Instrumenter<Method, Object> instrumenter() {
     return INSTRUMENTER;
@@ -102,6 +121,25 @@ public final class AnnotationSingletons {
       spanName = SpanNames.fromMethod(method);
     }
     return spanName;
+  }
+
+  public static Context getContextForMethod(Method method) {
+    return inheritContextFromMethod(method) ? Context.current() : Context.root();
+  }
+
+  private static boolean inheritContextFromMethod(Method method) {
+    if (inheritContextMethodHandle == null) {
+      return true;
+    }
+
+    WithSpan annotation = method.getDeclaredAnnotation(WithSpan.class);
+    try {
+      return (boolean) inheritContextMethodHandle.invoke(annotation);
+    } catch (Throwable ignore) {
+      // ignore
+    }
+
+    return true;
   }
 
   private AnnotationSingletons() {}

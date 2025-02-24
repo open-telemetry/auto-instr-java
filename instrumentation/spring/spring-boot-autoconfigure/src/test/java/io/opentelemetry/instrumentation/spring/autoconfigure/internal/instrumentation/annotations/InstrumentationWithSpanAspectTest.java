@@ -181,6 +181,27 @@ class InstrumentationWithSpanAspectTest {
                             equalTo(stringKey("explicitName"), "baz"))));
   }
 
+  @Test
+  @DisplayName(
+      "when method is annotated with @WithSpan(inheritContext=false) should build span without parent")
+  void withSpanWithoutParent() {
+    // when
+    testing.runWithSpan("parent", withSpanTester::testWithoutParentSpan);
+
+    // then
+    testing.waitAndAssertTraces(
+        trace -> trace.hasSpansSatisfyingExactly(span -> span.hasName("parent").hasKind(INTERNAL)),
+        trace ->
+            trace.hasSpansSatisfyingExactly(
+                span ->
+                    span.hasName(unproxiedTesterSimpleClassName + ".testWithoutParentSpan")
+                        .hasKind(INTERNAL)
+                        .hasNoParent()
+                        .hasAttributesSatisfyingExactly(
+                            equalTo(CODE_NAMESPACE, unproxiedTesterClassName),
+                            equalTo(CODE_FUNCTION, "testWithoutParentSpan"))));
+  }
+
   static class InstrumentationWithSpanTester {
     @WithSpan
     public String testWithSpan() {
@@ -221,6 +242,11 @@ class InstrumentationWithSpanAspectTest {
         String notTraced) {
 
       return "hello!";
+    }
+
+    @WithSpan(inheritContext = false)
+    public String testWithoutParentSpan() {
+      return "Span without parent span was created";
     }
   }
 

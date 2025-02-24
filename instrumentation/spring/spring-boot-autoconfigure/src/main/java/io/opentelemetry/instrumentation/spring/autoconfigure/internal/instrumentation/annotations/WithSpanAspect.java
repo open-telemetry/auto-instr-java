@@ -6,6 +6,7 @@
 package io.opentelemetry.instrumentation.spring.autoconfigure.internal.instrumentation.annotations;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -53,8 +54,14 @@ abstract class WithSpanAspect {
                     JoinPointRequest::method,
                     parameterAttributeNamesExtractor,
                     JoinPointRequest::args))
+            .addContextCustomizer(WithSpanAspect::parentContext)
             .buildInstrumenter(JoinPointRequest::spanKind);
     this.requestFactory = requestFactory;
+  }
+
+  private static Context parentContext(
+      Context parentContext, JoinPointRequest request, Attributes unused) {
+    return request.inheritContext() ? parentContext : Context.root();
   }
 
   public Object traceMethod(ProceedingJoinPoint pjp) throws Throwable {

@@ -6,6 +6,7 @@
 package io.opentelemetry.instrumentation.annotations;
 
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Context;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -34,4 +35,15 @@ public @interface WithSpan {
 
   /** Specify the {@link SpanKind} of span to be created. Defaults to {@link SpanKind#INTERNAL}. */
   SpanKind kind() default SpanKind.INTERNAL;
+
+  /**
+   * Specifies whether to inherit the current context when creating a span.
+   *
+   * <p>If set to {@code true} (default), the created span will use the current context as its
+   * parent, remaining within the same trace.
+   *
+   * <p>If set to {@code false}, the created span will use {@link Context#root()} as its parent,
+   * starting a new, independent trace.
+   */
+  boolean inheritContext() default true;
 }

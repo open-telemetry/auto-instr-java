@@ -19,7 +19,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.annotation.support.async.AsyncOperationEndSupport;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
-import io.opentelemetry.javaagent.bootstrap.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import java.lang.reflect.Method;
@@ -91,7 +90,7 @@ class WithSpanInstrumentation implements TypeInstrumentation {
       method = originMethod;
 
       Instrumenter<Method, Object> instrumenter = instrumenter();
-      Context current = Java8BytecodeBridge.currentContext();
+      Context current = AnnotationSingletons.getContextForMethod(method);
 
       if (instrumenter.shouldStart(current, method)) {
         context = instrumenter.start(current, method);
@@ -134,7 +133,7 @@ class WithSpanInstrumentation implements TypeInstrumentation {
       method = originMethod;
 
       Instrumenter<MethodRequest, Object> instrumenter = instrumenterWithAttributes();
-      Context current = Java8BytecodeBridge.currentContext();
+      Context current = AnnotationSingletons.getContextForMethod(method);
       request = new MethodRequest(method, args);
 
       if (instrumenter.shouldStart(current, request)) {

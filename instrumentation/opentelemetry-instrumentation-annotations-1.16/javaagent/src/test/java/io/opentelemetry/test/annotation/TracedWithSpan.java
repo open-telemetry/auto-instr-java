@@ -57,4 +57,14 @@ public class TracedWithSpan {
   public CompletableFuture<String> completableFuture(CompletableFuture<String> future) {
     return future;
   }
+
+  @WithSpan(inheritContext = false)
+  public String withoutParent() {
+    return "hello!";
+  }
+
+  @WithSpan(kind = SpanKind.CONSUMER)
+  public String consumer() {
+    return withoutParent();
+  }
 }
