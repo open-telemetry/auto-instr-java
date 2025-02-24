@@ -12,6 +12,9 @@ import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.apache.pekko.http.scaladsl.server.RequestContext;
+import org.apache.pekko.http.scaladsl.server.RouteResult;
+import scala.concurrent.Future;
 
 public class RouteConcatenationInstrumentation implements TypeInstrumentation {
   @Override
@@ -39,8 +42,10 @@ public class RouteConcatenationInstrumentation implements TypeInstrumentation {
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-    public static void onExit() {
-      PekkoRouteHolder.restore();
+    public static void onExit(
+        @Advice.Argument(value = 2) RequestContext ctx,
+        @Advice.Return(readOnly = false) Future<RouteResult> fut) {
+      fut = fut.andThen(new RestoreOnExit(), ctx.executionContext());
     }
   }
 
