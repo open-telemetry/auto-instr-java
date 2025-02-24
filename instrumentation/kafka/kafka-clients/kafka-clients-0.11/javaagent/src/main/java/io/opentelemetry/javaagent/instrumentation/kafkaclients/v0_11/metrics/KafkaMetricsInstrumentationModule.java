@@ -31,7 +31,7 @@ public class KafkaMetricsInstrumentationModule extends InstrumentationModule
   public void injectClasses(ClassInjector injector) {
     injector
         .proxyBuilder(
-            "io.opentelemetry.instrumentation.kafka.internal.OpenTelemetryMetricsReporter")
+            "io.opentelemetry.instrumentation.kafkaclients.common.v0_11.internal.OpenTelemetryMetricsReporter")
         .inject(InjectionMode.CLASS_ONLY);
   }
 

@@ -6,9 +6,9 @@
 package io.opentelemetry.javaagent.instrumentation.kafkaclients.v0_11.metrics;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.instrumentation.kafka.internal.MetricsReporterList;
-import io.opentelemetry.instrumentation.kafka.internal.OpenTelemetryMetricsReporter;
-import io.opentelemetry.instrumentation.kafka.internal.OpenTelemetrySupplier;
+import io.opentelemetry.instrumentation.kafkaclients.common.v0_11.internal.MetricsReporterList;
+import io.opentelemetry.instrumentation.kafkaclients.common.v0_11.internal.OpenTelemetryMetricsReporter;
+import io.opentelemetry.instrumentation.kafkaclients.common.v0_11.internal.OpenTelemetrySupplier;
 import io.opentelemetry.javaagent.bootstrap.internal.AgentInstrumentationConfig;
 import io.opentelemetry.javaagent.bootstrap.internal.DeprecatedConfigProperties;
 import java.util.List;

@@ -7,7 +7,7 @@ package io.opentelemetry.instrumentation.elasticsearch.rest.v7_0;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
-import io.opentelemetry.instrumentation.elasticsearch.rest.internal.ElasticsearchRestRequest;
+import io.opentelemetry.instrumentation.elasticsearch.rest.common.v5_0.internal.ElasticsearchRestRequest;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 

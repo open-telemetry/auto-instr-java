@@ -8,7 +8,7 @@ dependencies {
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
 
-  implementation(project(":instrumentation:kafka:kafka-clients:kafka-clients-common:library"))
+  implementation(project(":instrumentation:kafka:kafka-clients:kafka-clients-common-0.11:library"))
 
   // compiling against 2.8.0 to use methods that are not present in 2.7
   compileOnly("org.springframework.kafka:spring-kafka:2.8.0")
