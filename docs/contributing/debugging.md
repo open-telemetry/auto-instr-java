@@ -103,3 +103,7 @@ Execute tests as native executables:
 ```
 
 The tracing data will be generated in the `build/native/agent-output` folder.
+
+## Debugging tests
+
+See [Debugging tests](running-tests.md#debugging-tests) for more information on debugging tests.
