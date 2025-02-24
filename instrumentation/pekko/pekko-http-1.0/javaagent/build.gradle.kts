@@ -10,6 +10,8 @@ muzzle {
     versions.set("[1.0,)")
     assertInverse.set(true)
     extraDependency("org.apache.pekko:pekko-stream_2.12:1.0.1")
+    extraDependency("com.softwaremill.sttp.tapir:tapir-server_2.12:1.7.0")
+    extraDependency("com.softwaremill.sttp.tapir:tapir-core_2.12:1.7.0")
   }
   pass {
     group.set("org.apache.pekko")
@@ -17,6 +19,8 @@ muzzle {
     versions.set("[1.0,)")
     assertInverse.set(true)
     extraDependency("org.apache.pekko:pekko-stream_2.13:1.0.1")
+    extraDependency("com.softwaremill.sttp.tapir:tapir-server_2.12:1.7.0")
+    extraDependency("com.softwaremill.sttp.tapir:tapir-core_2.12:1.7.0")
   }
   pass {
     group.set("org.apache.pekko")
@@ -24,6 +28,32 @@ muzzle {
     versions.set("[1.0,)")
     assertInverse.set(true)
     extraDependency("org.apache.pekko:pekko-stream_3:1.0.1")
+    extraDependency("com.softwaremill.sttp.tapir:tapir-server_2.12:1.7.0")
+    extraDependency("com.softwaremill.sttp.tapir:tapir-core_2.12:1.7.0")
+  }
+  pass {
+    group.set("sttp.tapir_2.12")
+    module.set("tapir-pekko-http-server")
+    versions.set("[1.7,)")
+    assertInverse.set(true)
+    extraDependency("com.softwaremill.sttp.tapir:tapir-server_2.12:1.7.0")
+    extraDependency("com.softwaremill.sttp.tapir:tapir-core_2.12:1.7.0")
+  }
+  pass {
+    group.set("sttp.tapir_2.13")
+    module.set("tapir-pekko-http-server")
+    versions.set("[1.7,)")
+    assertInverse.set(true)
+    extraDependency("com.softwaremill.sttp.tapir:tapir-server_2.13:1.7.0")
+    extraDependency("com.softwaremill.sttp.tapir:tapir-core_2.13:1.7.0")
+  }
+  pass {
+    group.set("sttp.tapir_3")
+    module.set("tapir-pekko-http-server")
+    versions.set("[1.7,)")
+    assertInverse.set(true)
+    extraDependency("com.softwaremill.sttp.tapir:tapir-server_3:1.7.0")
+    extraDependency("com.softwaremill.sttp.tapir:tapir-core_3:1.7.0")
   }
 }
 
@@ -31,8 +61,6 @@ dependencies {
   library("org.apache.pekko:pekko-http_2.12:1.0.0")
   library("org.apache.pekko:pekko-stream_2.12:1.0.1")
   library("com.softwaremill.sttp.tapir:tapir-pekko-http-server_2.12:1.7.0")
-
-  testImplementation("com.softwaremill.sttp.tapir:tapir-pekko-http-server_2.12:1.7.0")
 
   testInstrumentation(project(":instrumentation:pekko:pekko-actor-1.0:javaagent"))
   testInstrumentation(project(":instrumentation:executors:javaagent"))
