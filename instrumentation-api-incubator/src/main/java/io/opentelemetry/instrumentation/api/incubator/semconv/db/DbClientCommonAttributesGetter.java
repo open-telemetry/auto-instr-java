@@ -54,10 +54,4 @@ public interface DbClientCommonAttributesGetter<REQUEST, RESPONSE> {
   default String getResponseStatus(RESPONSE response) {
     return null;
   }
-
-  @Nullable
-  default String httpStatusToResponseStatus(int httpStatus) {
-    int hundreds = httpStatus / 100;
-    return hundreds == 4 || hundreds == 5 ? Integer.toString(httpStatus) : null;
-  }
 }
