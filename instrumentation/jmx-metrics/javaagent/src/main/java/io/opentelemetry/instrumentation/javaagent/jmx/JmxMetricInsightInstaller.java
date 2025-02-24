@@ -17,8 +17,7 @@ import io.opentelemetry.javaagent.extension.AgentListener;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.net.URL;
 import java.time.Duration;
 import java.util.List;
 
@@ -78,13 +77,37 @@ public class JmxMetricInsightInstaller implements AgentListener {
     }
   }
 
-  private static void buildFromUserRules(
-      MetricConfiguration conf, ConfigProperties configProperties) {
+  static void buildFromUserRules(MetricConfiguration conf, ConfigProperties configProperties) {
+
     List<String> configFiles = configProperties.getList("otel.jmx.config");
+
+    // current working directory path
+    String currentWorkingDirectory = System.getProperty("user.dir");
+
     for (String configFile : configFiles) {
-      JmxMetricInsight.getLogger().log(FINE, "JMX config file name: {0}", configFile);
+      String configFileUrlString = configFile;
+
+      if (configFile != null) {
+
+        // handle relative path case
+        if (!configFile.startsWith("/") && !configFile.contains("://")) {
+          configFile = currentWorkingDirectory + "/" + configFile;
+        }
+
+        // handle relative path URL case
+        if (configFile.startsWith("file://") && !configFile.startsWith("file:///")) {
+          String configFileRelativePath = configFile.replaceFirst("^file://", "");
+          configFile = "file://" + currentWorkingDirectory + "/" + configFileRelativePath;
+        }
+
+        // handle absolute path
+        if (!configFile.contains("://")) {
+          configFileUrlString = "file://" + configFile;
+        }
+      }
+      JmxMetricInsight.getLogger().log(FINE, "JMX config file name: {0}", configFileUrlString);
       RuleParser parserInstance = RuleParser.get();
-      try (InputStream inputStream = Files.newInputStream(Paths.get(configFile))) {
+      try (InputStream inputStream = new URL(configFileUrlString).openStream()) {
         parserInstance.addMetricDefsTo(conf, inputStream, configFile);
       } catch (Exception e) {
         // yaml parsing errors are caught and logged inside of addMetricDefsTo
