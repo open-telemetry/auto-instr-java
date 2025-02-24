@@ -8,6 +8,7 @@ package io.opentelemetry.javaagent.instrumentation.play.v2_4;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.incubator.semconv.code.CodeAttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.Instrumenter;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpServerRoute;
 import io.opentelemetry.instrumentation.api.semconv.http.HttpServerRouteSource;
@@ -16,15 +17,20 @@ import play.api.mvc.Request;
 import scala.Option;
 
 public final class Play24Singletons {
-
   private static final String SPAN_NAME = "play.request";
-  private static final Instrumenter<Void, Void> INSTRUMENTER =
-      Instrumenter.<Void, Void>builder(
-              GlobalOpenTelemetry.get(), "io.opentelemetry.play-mvc-2.4", s -> SPAN_NAME)
-          .setEnabled(ExperimentalConfig.get().controllerTelemetryEnabled())
-          .buildInstrumenter();
+  private static final Instrumenter<ActionData, Void> INSTRUMENTER;
 
-  public static Instrumenter<Void, Void> instrumenter() {
+  static {
+    INSTRUMENTER =
+        Instrumenter.<ActionData, Void>builder(
+                GlobalOpenTelemetry.get(), "io.opentelemetry.play-mvc-2.4", s -> SPAN_NAME)
+            .addAttributesExtractor(
+                CodeAttributesExtractor.create(new ActionCodeAttributesGetter()))
+            .setEnabled(ExperimentalConfig.get().controllerTelemetryEnabled())
+            .buildInstrumenter();
+  }
+
+  public static Instrumenter<ActionData, Void> instrumenter() {
     return INSTRUMENTER;
   }
 

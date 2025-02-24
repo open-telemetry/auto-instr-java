@@ -8,16 +8,15 @@ package io.opentelemetry.javaagent.instrumentation.play.v2_4;
 import static io.opentelemetry.javaagent.bootstrap.Java8BytecodeBridge.currentContext;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
-import static io.opentelemetry.javaagent.instrumentation.play.v2_4.Play24Singletons.instrumenter;
 import static io.opentelemetry.javaagent.instrumentation.play.v2_4.Play24Singletons.updateSpan;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
+import java.lang.reflect.Method;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
@@ -50,17 +49,14 @@ public class ActionInstrumentation implements TypeInstrumentation {
   public static class ApplyAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void onEnter(
-        @Advice.Argument(0) Request<?> req,
-        @Advice.Local("otelContext") Context context,
-        @Advice.Local("otelScope") Scope scope) {
+    public static ActionScope onEnter(
+        @Advice.This Object target,
+        @Advice.Origin Method method,
+        @Advice.Argument(0) Request<?> req) {
       Context parentContext = currentContext();
-      if (!instrumenter().shouldStart(parentContext, null)) {
-        return;
-      }
 
-      context = instrumenter().start(parentContext, null);
-      scope = context.makeCurrent();
+      ActionData actionData = new ActionData(target.getClass(), method);
+      return ActionScope.start(parentContext, actionData);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
@@ -69,20 +65,21 @@ public class ActionInstrumentation implements TypeInstrumentation {
         @Advice.Thrown Throwable throwable,
         @Advice.Argument(0) Request<?> req,
         @Advice.Return(readOnly = false) Future<Result> responseFuture,
-        @Advice.Local("otelContext") Context context,
-        @Advice.Local("otelScope") Scope scope) {
-      if (scope == null) {
+        @Advice.Enter ActionScope actionScope) {
+      if (actionScope == null || actionScope.getScope() == null) {
         return;
       }
-      scope.close();
+      actionScope.closeScope();
 
-      updateSpan(context, req);
+      updateSpan(actionScope.getContext(), req);
+
       // span finished in RequestCompleteCallback
       if (throwable == null) {
         responseFuture.onComplete(
-            new RequestCompleteCallback(context), ((Action<?>) thisAction).executionContext());
+            new RequestCompleteCallback(actionScope.getContext()),
+            ((Action<?>) thisAction).executionContext());
       } else {
-        instrumenter().end(context, null, null, throwable);
+        actionScope.end(throwable);
       }
     }
   }
