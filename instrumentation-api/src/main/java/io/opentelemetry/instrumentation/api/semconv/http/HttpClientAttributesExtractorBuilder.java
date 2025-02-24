@@ -11,6 +11,7 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.InstrumenterBuilder;
+import io.opentelemetry.instrumentation.api.internal.Experimental;
 import io.opentelemetry.instrumentation.api.internal.HttpConstants;
 import io.opentelemetry.instrumentation.api.semconv.network.internal.AddressAndPortExtractor;
 import io.opentelemetry.instrumentation.api.semconv.network.internal.InternalNetworkAttributesExtractor;
@@ -37,6 +38,12 @@ public final class HttpClientAttributesExtractorBuilder<REQUEST, RESPONSE> {
   List<String> capturedResponseHeaders = emptyList();
   Set<String> knownMethods = HttpConstants.KNOWN_METHODS;
   ToIntFunction<Context> resendCountIncrementer = HttpClientRequestResendCount::getAndIncrement;
+  boolean redactQueryParameters;
+
+  static {
+    Experimental.internalSetRedactHttpClientQueryParameters(
+        (builder, redact) -> builder.redactQueryParameters = redact);
+  }
 
   HttpClientAttributesExtractorBuilder(
       HttpClientAttributesGetter<REQUEST, RESPONSE> httpAttributesGetter) {

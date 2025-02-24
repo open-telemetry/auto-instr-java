@@ -17,6 +17,9 @@ import io.opentelemetry.instrumentation.api.semconv.network.internal.InternalNet
 import io.opentelemetry.instrumentation.api.semconv.network.internal.InternalServerAttributesExtractor;
 import io.opentelemetry.semconv.HttpAttributes;
 import io.opentelemetry.semconv.UrlAttributes;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.ToIntFunction;
 import javax.annotation.Nullable;
 
@@ -31,6 +34,9 @@ public final class HttpClientAttributesExtractor<REQUEST, RESPONSE>
     extends HttpCommonAttributesExtractor<
         REQUEST, RESPONSE, HttpClientAttributesGetter<REQUEST, RESPONSE>>
     implements SpanKeyProvider {
+
+  private static final Set<String> PARAMS_TO_REDACT =
+      new HashSet<>(Arrays.asList("AWSAccessKeyId", "Signature", "sig", "X-Goog-Signature"));
 
   /**
    * Creates the HTTP client attributes extractor with default configuration.
@@ -54,6 +60,7 @@ public final class HttpClientAttributesExtractor<REQUEST, RESPONSE>
   private final InternalNetworkAttributesExtractor<REQUEST, RESPONSE> internalNetworkExtractor;
   private final InternalServerAttributesExtractor<REQUEST> internalServerExtractor;
   private final ToIntFunction<Context> resendCountIncrementer;
+  private final boolean redactQueryParameters;
 
   HttpClientAttributesExtractor(HttpClientAttributesExtractorBuilder<REQUEST, RESPONSE> builder) {
     super(
@@ -65,6 +72,7 @@ public final class HttpClientAttributesExtractor<REQUEST, RESPONSE>
     internalNetworkExtractor = builder.buildNetworkExtractor();
     internalServerExtractor = builder.buildServerExtractor();
     resendCountIncrementer = builder.resendCountIncrementer;
+    redactQueryParameters = builder.redactQueryParameters;
   }
 
   @Override
@@ -104,11 +112,21 @@ public final class HttpClientAttributesExtractor<REQUEST, RESPONSE>
   }
 
   @Nullable
-  private static String stripSensitiveData(@Nullable String url) {
+  private String stripSensitiveData(@Nullable String url) {
     if (url == null || url.isEmpty()) {
       return url;
     }
 
+    url = redactUserInfo(url);
+
+    if (redactQueryParameters) {
+      url = redactQueryParameters(url);
+    }
+
+    return url;
+  }
+
+  private static String redactUserInfo(String url) {
     int schemeEndIndex = url.indexOf(':');
 
     if (schemeEndIndex == -1) {
@@ -144,5 +162,59 @@ public final class HttpClientAttributesExtractor<REQUEST, RESPONSE>
       return url;
     }
     return url.substring(0, schemeEndIndex + 3) + "REDACTED:REDACTED" + url.substring(atIndex);
+  }
+
+  private static String redactQueryParameters(String url) {
+    int questionMarkIndex = url.indexOf('?');
+    if (questionMarkIndex == -1 || !containsParamToRedact(url)) {
+      return url;
+    }
+
+    StringBuilder urAfterQuestionMark = new StringBuilder();
+
+    // To build a parameter name until we reach the '=' character
+    // If the parameter name is a one to redact, we will redact the value
+    StringBuilder currentParamName = new StringBuilder();
+
+    for (int i = questionMarkIndex + 1; i < url.length(); i++) {
+      char currentChar = url.charAt(i);
+
+      if (currentChar == '=') {
+        urAfterQuestionMark.append('=');
+        if (PARAMS_TO_REDACT.contains(currentParamName.toString())) {
+          urAfterQuestionMark.append("REDACTED");
+          // skip over parameter value
+          for (; i + 1 < url.length(); i++) {
+            char c = url.charAt(i + 1);
+            if (c == '&' || c == '#') {
+              break;
+            }
+          }
+        }
+      } else if (currentChar == '&') { // New parameter delimiter
+        urAfterQuestionMark.append(currentChar);
+        // To avoid creating a new StringBuilder for each new parameter
+        currentParamName.setLength(0);
+      } else if (currentChar == '#') { // Reference delimiter
+        urAfterQuestionMark.append(url.substring(i));
+        break;
+      } else {
+        currentParamName.append(
+            currentChar); // param values can be appended to currentParamName here but it's not an
+        // issue
+        urAfterQuestionMark.append(currentChar);
+      }
+    }
+
+    return url.substring(0, questionMarkIndex) + "?" + urAfterQuestionMark;
+  }
+
+  private static boolean containsParamToRedact(String urlpart) {
+    for (String param : PARAMS_TO_REDACT) {
+      if (urlpart.contains(param)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
