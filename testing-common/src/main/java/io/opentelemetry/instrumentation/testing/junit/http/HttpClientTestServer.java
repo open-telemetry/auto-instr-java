@@ -46,8 +46,10 @@ public final class HttpClientTestServer extends ServerExtension {
   @Override
   protected void configure(ServerBuilder sb) throws Exception {
     KeyStore keystore = KeyStore.getInstance("PKCS12");
+    String trustStore = System.getProperty("javax.net.ssl.trustStore");
+    System.out.println("trustStore = " + trustStore);
     try (InputStream in =
-        Files.newInputStream(Paths.get(System.getProperty("javax.net.ssl.trustStore")))) {
+        Files.newInputStream(Paths.get(trustStore))) {
       keystore.load(in, "testing".toCharArray());
     }
     KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
